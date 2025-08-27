@@ -1,22 +1,23 @@
-@use 'colors';
+@use 'colors' as *;
 
 :root {
     // Light theme colors
-    --color-primary: #{$primary};
-    --color-primary-foreground: #{$primary-foreground};
-    --color-secondary: #{$secondary};
-    --color-secondary-foreground: #{$secondary-foreground};
-    --color-muted: #{$muted};
-    --color-muted-foreground: #{$muted-foreground};
-    --color-accent: #{$accent};
-    --color-accent-foreground: #{$accent-foreground};
-    --color-destructive: #{$destructive};
-    --color-destructive-foreground: #{$destructive-foreground};
-    --color-border: #{$border};
-    --color-input: #{$input};
-    --color-ring: #{$ring};
-    --color-background: #{$background};
-    --color-foreground: #{$foreground};
+    --color-primary: #{$blue-500};
+    --color-primary-focus: #{$blue-600};
+    --color-primary-foreground: #{$gray-50};
+    --color-secondary: #{$gray-100};
+    --color-secondary-foreground: #{$gray-900};
+    --color-muted: #{$gray-100};
+    --color-muted-foreground: #{$gray-500};
+    --color-accent: #{$gray-100};
+    --color-accent-foreground: #{$gray-900};
+    --color-destructive: #{$red-500};
+    --color-destructive-foreground: #{$gray-50};
+    --color-border: #{$gray-200};
+    --color-input: #{$gray-200};
+    --color-ring: #{$blue-500};
+    --color-background: #{$gray-50};
+    --color-foreground: #{$gray-950};
 
     // Full color palette
     --color-gray-50: #{$gray-50};
@@ -103,6 +104,8 @@
     --space-4: 1rem;
     --space-5: 1.25rem;
     --space-6: 1.5rem;
+    --space-7: 1.75rem;
+    --space-8: 2rem;
 
     --font-size-xs: #($font-size-xs);
     --font-size-sm: #($font-size-sm);
@@ -117,21 +120,22 @@
 // Dark theme
 @media (prefers-color-scheme: dark) {
     :root {
-        --color-primary: #{$dark-primary};
-        --color-primary-foreground: #{$dark-primary-foreground};
-        --color-secondary: #{$dark-secondary};
-        --color-secondary-foreground: #{$dark-secondary-foreground};
-        --color-muted: #{$dark-muted};
-        --color-muted-foreground: #{$dark-muted-foreground};
-        --color-accent: #{$dark-accent};
-        --color-accent-foreground: #{$dark-accent-foreground};
-        --color-destructive: #{$dark-destructive};
-        --color-destructive-foreground: #{$dark-destructive-foreground};
-        --color-border: #{$dark-border};
-        --color-input: #{$dark-input};
-        --color-ring: #{$dark-ring};
-        --color-background: #{$dark-background};
-        --color-foreground: #{$dark-foreground};
+        --color-primary: #{$blue-400};
+        --color-primary-focus: #{$blue-500};
+        --color-primary-foreground: #{$gray-900};
+        --color-secondary: #{$gray-800};
+        --color-secondary-foreground: #{$gray-50};
+        --color-muted: #{$gray-800};
+        --color-muted-foreground: #{$gray-400};
+        --color-accent: #{$gray-800};
+        --color-accent-foreground: #{$gray-50};
+        --color-destructive: #{$red-400};
+        --color-destructive-foreground: #{$gray-50};
+        --color-border: #{$gray-800};
+        --color-input: #{$gray-800};
+        --color-ring: #{$blue-400};
+        --color-background: #{$gray-950};
+        --color-foreground: #{$gray-50};
     }
 }
 

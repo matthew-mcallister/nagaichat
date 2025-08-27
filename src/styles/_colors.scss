@@ -554,12 +554,12 @@ $colors: (
     )
 );
 
-$shadow-2xs: '0 1px rgb(0 0 0 / 0.05)',;
-$shadow-xs: '0 1px 2px 0 rgb(0 0 0 / 0.05)',;
-$shadow-sm: '0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)',;
-$shadow-md: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)',;
-$shadow-lg: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)',;
-$shadow-xl: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)',;
+$shadow-2xs: '0 1px rgb(0 0 0 / 0.05)';
+$shadow-xs: '0 1px 2px 0 rgb(0 0 0 / 0.05)';
+$shadow-sm: '0 2px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1)';
+$shadow-md: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)';
+$shadow-lg: '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)';
+$shadow-xl: '0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1)';
 $shadow-2xl: '0 25px 50px -12px rgb(0 0 0 / 0.25)';
 
 $shadows: (
@@ -615,37 +615,3 @@ $font-sizes: (
 @function color($name, $shade: 500) {
     @return map-get(map-get($colors, $name), $shade);
 }
-
-// Semantic colors
-$primary: $blue-500;
-$primary-foreground: $gray-50;
-$secondary: $gray-100;
-$secondary-foreground: $gray-900;
-$muted: $gray-100;
-$muted-foreground: $gray-500;
-$accent: $gray-100;
-$accent-foreground: $gray-900;
-$destructive: $red-500;
-$destructive-foreground: $gray-50;
-$border: $gray-200;
-$input: $gray-200;
-$ring: $blue-500;
-$background: $gray-50;
-$foreground: $gray-950;
-
-// Dark mode semantic colors
-$dark-primary: $blue-400;
-$dark-primary-foreground: $gray-900;
-$dark-secondary: $gray-800;
-$dark-secondary-foreground: $gray-50;
-$dark-muted: $gray-800;
-$dark-muted-foreground: $gray-400;
-$dark-accent: $gray-800;
-$dark-accent-foreground: $gray-50;
-$dark-destructive: $red-400;
-$dark-destructive-foreground: $gray-50;
-$dark-border: $gray-800;
-$dark-input: $gray-800;
-$dark-ring: $blue-400;
-$dark-background: $gray-950;
-$dark-foreground: $gray-50;

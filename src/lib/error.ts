@@ -1,25 +1,15 @@
 import { NextRequest, NextResponse } from "next/server"
+import toast from "react-hot-toast"
 
-export class BaseError {
-  public message: string
+export class BaseError extends Error {
   public statusCode: number
 
   protected static defaultMessage: string = 'An unexpected error occurred'
   protected static defaultStatusCode: number = 500
 
-  constructor(message: string | undefined = undefined, statusCode: number | undefined = undefined) {
-    if (message !== undefined) {
-      this.message = message
-    } else {
-      // @ts-ignore
-      this.message = this.constructor.defaultMessage
-    }
-    if (statusCode !== undefined) {
-      this.statusCode = statusCode
-    } else {
-      // @ts-ignore
-      this.statusCode = this.constructor.defaultStatusCode
-    }
+  constructor(message?: string | undefined, statusCode?: number | undefined) {
+    super(message || BaseError.defaultMessage);
+    this.statusCode = statusCode || BaseError.defaultStatusCode;
   }
 
   public toJson(): any {
@@ -35,22 +25,33 @@ export class InvalidRequest extends BaseError {
   protected static defaultMessage = 'Invalid request'
 }
 
-type NextHandler = (request: NextRequest) => Promise<NextResponse> | NextResponse;
+export class NoSuchResource extends BaseError {
+  protected static defaultStatusCode = 404
+  protected static defaultMessage = 'No such resource'
+}
+
+type NextHandler = (request: NextRequest, context?: any) => Promise<NextResponse> | NextResponse;
 
 export function handleErrors(handler: NextHandler): NextHandler {
-  return async request => {
+  return async (request, context) => {
     try {
-      return await handler(request)
+      return await handler(request, context)
     } catch (e: any) {
       if ('toJson' in e) {
-        return NextResponse.json(e.toJson())
+        return NextResponse.json({ error: e.message }, { status: e.statusCode })
       } else {
         console.error('Uncaught exception:', e)
         return NextResponse.json(
-          { message: 'An unexpected error occurred' },
+          { error: 'An unexpected error occurred' },
           { status: 500 },
         )
       }
     }
   }
+}
+
+export function reportError(error: Error | any) {
+  let message = (error instanceof Error) ? error.message : String(error)
+  console.error(message, error);
+  toast.error(message);
 }
