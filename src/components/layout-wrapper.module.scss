@@ -1,0 +1,16 @@
+.layoutContainer {
+    display: flex;
+    min-height: 100vh;
+}
+
+.mainContent {
+    flex: 1;
+    margin-left: 280px; // Width of sidebar on desktop
+    min-height: 100vh;
+    background-color: var(--color-background);
+
+    @media (max-width: 768px) {
+        margin-left: 0;
+        margin-top: 60px; // Height of mobile top bar
+    }
+}

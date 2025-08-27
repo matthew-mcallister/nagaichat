@@ -2,6 +2,9 @@
 
 :root {
     // Light theme colors
+    --color-background: #{$gray-50};
+    --color-foreground: #{$gray-950};
+    --color-focus: #{$gray-200};
     --color-primary: #{$blue-500};
     --color-primary-focus: #{$blue-600};
     --color-primary-foreground: #{$gray-50};
@@ -16,8 +19,6 @@
     --color-border: #{$gray-200};
     --color-input: #{$gray-200};
     --color-ring: #{$blue-500};
-    --color-background: #{$gray-50};
-    --color-foreground: #{$gray-950};
 
     // Full color palette
     --color-gray-50: #{$gray-50};
@@ -107,35 +108,36 @@
     --space-7: 1.75rem;
     --space-8: 2rem;
 
-    --font-size-xs: #($font-size-xs);
-    --font-size-sm: #($font-size-sm);
-    --font-size-md: #($font-size-md);
-    --font-size-lg: #($font-size-lg);
-    --font-size-xl: #($font-size-xl);
-    --font-size-2xl: #($font-size-2xl);
-    --font-size-3xl: #($font-size-3xl);
-    --font-size-4xl: #($font-size-4xl);
+    --font-size-xs: #{$font-size-xs};
+    --font-size-sm: #{$font-size-sm};
+    --font-size-md: #{$font-size-md};
+    --font-size-lg: #{$font-size-lg};
+    --font-size-xl: #{$font-size-xl};
+    --font-size-2xl: #{$font-size-2xl};
+    --font-size-3xl: #{$font-size-3xl};
+    --font-size-4xl: #{$font-size-4xl};
 }
 
 // Dark theme
 @media (prefers-color-scheme: dark) {
     :root {
+        --color-background: #{$zinc-800};
+        --color-foreground: #{$zinc-50};
+        --color-focus: #{$zinc-700};
         --color-primary: #{$blue-400};
         --color-primary-focus: #{$blue-500};
-        --color-primary-foreground: #{$gray-900};
-        --color-secondary: #{$gray-800};
-        --color-secondary-foreground: #{$gray-50};
-        --color-muted: #{$gray-800};
-        --color-muted-foreground: #{$gray-400};
-        --color-accent: #{$gray-800};
-        --color-accent-foreground: #{$gray-50};
+        --color-primary-foreground: #{$zinc-900};
+        --color-secondary: #{$zinc-800};
+        --color-secondary-foreground: #{$zinc-50};
+        --color-muted: #{$zinc-800};
+        --color-muted-foreground: #{$zinc-400};
+        --color-accent: #{$zinc-900};
+        --color-accent-foreground: #{$zinc-50};
         --color-destructive: #{$red-400};
-        --color-destructive-foreground: #{$gray-50};
-        --color-border: #{$gray-800};
-        --color-input: #{$gray-800};
+        --color-destructive-foreground: #{$zinc-50};
+        --color-border: #{$zinc-800};
+        --color-input: #{$zinc-800};
         --color-ring: #{$blue-400};
-        --color-background: #{$gray-950};
-        --color-foreground: #{$gray-50};
     }
 }
 
