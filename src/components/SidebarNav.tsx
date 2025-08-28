@@ -18,7 +18,7 @@ export default function SidebarNav({ open, setOpen }: Props) {
   return (
     <>
       <div className={styles.sidebarHeader}>
-        <title>Nagai</title>
+        <span>Nagai</span>
         <button
           className={styles.closeButton}
           onClick={closeSidebar}
