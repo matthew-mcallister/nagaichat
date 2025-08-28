@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'VarChat - API Integrations',
+  title: 'NagaiChat - API Integrations',
   description: 'Manage your AI API integrations',
 }
 

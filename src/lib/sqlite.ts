@@ -4,13 +4,13 @@ import { existsSync, mkdirSync } from 'fs'
 import { dirname } from 'path'
 
 declare global {
-  let _varchat_sqlite_db: Database | null
+  let _sqlite_db: Database | null
 }
 
-let _varchat_sqlite_db: Database | null = null
+let _sqlite_db: Database | null = null
 
 function getDb(): Database {
-  if (_varchat_sqlite_db != null) return _varchat_sqlite_db
+  if (_sqlite_db != null) return _sqlite_db
 
   const SQLITE_PATH = process.env.SQLITE_PATH || './db.sqlite'
 
@@ -25,7 +25,7 @@ function getDb(): Database {
 
   runMigrations(db)
 
-  _varchat_sqlite_db = db
+  _sqlite_db = db
 
   return db
 }

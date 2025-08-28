@@ -1,9 +1,9 @@
-## VarChat
+## NagaiChat
 
-VarChat is a multimodal, multi-model LLM chat UI. It provides a similar user
+NagaiChat is a multimodal, multi-model LLM chat UI. It provides a similar user
 experience to Google AI Studio or ChatGPT, but supports a variety of different
 backend APIs powered by your API keys. Rather than specializing to one use
-case, VarChat is designed to handle many different use cases well, such as
+case, NagaiChat is designed to handle many different use cases well, such as
 conversation, fiction, coding, tool use, and image editing.
 
 ### Planned features
