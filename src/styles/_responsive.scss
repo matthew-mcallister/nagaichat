@@ -1,0 +1,12 @@
+.hideDesktop {
+    @media (min-width: 769px) {
+        display: none;
+    }
+}
+
+.hideMobile {
+    @media (max-width: 768px) {
+        display: none;
+    }
+}
+
