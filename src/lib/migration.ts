@@ -1,12 +1,13 @@
 import { Database } from 'better-sqlite3'
 
 function migrate_v1(db: Database): void {
-    // Add integrations table in a transaction
+    console.log('running migration v1')
+
     db.exec(`
         CREATE TABLE integrations (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL UNIQUE,
-            provider TEXT NOT NULL CHECK (provider IN ('openai', 'gemini')),
+            interface TEXT NOT NULL CHECK (interface IN ('openai', 'gemini')),
             apiKey TEXT NOT NULL,
             baseUrl TEXT,
             createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
@@ -23,8 +24,9 @@ function migrate_v1(db: Database): void {
 }
 
 export default function runMigrations(db: Database): void {
-    // Get current database version
     const currentVersion = db.pragma('user_version', { simple: true }) as number
+
+    console.log('current schema version: ', currentVersion)
 
     const migrations = [
         migrate_v1

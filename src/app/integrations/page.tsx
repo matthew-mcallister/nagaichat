@@ -3,21 +3,26 @@
 import { useState, useEffect } from 'react'
 import { Integration, CreateIntegrationRequest } from '@/lib/integration'
 import styles from './integrations.module.scss'
+import Api from '@/lib/frontend/api'
+import { ValidationError } from '@/lib/error'
 
 export default function IntegrationsPage() {
+  const api = new Api()
+
   const [integrations, setIntegrations] = useState<Integration[]>([])
   const [loading, setLoading] = useState(true)
   const [isCreating, setIsCreating] = useState(false)
-  const [editingId, setEditingId] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState<number | null>(null)
 
   // Form state
   const [formData, setFormData] = useState<CreateIntegrationRequest>({
     name: '',
-    provider: 'openai',
+    interface: 'openai',
     apiKey: '',
     baseUrl: '',
   })
 
+  // TODO: useSWR
   useEffect(() => {
     fetchIntegrations()
   }, [])
@@ -25,12 +30,7 @@ export default function IntegrationsPage() {
   const fetchIntegrations = async () => {
     try {
       setLoading(true)
-      const response = await fetch('/api/integrations')
-      if (!response.ok) {
-        throw new Error('Failed to fetch integrations')
-      }
-      const data = await response.json()
-      setIntegrations(data)
+      setIntegrations(await api.listIntegrations())
     } catch (err) {
       reportError(err)
     } finally {
@@ -43,35 +43,13 @@ export default function IntegrationsPage() {
 
     try {
       if (editingId) {
-        // Update existing integration
-        const response = await fetch(`/api/integrations/${editingId}`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-        })
-
-        if (!response.ok) {
-          throw new Error('Failed to update integration')
-        }
+        await api.updateIntegration(editingId, formData)
       } else {
-        // Create new integration
-        const response = await fetch('/api/integrations', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(formData),
-        })
-
-        if (!response.ok) {
-          throw new Error('Failed to create integration')
-        }
+        await api.createIntegration(formData)
       }
 
       // Reset form and refresh list
-      setFormData({ name: '', provider: 'openai', apiKey: '', baseUrl: '' })
+      setFormData({ name: '', interface: 'openai', apiKey: '', baseUrl: '' })
       setIsCreating(false)
       setEditingId(null)
       fetchIntegrations()
@@ -83,15 +61,15 @@ export default function IntegrationsPage() {
   const handleEdit = (integration: Integration) => {
     setFormData({
       name: integration.name,
-      provider: integration.provider,
-      apiKey: integration.apiKey,
+      interface: integration.interface,
+      apiKey: '',
       baseUrl: integration.baseUrl || '',
     })
     setEditingId(integration.id!)
     setIsCreating(true)
   }
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (id: number) => {
     if (!confirm('Are you sure you want to delete this integration?')) {
       return
     }
@@ -112,7 +90,7 @@ export default function IntegrationsPage() {
   }
 
   const handleCancel = () => {
-    setFormData({ name: '', provider: 'openai', apiKey: '', baseUrl: '' })
+    setFormData({ name: '', interface: 'openai', apiKey: '', baseUrl: '' })
     setIsCreating(false)
     setEditingId(null)
   }
@@ -124,20 +102,20 @@ export default function IntegrationsPage() {
   return (
     <div className={styles.container}>
       <div className={styles.header}>
-        <h1>API Integrations</h1>
+        <h1>API integrations</h1>
         {!isCreating && (
           <button
             onClick={() => setIsCreating(true)}
-            className={styles.createButton}
+            className='button primary'
           >
-            Add Integration
+            Add integration
           </button>
         )}
       </div>
 
       {isCreating && (
         <div className={styles.formContainer}>
-          <h2>{editingId ? 'Edit Integration' : 'Create New Integration'}</h2>
+          <h2>{editingId ? 'Edit integration' : 'Create new integration'}</h2>
           <form onSubmit={handleSubmit} className={styles.form}>
             <div className={styles.field}>
               <label htmlFor='name'>Name</label>
@@ -154,14 +132,14 @@ export default function IntegrationsPage() {
             </div>
 
             <div className={styles.field}>
-              <label htmlFor='provider'>Provider</label>
+              <label htmlFor='interface'>Interface</label>
               <select
-                id='provider'
-                value={formData.provider}
+                id='interface'
+                value={formData.interface}
                 onChange={e =>
                   setFormData({
                     ...formData,
-                    provider: e.target.value as 'openai' | 'gemini',
+                    interface: e.target.value as 'openai' | 'gemini',
                   })
                 }
               >
@@ -171,7 +149,7 @@ export default function IntegrationsPage() {
             </div>
 
             <div className={styles.field}>
-              <label htmlFor='apiKey'>API Key</label>
+              <label htmlFor='apiKey'>API key</label>
               <input
                 type='password'
                 id='apiKey'
@@ -185,7 +163,7 @@ export default function IntegrationsPage() {
             </div>
 
             <div className={styles.field}>
-              <label htmlFor='baseUrl'>Base URL (Optional)</label>
+              <label htmlFor='baseUrl'>Base URL (optional)</label>
               <input
                 type='url'
                 id='baseUrl'
@@ -198,14 +176,10 @@ export default function IntegrationsPage() {
             </div>
 
             <div className={styles.buttons}>
-              <button type='submit' className={styles.submitButton}>
-                {editingId ? 'Update' : 'Create'} Integration
+              <button type='submit' className='button primary'>
+                {editingId ? 'Update' : 'Create'}
               </button>
-              <button
-                type='button'
-                onClick={handleCancel}
-                className={styles.cancelButton}
-              >
+              <button type='button' onClick={handleCancel} className='button'>
                 Cancel
               </button>
             </div>
@@ -223,13 +197,11 @@ export default function IntegrationsPage() {
             <div key={integration.id} className={styles.card}>
               <div className={styles.cardHeader}>
                 <h3>{integration.name}</h3>
-                <span className={styles.provider}>{integration.provider}</span>
+                <span className={styles.interface}>
+                  {integration.interface}
+                </span>
               </div>
               <div className={styles.cardBody}>
-                <p>
-                  <strong>API Key:</strong> {integration.apiKey.substring(0, 8)}
-                  ...
-                </p>
                 {integration.baseUrl && (
                   <p>
                     <strong>Base URL:</strong> {integration.baseUrl}
@@ -252,13 +224,13 @@ export default function IntegrationsPage() {
               <div className={styles.cardActions}>
                 <button
                   onClick={() => handleEdit(integration)}
-                  className={styles.editButton}
+                  className='button primary'
                 >
                   Edit
                 </button>
                 <button
                   onClick={() => handleDelete(integration.id!)}
-                  className={styles.deleteButton}
+                  className='button destructive'
                 >
                   Delete
                 </button>

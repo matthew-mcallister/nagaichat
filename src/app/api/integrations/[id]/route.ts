@@ -16,12 +16,16 @@ export const GET = handleErrors(async function get(
   return NextResponse.json(integration);
 })
 
-export const PUT = handleErrors(async function put(
+export const PATCH = handleErrors(async function put(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
   const body: UpdateIntegrationRequest = await request.json();
+
+  if (!body.apiKey) {
+    body.apiKey = undefined
+  }
 
   const integration = IntegrationTable.update(Number(id), body);
 
@@ -43,5 +47,5 @@ export const DELETE = handleErrors(async function deleteHandler(
     throw new NoSuchResource('Integration not found');
   }
 
-  return NextResponse.json({ success: true });
+  return new NextResponse(null, { status: 200 });
 })

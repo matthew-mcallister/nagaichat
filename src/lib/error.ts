@@ -20,7 +20,7 @@ export class BaseError extends Error {
   }
 }
 
-export class InvalidRequest extends BaseError {
+export class ValidationError extends BaseError {
   protected static defaultStatusCode = 400
   protected static defaultMessage = 'Invalid request'
 }

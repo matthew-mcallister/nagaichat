@@ -1,245 +1,196 @@
+@use '@/styles/colors' as *;
+
 .container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-  padding-top: 3rem; // Account for fixed navigation
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+
+    @media (max-width: 768px) {
+        padding: 1rem;
+    }
 }
 
 .header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 2rem;
-}
-
-.createButton {
-  background-color: var(--color-primary);
-  color: var(--color-primary-foreground);
-  border: none;
-  border-radius: 6px;
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
-  cursor: pointer;
-
-  &:hover {
-    background-color: #0051cc;
-  }
-}
-
-.error {
-  background-color: var(--color-destructive);
-  border: 1px solid #fcc;
-  color: var(--color-destructive-foreground);
-  padding: 1rem;
-  border-radius: 6px;
-  margin-bottom: 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.closeError {
-  background: none;
-  border: none;
-  font-size: var(--font-size-md);
-  cursor: pointer;
-  color: var(--color-destructive-foreground);
-  padding: 0;
-  margin-left: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
 }
 
 .formContainer {
-  background-color: var(--color-background);
-  margin-bottom: var(--space-6);
+    background-color: var(--color-background);
+    margin-bottom: var(--space-6);
 }
 
 .form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-6);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-6);
 }
 
 .field {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
 
-  label {
-    font-weight: 600;
-  }
-
-  input,
-  select {
-    padding: var(--space-3);
-    color: var(--color-foreground);
-    border: 1px solid var(--color-foreground);
-    border-radius: 4px;
-    font-size: 1rem;
-
-    &:focus {
-      outline: none;
-      border-color: var(--color-primary);
-      box-shadow: 0 0 0 2px var(--color-shadow);
+    label {
+        font-weight: 600;
     }
-  }
+
+    input,
+    select {
+        padding: var(--space-3);
+        color: var(--color-foreground);
+        border: 1px solid var(--color-muted-foreground);
+        border-radius: var(--radius-lg);
+        font-size: 1rem;
+
+        &:focus {
+            outline: none;
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 2px var(--color-shadow);
+        }
+    }
 }
 
 .buttons {
-  display: flex;
-  gap: var(--space-4);
-  margin-top: var(--space-4);
+    display: flex;
+    gap: var(--space-4);
+    margin-top: var(--space-4);
 }
 
 .submitButton {
-  background-color: var(--color-primary);
-  color: var(--color-primary-foreground);
-  border: none;
-  border-radius: 6px;
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
-  cursor: pointer;
+    background-color: var(--color-primary);
+    color: var(--color-primary-foreground);
+    border: none;
+    border-radius: 6px;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    cursor: pointer;
 
-  &:hover {
-    background-color: var(--color-primary-focus);
-  }
+    &:hover {
+        background-color: var(--color-primary-focus);
+    }
 }
 
 .cancelButton {
-  background-color: var(--color-secondary);
-  color: var(--color-secondary-foreground);
-  border: none;
-  border-radius: var(--radius-lg);
-  padding: var(--space-3) var(--space-6);
-  font-size: 1rem;
-  cursor: pointer;
+    background-color: var(--color-secondary);
+    color: var(--color-secondary-foreground);
+    border: none;
+    border-radius: var(--radius-lg);
+    padding: var(--space-3) var(--space-6);
+    font-size: 1rem;
+    cursor: pointer;
 
-  &:hover {
-    background-color: #5a6268;
-  }
+    &:hover {
+        background-color: #5a6268;
+    }
 }
 
 .list {
-  display: grid;
-  gap: var(--space-3);
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+    display: grid;
+    gap: var(--space-3);
+    grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
 }
 
 .empty {
-  text-align: center;
-  color: var(--color-foreground);
-  font-style: italic;
-  padding: 3rem;
-  background-color: var(--color-background);
-  border-radius: var(--radius-lg);
-  grid-column: 1 / -1;
+    text-align: center;
+    color: var(--color-foreground);
+    font-style: italic;
+    padding: 3rem;
+    background-color: var(--color-background);
+    border-radius: var(--radius-lg);
+    grid-column: 1 / -1;
 }
 
 .card {
-  background-color: var(--color-background);
-  border: 1px solid var(--color-foreground);
-  border-radius: var(--radius-lg);
-  padding: var(--space-6);
-  box-shadow: 0 2px 4px var(--color-shadow);
-  transition: box-shadow 0.2s;
+    background-color: var(--color-background);
+    border: 1px solid var(--color-foreground);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    box-shadow: 0 2px 4px var(--color-shadow);
+    transition: box-shadow 0.2s;
 
-  &:hover {
-    box-shadow: 0 4px 8px var(--color-shadow);
-  }
+    &:hover {
+        box-shadow: 0 4px 8px var(--color-shadow);
+    }
 }
 
 .cardHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
 
-  h3 {
-    margin: 0;
-  }
+    h3 {
+        margin: 0;
+    }
 }
 
-.provider {
-  background-color: var(--color-background);
-  color: var(--color-foreground);
-  padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-xl);
-  font-size: var(--font-size-lg);
-  font-weight: 500;
-  text-transform: uppercase;
+.interface {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-xl);
+    font-size: var(--font-size-lg);
+    font-weight: 500;
+    text-transform: uppercase;
 }
 
 .cardBody {
-  margin-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
 
-  p {
-    margin: 0.5rem 0;
-    color: #666;
+    p {
+        margin: 0.5rem 0;
+        color: #666;
 
-    strong {
-      color: #333;
+        strong {
+            color: #333;
+        }
     }
-  }
 }
 
 .dates {
-  border-top: 1px solid #e0e0e0;
-  padding-top: 1rem;
-  margin-top: 1rem;
+    border-top: 1px solid #e0e0e0;
+    padding-top: 1rem;
+    margin-top: 1rem;
 }
 
 .cardActions {
-  display: flex;
-  gap: 0.75rem;
+    display: flex;
+    gap: 0.75rem;
 }
 
 .editButton {
-  background-color: #28a745;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  cursor: pointer;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    cursor: pointer;
 
-  &:hover {
-    background-color: #218838;
-  }
+    &:hover {
+        background-color: #218838;
+    }
 }
 
 .deleteButton {
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 0.5rem 1rem;
-  font-size: 0.875rem;
-  cursor: pointer;
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    cursor: pointer;
 
-  &:hover {
-    background-color: #c82333;
-  }
+    &:hover {
+        background-color: #c82333;
+    }
 }
 
 @media (max-width: 768px) {
-  .container {
-    padding: 1rem;
-  }
-
-  .header {
-    flex-direction: column;
-    gap: 1rem;
-    align-items: stretch;
-  }
-
-  .list {
-    grid-template-columns: 1fr;
-  }
-
-  .buttons {
-    flex-direction: column;
-  }
-
-  .cardActions {
-    flex-direction: column;
-  }
+    .buttons {
+        flex-direction: column;
+    }
 }

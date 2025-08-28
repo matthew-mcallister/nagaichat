@@ -1,4 +1,5 @@
 @use 'colors' as *;
+@use 'buttons' as *;
 
 :root {
     // Light theme colors
@@ -8,13 +9,15 @@
     --color-primary: #{$blue-500};
     --color-primary-focus: #{$blue-600};
     --color-primary-foreground: #{$gray-50};
-    --color-secondary: #{$gray-100};
+    --color-secondary: #{$gray-200};
+    --color-secondary-focus: #{$gray-300};
     --color-secondary-foreground: #{$gray-900};
     --color-muted: #{$gray-100};
     --color-muted-foreground: #{$gray-500};
     --color-accent: #{$gray-100};
     --color-accent-foreground: #{$gray-900};
     --color-destructive: #{$red-500};
+    --color-destructive-focus: #{$red-600};
     --color-destructive-foreground: #{$gray-50};
     --color-border: #{$gray-200};
     --color-input: #{$gray-200};
@@ -128,12 +131,14 @@
         --color-primary-focus: #{$blue-500};
         --color-primary-foreground: #{$zinc-900};
         --color-secondary: #{$zinc-800};
+        --color-secondary-focus: #{$zinc-700};
         --color-secondary-foreground: #{$zinc-50};
         --color-muted: #{$zinc-800};
         --color-muted-foreground: #{$zinc-400};
         --color-accent: #{$zinc-900};
         --color-accent-foreground: #{$zinc-50};
         --color-destructive: #{$red-400};
+        --color-destructive-focus: #{$red-300};
         --color-destructive-foreground: #{$zinc-50};
         --color-border: #{$zinc-800};
         --color-input: #{$zinc-800};

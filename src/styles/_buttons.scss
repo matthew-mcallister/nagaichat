@@ -1,0 +1,31 @@
+.button {
+    background-color: var(--color-secondary);
+    color: var(--color-secondary-foreground);
+    border: none;
+    border-radius: 6px;
+    padding: var(--space-3) var(--space-6);
+    font-size: 1rem;
+    cursor: pointer;
+
+    &:hover {
+        background-color: var(--color-secondary-focus);
+    }
+
+    &.primary {
+        background-color: var(--color-primary);
+        color: var(--color-primary-foreground);
+
+        &:hover {
+            background-color: var(--color-primary-focus);
+        }
+    }
+
+    &.destructive {
+        background-color: var(--color-destructive);
+        color: var(--color-destructive-foreground);
+
+        &:hover {
+            background-color: var(--color-destructive-focus);
+        }
+    }
+}
