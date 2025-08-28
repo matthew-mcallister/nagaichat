@@ -3,10 +3,12 @@
     min-height: 100vh;
 }
 
-.mainContent {
+.mainArea {
     flex: 1;
-    margin-left: 280px; // Width of sidebar on desktop
     min-height: 100vh;
+}
+
+.mainContent {
     background-color: var(--color-background);
 
     @media (max-width: 768px) {

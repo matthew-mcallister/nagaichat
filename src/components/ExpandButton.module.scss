@@ -1,0 +1,28 @@
+.expandButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: var(--space-2);
+    border-radius: var(--radius-sm);
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+        background-color: var(--color-focus);
+    }
+
+    &:focus {
+        outline: 2px solid var(--color-ring);
+        outline-offset: 2px;
+    }
+}
+
+.expandIcon {
+    width: 24px;
+    height: 24px;
+    color: var(--color-foreground);
+    transition: color 0.2s ease;
+}
+
