@@ -34,9 +34,9 @@ export default function Sidebar({ open, setOpen, children, side }: Props) {
 
   return (
     <>
-      <nav className={`${styles.sidebar} ${statusClass} ${styles[side]}`}>
+      <div className={`${styles.sidebar} ${statusClass} ${styles[side]}`}>
         {children}
-      </nav>
+      </div>
       <div className={`${styles.sidePadding} ${statusClass} ${styles[side]}`} />
       <div
         className={`${styles.overlay} ${statusClass}`}

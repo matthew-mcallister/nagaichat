@@ -16,7 +16,7 @@ export default function SidebarNav({ open, setOpen }: Props) {
   }
 
   return (
-    <>
+    <nav>
       <div className={styles.sidebarHeader}>
         <span>Nagai</span>
         <button
@@ -44,6 +44,6 @@ export default function SidebarNav({ open, setOpen }: Props) {
           </Link>
         </li>
       </ul>
-    </>
+    </nav>
   )
 }

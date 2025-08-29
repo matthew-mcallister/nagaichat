@@ -10,6 +10,8 @@ import {
   AdjustmentsHorizontalIcon,
   Bars3Icon,
 } from '@heroicons/react/24/outline'
+import { Parameters } from '@/lib/chat'
+import ParameterSidebar from '@/components/ParameterSidebar'
 
 interface Props {
   children: ReactNode
@@ -22,6 +24,14 @@ export default function ChatLayout({ children }: Props) {
   const [rightSidebarOpen, setRightSidebarOpen] = useState<boolean | undefined>(
     undefined
   )
+
+  const [parameters, setParameters] = useState<Parameters>({
+    integration: undefined,
+    model: undefined,
+    systemPrompt: '',
+    temperature: 1,
+    thinkingEnabled: true,
+  })
 
   useEffect(() => {
     setLeftSidebarOpen(window.innerWidth >= 769)
@@ -57,7 +67,10 @@ export default function ChatLayout({ children }: Props) {
           setOpen={setRightSidebarOpen}
           side='right'
         >
-          <p>Hello there</p>
+          <ParameterSidebar
+            parameters={parameters}
+            setParameters={setParameters}
+          />
         </Sidebar>
       </div>
     </div>

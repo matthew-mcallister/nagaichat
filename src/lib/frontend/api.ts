@@ -1,5 +1,6 @@
 import { BaseError } from "@/lib/error"
 import { CreateIntegrationRequest, Integration, UpdateIntegrationRequest } from "@/lib/integration"
+import useSWR from "swr"
 
 async function raiseForStatus(response: Response | Promise<Response>): Promise<Response> {
   response = await response
@@ -22,6 +23,10 @@ async function unwrapJson<T>(response: Response | Promise<Response>): Promise<T>
   } catch (e) {
   throw new BaseError()
   }
+}
+
+interface ModelInfo {
+  name: string
 }
 
 /**
@@ -90,11 +95,29 @@ export default class Api {
     return this.get('/api/integrations')
   }
 
+  public useIntegrations(): Integration[] | null {
+    const { data } = useSWR('/api/integrations', () => this.listIntegrations())
+    return data || null
+  }
+
   public async updateIntegration(id: number, body: UpdateIntegrationRequest): Promise<Integration> {
     return this.patch(`/api/integrations/${id}`, body)
   }
 
   public async createIntegration(body: CreateIntegrationRequest): Promise<Integration> {
     return this.post('/api/integrations', body)
+  }
+
+  public async listModels(integrationId: number): Promise<ModelInfo[]> {
+    // TODO: Cache this output on backend
+    return this.get(`/api/integrations/${integrationId}/models`)
+  }
+
+  public useAvailableModels(integrationId: number | null): ModelInfo[] | null {
+    const { data } = useSWR(
+      integrationId !== null ? `/api/integrations/${integrationId}/models` : null,
+      () => integrationId !== null ? this.listModels(integrationId) : null,
+    )
+    return data || null
   }
 }

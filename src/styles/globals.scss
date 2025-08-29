@@ -1,6 +1,7 @@
 @use 'colors' as *;
 @use 'buttons' as *;
 @use 'responsive' as *;
+@use 'form' as *;
 
 :root {
     // Light theme colors
@@ -207,7 +208,10 @@ a {
 h1, h2, h3, h4, h5, h6 {
     font-weight: 600;
     line-height: 1.25;
-    margin-bottom: var(--space-4);
+
+    & + p {
+        margin-bottom: var(--space-4);
+    }
 }
 
 h1 {
