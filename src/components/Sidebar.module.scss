@@ -1,7 +1,6 @@
 .sidebar {
     position: fixed;
     top: 0;
-    left: 0;
     height: 100vh;
     width: 260px;
     background-color: var(--color-accent);
@@ -12,31 +11,53 @@
     transition: transform 0.3s ease;
     font-size: var(--font-size-sm);
 
-    @media (max-width: 768px) {
-        transform: translateX(-100%);
-        &.sidebarOpen {
+    &.left {
+        left: 0;
+
+        @media (max-width: 768px) {
+            transform: translateX(-100%);
+            &.sidebarOpen {
+                transform: translateX(0);
+            }
+        }
+
+        @media (min-width: 769px) {
             transform: translateX(0);
+            &.sidebarClosed {
+                transform: translateX(-100%);
+            }
         }
     }
 
-    @media (min-width: 769px) {
-        transform: translateX(0);
-        &.sidebarClosed {
-            transform: translateX(-100%);
+    &.right {
+        right: 0;
+
+        @media (max-width: 768px) {
+            transform: translateX(100%);
+            &.sidebarOpen {
+                transform: translateX(0);
+            }
+        }
+
+        @media (min-width: 769px) {
+            transform: translateX(0);
+            &.sidebarClosed {
+                transform: translateX(100%);
+            }
         }
     }
 }
 
-.leftPadding {
+.sidePadding {
     transition: all 0.3s ease;
     padding-left: 260px;
 
     &.sidebarClosed {
-        padding-left: 0;
+        padding: 0 !important;
     }
 
     @media (max-width: 768px) {
-        padding-left: 0;
+        padding-left: 0 !important;
     }
 }
 

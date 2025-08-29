@@ -1,14 +1,20 @@
 'use client'
 
-import SidebarNav from '@/components/SidebarNav'
 import styles from './Sidebar.module.scss'
+import { ReactNode } from 'react'
+
+type Side = 'left' | 'right'
 
 interface Props {
   open?: boolean
   setOpen: (value: boolean) => void
+  children?: ReactNode
+  side?: Side
 }
 
-export default function Sidebar({ open, setOpen }: Props) {
+export default function Sidebar({ open, setOpen, children, side }: Props) {
+  side = side || 'left'
+
   let statusClass: string
   switch (open) {
     case undefined:
@@ -28,10 +34,10 @@ export default function Sidebar({ open, setOpen }: Props) {
 
   return (
     <>
-      <nav className={`${styles.sidebar} ${statusClass}`}>
-        <SidebarNav open={open} setOpen={setOpen} />
+      <nav className={`${styles.sidebar} ${statusClass} ${styles[side]}`}>
+        {children}
       </nav>
-      <div className={`${styles.leftPadding} ${statusClass}`} />
+      <div className={`${styles.sidePadding} ${statusClass} ${styles[side]}`} />
       <div
         className={`${styles.overlay} ${statusClass}`}
         onClick={closeSidebar}

@@ -5,6 +5,7 @@ import styles from './LayoutWrapper.module.scss'
 import Navbar from '@/components/Navbar'
 import ExpandButton from '@/components/ExpandButton'
 import Sidebar from '@/components/Sidebar'
+import SidebarNav from '@/components/SidebarNav'
 
 interface LayoutWrapperProps {
   children: ReactNode
@@ -21,7 +22,9 @@ export default function LayoutWrapper({ children }: LayoutWrapperProps) {
 
   return (
     <div className={styles.layoutContainer}>
-      <Sidebar open={leftSidebarOpen} setOpen={setLeftSidebarOpen} />
+      <Sidebar open={leftSidebarOpen} setOpen={setLeftSidebarOpen}>
+        <SidebarNav open={leftSidebarOpen} setOpen={setLeftSidebarOpen} />
+      </Sidebar>
 
       <div className={styles.mainArea}>
         <Navbar>
