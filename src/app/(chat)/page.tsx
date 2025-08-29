@@ -1,7 +1,8 @@
 import Image from 'next/image'
 import styles from './page.module.css'
+import { Metadata } from 'next'
 
-export default function Home() {
+export default function NewChat() {
   return (
     <div className={styles.page}>
       <main className={styles.main}>

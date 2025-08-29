@@ -1,17 +1,17 @@
 'use client'
 
 import { ReactNode, useEffect, useState } from 'react'
-import styles from './LayoutWrapper.module.scss'
+import styles from './Layout.module.scss'
 import Navbar from '@/components/Navbar'
 import ExpandButton from '@/components/ExpandButton'
 import Sidebar from '@/components/Sidebar'
 import SidebarNav from '@/components/SidebarNav'
 
-interface LayoutWrapperProps {
+interface Props {
   children: ReactNode
 }
 
-export default function LayoutWrapper({ children }: LayoutWrapperProps) {
+export default function ManageLayout({ children }: Props) {
   const [leftSidebarOpen, setLeftSidebarOpen] = useState<boolean | undefined>(
     undefined
   )

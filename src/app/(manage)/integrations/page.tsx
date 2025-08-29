@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react'
 import { Integration, CreateIntegrationRequest } from '@/lib/integration'
 import styles from './integrations.module.scss'
 import Api from '@/lib/frontend/api'
-import { ValidationError } from '@/lib/error'
 
 export default function IntegrationsPage() {
   const api = new Api()
