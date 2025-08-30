@@ -1,6 +1,7 @@
 import { BaseError } from "@/lib/error"
 import { CreateIntegrationRequest, Integration, UpdateIntegrationRequest } from "@/lib/integration"
 import { ModelInfo } from "@/lib/integrations/interface"
+import { Parameters, Session } from '@/lib/session'
 import useSWR from "swr"
 
 async function raiseForStatus(response: Response | Promise<Response>): Promise<Response> {
@@ -116,5 +117,12 @@ export default class Api {
       () => integrationId !== null ? this.listModels(integrationId) : null,
     )
     return data || null
+  }
+
+  public async createSession(message: string, parameters: Parameters): Promise<Session> {
+    return this.post('/api/sessions', {
+      content: [message],
+      parameters,
+    })
   }
 }

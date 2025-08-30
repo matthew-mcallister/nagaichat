@@ -1,7 +1,7 @@
 import Api from '@/lib/frontend/api'
 import { Integration } from '@/lib/integration'
 import styles from './ParameterSidebar.module.scss'
-import { Parameters } from '@/lib/chat'
+import { Parameters } from '@/lib/session'
 import Select from '@/components/form/Select'
 
 interface Props {

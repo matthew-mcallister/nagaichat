@@ -4,7 +4,7 @@ import { useState } from 'react'
 import ChatBar from '@/components/ChatBar'
 import styles from './page.module.scss'
 
-export default function NewChat() {
+export default function Session() {
   const [isLoading, setIsLoading] = useState(false)
   const [messages, setMessages] = useState<string[]>([])
 
