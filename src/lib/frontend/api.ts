@@ -1,5 +1,6 @@
 import { BaseError } from "@/lib/error"
 import { CreateIntegrationRequest, Integration, UpdateIntegrationRequest } from "@/lib/integration"
+import { ModelInfo } from "@/lib/integrations/interface"
 import useSWR from "swr"
 
 async function raiseForStatus(response: Response | Promise<Response>): Promise<Response> {
@@ -8,10 +9,10 @@ async function raiseForStatus(response: Response | Promise<Response>): Promise<R
   try {
     let body = await response.json()
     if (body.message) {
-    throw new BaseError(body.message)
+      throw new BaseError(body.message)
     }
   } catch (e) {}
-  throw new BaseError()
+    throw new BaseError()
   }
   return response
 }
@@ -19,14 +20,10 @@ async function raiseForStatus(response: Response | Promise<Response>): Promise<R
 async function unwrapJson<T>(response: Response | Promise<Response>): Promise<T> {
   response = await raiseForStatus(response)
   try {
-  return response.json()
+    return response.json()
   } catch (e) {
-  throw new BaseError()
+    throw new BaseError()
   }
-}
-
-interface ModelInfo {
-  name: string
 }
 
 /**

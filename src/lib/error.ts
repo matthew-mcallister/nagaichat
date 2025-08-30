@@ -37,15 +37,21 @@ export function handleErrors(handler: NextHandler): NextHandler {
     try {
       return await handler(request, context)
     } catch (e: any) {
+      let response
       if ('toJson' in e) {
-        return NextResponse.json({ error: e.message }, { status: e.statusCode })
+        response = NextResponse.json({ error: e.message }, { status: e.statusCode })
       } else {
-        console.error('Uncaught exception:', e)
-        return NextResponse.json(
+        response = NextResponse.json(
           { error: 'An unexpected error occurred' },
           { status: 500 },
         )
       }
+
+      if (response.status === 500) {
+        console.error('Uncaught exception:', e)
+      }
+
+      return response
     }
   }
 }

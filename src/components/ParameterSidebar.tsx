@@ -47,14 +47,10 @@ export default function ParameterSidebar({ parameters, setParameters }: Props) {
                 handleParameterChange('model', undefined)
               }
             }}
-            options={
-              integrations
-                ? integrations.map(integration => ({
-                    key: integration.id,
-                    value: integration.name,
-                  }))
-                : []
-            }
+            options={integrations?.map(integration => ({
+              key: integration.id,
+              value: integration.name,
+            }))}
           />
         </div>
 
@@ -63,22 +59,16 @@ export default function ParameterSidebar({ parameters, setParameters }: Props) {
           <label className={styles.label} htmlFor='model'>
             Model
           </label>
-          <select
+          <Select
             id='model'
-            className='select'
-            value={parameters.model || ''}
-            onChange={e =>
-              handleParameterChange('model', e.target.value || undefined)
-            }
+            selected={parameters.model}
+            onChange={model => handleParameterChange('model', model)}
             disabled={!parameters.integration || !models}
-          >
-            <option value=''>Select a model...</option>
-            {models?.map(model => (
-              <option key={model.name} value={model.name}>
-                {model.name}
-              </option>
-            ))}
-          </select>
+            options={models?.map(model => ({
+              key: model.name,
+              value: model.displayName,
+            }))}
+          />
           {parameters.integration && !models && (
             <span className={styles.loading}>Loading models...</span>
           )}
