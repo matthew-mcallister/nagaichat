@@ -1,3 +1,5 @@
+@use 'sass:color';
+
 @use 'colors' as *;
 @use 'buttons' as *;
 @use 'responsive' as *;
@@ -103,6 +105,7 @@
     --radius-2xl: #{$radius-2xl};
     --radius-3xl: #{$radius-3xl};
     --radius-4xl: #{$radius-4xl};
+    --radius-inf: #{$radius-inf};
 
     --space-1: 0.25rem;
     --space-2: 0.5rem;
@@ -132,7 +135,7 @@
         --color-primary: #{$blue-400};
         --color-primary-focus: #{$blue-500};
         --color-primary-foreground: #{$zinc-900};
-        --color-secondary: #{$zinc-800};
+        --color-secondary: #{color.adjust($zinc-700, $lightness: -3%)};
         --color-secondary-focus: #{$zinc-700};
         --color-secondary-foreground: #{$zinc-50};
         --color-muted: #{$zinc-800};

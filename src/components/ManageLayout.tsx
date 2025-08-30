@@ -6,6 +6,7 @@ import Navbar from '@/components/Navbar'
 import ExpandButton from '@/components/ExpandButton'
 import Sidebar from '@/components/Sidebar'
 import SidebarNav from '@/components/SidebarNav'
+import { Bars3Icon } from '@heroicons/react/24/outline'
 
 interface Props {
   children: ReactNode
@@ -32,6 +33,7 @@ export default function ManageLayout({ children }: Props) {
             onClick={() => {
               setLeftSidebarOpen(!leftSidebarOpen)
             }}
+            Icon={Bars3Icon}
           />
         </Navbar>
 
