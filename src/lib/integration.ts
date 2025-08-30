@@ -1,4 +1,6 @@
-import { BaseError, ValidationError } from '@/lib/error'
+import { cached, Cached } from '@/lib/cache'
+import { BaseError, NoSuchResource, ValidationError } from '@/lib/error'
+import { getApi, ModelInfo } from '@/lib/integrations/interface'
 import { updateRow } from '@/lib/orm'
 import getDb from '@/lib/sqlite'
 
@@ -88,6 +90,11 @@ export class IntegrationTable {
     return IntegrationTable.fromRow(row)
   }
 
+  /// Clears any cache keys related to this integration
+  private static clearCache(id: number) {
+    IntegrationTable.getModels.clear(id)
+  }
+
   /// Creates a new integration.
   public static create(data: CreateIntegrationRequest): Integration {
     if (!data.name) {
@@ -124,6 +131,7 @@ export class IntegrationTable {
 
     let updated = updateRow(getDb(), 'integrations', id, data, ['name', 'interface', 'apiKey', 'baseUrl'])
     if (updated) {
+      this.clearCache(id)
       return this.getById(id)
     } else {
       return existing
@@ -132,7 +140,7 @@ export class IntegrationTable {
 
   /// Deletes an existing integration. Returns `true` if a row was successfully
   /// deleted.
-  public static delete(id: string): boolean {
+  public static delete(id: number): boolean {
     const stmt = getDb().prepare(`
       DELETE FROM integrations
       WHERE id = ?
@@ -140,6 +148,21 @@ export class IntegrationTable {
 
     const result = stmt.run(id)
 
-    return result.changes > 0
+    if (result.changes > 0) {
+      this.clearCache(id)
+      return true
+    }
+
+    return false
   }
+
+  public static getModels: Cached<[number], ModelInfo[]> = cached(24 * 3600, async (integrationId: number) => {
+    const integration = IntegrationTable.getSensitive(integrationId);
+    if (!integration) {
+      throw new NoSuchResource('Integration not found');
+    }
+
+    const api = getApi(integration)
+    return api.getModels()
+  })
 }

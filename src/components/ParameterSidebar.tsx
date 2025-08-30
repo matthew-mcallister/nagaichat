@@ -12,11 +12,7 @@ interface Props {
 export default function ParameterSidebar({ parameters, setParameters }: Props) {
   const api = new Api()
   const integrations: Integration[] | null = api.useIntegrations()
-  const integration = integrations?.find(
-    info => info.id === parameters.integration
-  )
   const models = api.useAvailableModels(parameters.integration || null)
-  const model = models?.find(m => m.name === parameters.model)
 
   function handleParameterChange(field: keyof Parameters, value: any) {
     parameters = {

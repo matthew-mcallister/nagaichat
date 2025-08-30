@@ -21,13 +21,14 @@ export const PATCH = handleErrors(async function put(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
+  const integrationId = Number(id);
   const body: UpdateIntegrationRequest = await request.json();
 
   if (!body.apiKey) {
     body.apiKey = undefined
   }
 
-  const integration = IntegrationTable.update(Number(id), body);
+  const integration = IntegrationTable.update(integrationId, body);
 
   if (!integration) {
     throw new NoSuchResource('Integration not found');
@@ -41,7 +42,9 @@ export const DELETE = handleErrors(async function deleteHandler(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
-  const deleted = IntegrationTable.delete(id);
+  const integrationId = Number(id);
+
+  const deleted = IntegrationTable.delete(integrationId);
 
   if (!deleted) {
     throw new NoSuchResource('Integration not found');
