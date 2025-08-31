@@ -1,7 +1,8 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from "next"
 
 const nextConfig: NextConfig = {
-  /* config options here */
-};
+  // Fixes packages with conditional/optional imports
+  serverExternalPackages: ['sequelize'],
+}
 
-export default nextConfig;
+export default nextConfig

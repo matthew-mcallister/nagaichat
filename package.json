@@ -13,11 +13,11 @@
     "@heroicons/react": "^2.2.0",
     "@types/better-sqlite3": "^7.6.13",
     "@types/sqlite3": "^3.1.11",
-    "better-sqlite3": "^12.2.0",
     "next": "15.5.1",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-hot-toast": "^2.6.0",
+    "sequelize": "^6.37.7",
     "sqlite3": "^5.1.7",
     "swr": "^2.3.6"
   },

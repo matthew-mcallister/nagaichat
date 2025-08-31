@@ -1,54 +1,41 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { IntegrationTable, UpdateIntegrationRequest } from '@/lib/integration';
-import { handleErrors, NoSuchResource } from '@/lib/error';
+import { NextRequest, NextResponse } from 'next/server'
+import { handleErrors, NoSuchResource } from '@/lib/error'
+import { Integration } from '@/lib/backend/integration'
+import { UpdateIntegrationRequest } from '@/lib/frontend/api'
 
 export const GET = handleErrors(async function get(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
-  const integration = IntegrationTable.getById(Number(id));
-
-  if (!integration) {
-    throw new NoSuchResource('Integration not found');
-  }
-
-  return NextResponse.json(integration);
+  const { id } = await params
+  const integration = await Integration.getById(Number(id))
+  return NextResponse.json(integration.toApiJson())
 })
 
 export const PATCH = handleErrors(async function put(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
-  const integrationId = Number(id);
-  const body: UpdateIntegrationRequest = await request.json();
+  const { id } = await params
+  const body: UpdateIntegrationRequest = await request.json()
 
   if (!body.apiKey) {
     body.apiKey = undefined
   }
 
-  const integration = IntegrationTable.update(integrationId, body);
+  const integration = await Integration.getById(Number(id))
+  await integration.doUpdate(body)
 
-  if (!integration) {
-    throw new NoSuchResource('Integration not found');
-  }
-
-  return NextResponse.json(integration);
+  return NextResponse.json(integration.toApiJson())
 })
 
 export const DELETE = handleErrors(async function deleteHandler(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
-  const integrationId = Number(id);
+  const { id } = await params
+  const integration = await Integration.getById(Number(id))
+  integration.destroy()
 
-  const deleted = IntegrationTable.delete(integrationId);
-
-  if (!deleted) {
-    throw new NoSuchResource('Integration not found');
-  }
-
-  return new NextResponse(null, { status: 200 });
+  return new NextResponse(null, { status: 200 })
 })

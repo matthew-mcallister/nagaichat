@@ -1,5 +1,4 @@
 import { BaseError } from "@/lib/error"
-import { CreateIntegrationRequest, Integration, UpdateIntegrationRequest } from "@/lib/integration"
 import { ModelInfo } from "@/lib/integrations/interface"
 import { Parameters, Session } from '@/lib/session'
 import useSWR from "swr"
@@ -27,10 +26,33 @@ async function unwrapJson<T>(response: Response | Promise<Response>): Promise<T>
   }
 }
 
+export interface Integration {
+  id: number
+  name: string
+  interface: 'openai' | 'gemini'
+  baseUrl?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface CreateIntegrationRequest {
+  name: string
+  interface: 'openai' | 'gemini'
+  apiKey: string
+  baseUrl?: string
+}
+
+export interface UpdateIntegrationRequest {
+  name?: string
+  interface?: 'openai' | 'gemini'
+  apiKey?: string
+  baseUrl?: string
+}
+
 /**
  * Wrapper around the backend API.
  */
-export default class Api {
+export class Api {
   private baseUrl: string
 
   constructor(baseUrl?: string) {
@@ -126,3 +148,5 @@ export default class Api {
     })
   }
 }
+
+export default Api

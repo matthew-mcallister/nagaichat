@@ -1,9 +1,9 @@
-import { Database } from 'better-sqlite3'
+import { Sequelize, Transaction } from 'sequelize'
 
-function migrate_v1(db: Database): void {
+function migrate_v1(db: Sequelize, transaction: Transaction): void {
     console.log('running migration v1')
 
-    db.exec(`
+    db.query(`
         CREATE TABLE integrations (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL UNIQUE,
@@ -20,11 +20,12 @@ function migrate_v1(db: Database): void {
         BEGIN
             UPDATE integrations SET updatedAt = CURRENT_TIMESTAMP WHERE id = NEW.id;
         END;
-    `)
+    `, { transaction })
 }
 
-export default function runMigrations(db: Database): void {
-    const currentVersion = db.pragma('user_version', { simple: true }) as number
+export default async function runMigrations(db: Sequelize): Promise<void> {
+    const [result, _] = await db.query('PRAGMA user_version')
+    const currentVersion = result[0] as number
 
     console.log('current schema version: ', currentVersion)
 
@@ -34,11 +35,11 @@ export default function runMigrations(db: Database): void {
 
     // Run migrations that haven't been applied yet
     for (let i = currentVersion; i < migrations.length; i++) {
-        const transaction = db.transaction(() => {
-            migrations[i](db)
-            db.pragma(`user_version = ${i + 1}`)
-        })
+        const transaction = await db.transaction()
 
-        transaction()
+        migrations[i](db, transaction)
+        db.query(`PRAGMA user_version = ${i + 1}`, { transaction })
+
+        transaction.commit()
     }
 }

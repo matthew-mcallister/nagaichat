@@ -8,8 +8,8 @@ export class BaseError extends Error {
   protected static defaultStatusCode: number = 500
 
   constructor(message?: string | undefined, statusCode?: number | undefined) {
-    super(message || BaseError.defaultMessage);
-    this.statusCode = statusCode || BaseError.defaultStatusCode;
+    super(message || BaseError.defaultMessage)
+    this.statusCode = statusCode || BaseError.defaultStatusCode
   }
 
   public toJson(): any {
@@ -30,7 +30,7 @@ export class NoSuchResource extends BaseError {
   protected static defaultMessage = 'No such resource'
 }
 
-type NextHandler = (request: NextRequest, context?: any) => Promise<NextResponse> | NextResponse;
+type NextHandler = (request: NextRequest, context?: any) => Promise<NextResponse> | NextResponse
 
 export function handleErrors(handler: NextHandler): NextHandler {
   return async (request, context) => {
@@ -58,6 +58,6 @@ export function handleErrors(handler: NextHandler): NextHandler {
 
 export function reportError(error: Error | any) {
   let message = (error instanceof Error) ? error.message : String(error)
-  console.error(message, error);
-  toast.error(message);
+  console.error(message, error)
+  toast.error(message)
 }

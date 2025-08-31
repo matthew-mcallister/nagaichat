@@ -30,5 +30,5 @@ export function updateRow(db: Database, table: string, id: number, data: any, fi
 
   stmt.run(...values)
 
-  return true;
+  return true
 }

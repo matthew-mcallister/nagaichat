@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Integration, CreateIntegrationRequest } from '@/lib/integration'
+import { Integration, CreateIntegrationRequest } from '@/lib/frontend/api'
 import styles from './integrations.module.scss'
 import Api from '@/lib/frontend/api'
 

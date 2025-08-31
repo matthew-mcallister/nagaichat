@@ -1,5 +1,4 @@
-import Api from '@/lib/frontend/api'
-import { Integration } from '@/lib/integration'
+import Api, { Integration } from '@/lib/frontend/api'
 import styles from './ParameterSidebar.module.scss'
 import { Parameters } from '@/lib/session'
 import Select from '@/components/form/Select'
