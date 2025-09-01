@@ -4,13 +4,12 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import ChatBar from '@/components/ChatBar'
 import { useChatContext } from '@/components/context/ChatContext'
-import Api from '@/lib/frontend/api'
+import Api, { areOptionsComplete } from '@/lib/frontend/api'
 import styles from './page.module.scss'
-import { areParametersComplete } from '@/lib/session'
 
 export default function NewChat() {
   const [loading, setLoading] = useState(false)
-  const { parameters } = useChatContext()
+  const { options } = useChatContext()
   const router = useRouter()
   const api = new Api()
 
@@ -19,7 +18,7 @@ export default function NewChat() {
 
     setLoading(true)
     try {
-      const session = await api.createSession(message, parameters)
+      const session = await api.createSession(message, options)
       router.push(`/session/${session.id}`)
     } catch (error) {
       reportError(error)
@@ -37,7 +36,7 @@ export default function NewChat() {
         </p>
         <ChatBar
           onSend={handleSend}
-          disabled={!areParametersComplete(parameters)}
+          disabled={!areOptionsComplete(options)}
           loading={loading}
           placeholder='Send a message...'
         />

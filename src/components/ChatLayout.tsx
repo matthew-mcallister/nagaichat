@@ -10,8 +10,8 @@ import {
   AdjustmentsHorizontalIcon,
   Bars3Icon,
 } from '@heroicons/react/24/outline'
-import { Parameters } from '@/lib/session'
-import ParameterSidebar from '@/components/ParameterSidebar'
+import { SessionOptions } from '@/lib/frontend/api'
+import OptionSidebar from '@/components/OptionSidebar'
 import { ChatContextProvider } from '@/components/context/ChatContext'
 
 interface Props {
@@ -26,12 +26,15 @@ export default function ChatLayout({ children }: Props) {
     undefined
   )
 
-  const [parameters, setParameters] = useState<Parameters>({
-    integration: undefined,
-    model: undefined,
-    systemPrompt: '',
-    temperature: 1,
-    thinkingEnabled: true,
+  const [options, setOptions] = useState<SessionOptions>({
+    modelOptions: {
+      integration: undefined,
+      model: undefined,
+      systemPrompt: '',
+      temperature: 1,
+      thinkingEnabled: true,
+    },
+    renderMarkdown: true,
   })
 
   useEffect(() => {
@@ -40,7 +43,7 @@ export default function ChatLayout({ children }: Props) {
   }, [])
 
   return (
-    <ChatContextProvider parameters={parameters} setParameters={setParameters}>
+    <ChatContextProvider options={options} setOptions={setOptions}>
       <div className={styles.layoutContainer}>
         <Sidebar open={leftSidebarOpen} setOpen={setLeftSidebarOpen}>
           <SidebarNav open={leftSidebarOpen} setOpen={setLeftSidebarOpen} />
@@ -69,10 +72,7 @@ export default function ChatLayout({ children }: Props) {
             setOpen={setRightSidebarOpen}
             side='right'
           >
-            <ParameterSidebar
-              parameters={parameters}
-              setParameters={setParameters}
-            />
+            <OptionSidebar options={options} setOptions={setOptions} />
           </Sidebar>
         </div>
       </div>

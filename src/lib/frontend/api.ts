@@ -48,7 +48,7 @@ export interface UpdateIntegrationRequest {
   baseUrl?: string
 }
 
-export interface Parameters {
+export interface ModelOptions {
   integration?: number
   model?: string
   systemPrompt: string
@@ -56,10 +56,16 @@ export interface Parameters {
   thinkingEnabled: boolean
 }
 
-export function areParametersComplete(parameters: Parameters): boolean {
+export interface SessionOptions {
+  modelOptions: ModelOptions,
+  renderMarkdown: boolean,
+}
+
+export function areOptionsComplete(options: SessionOptions): boolean {
+  const modelOptions = options.modelOptions
   return (
-    parameters.integration !== undefined
-    && parameters.model !== undefined
+    modelOptions.integration !== undefined
+    && modelOptions.model !== undefined
   )
 }
 
@@ -83,21 +89,21 @@ export type HistoryItem = {
 
 export interface Session {
   id: number
-  parameters: Parameters
+  options: SessionOptions
   history: HistoryItem[]
 }
 
-/// Creates a new session with the given initial message and parameters.
+/// Creates a new session with the given initial message and options.
 export interface CreateSessionRequest {
   content: Content[]
-  parameters: Parameters
+  options: SessionOptions
 }
 
 /// Adds a message and generated response to the session. The last used
-/// parameters will be saved to the session.
+/// options will be saved to the session.
 export interface CreateResponseRequest {
   content: Content[]
-  parameters: Parameters
+  options: SessionOptions
 }
 
 /**
@@ -192,10 +198,10 @@ export class Api {
     return data || null
   }
 
-  public async createSession(message: string, parameters: Parameters): Promise<Session> {
+  public async createSession(message: string, options: SessionOptions): Promise<Session> {
     return this.post('/api/sessions', {
       content: [message],
-      parameters,
+      options,
     })
   }
 }

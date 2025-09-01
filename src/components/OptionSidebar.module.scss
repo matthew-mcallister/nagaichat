@@ -23,6 +23,10 @@
   border-bottom: 1px solid var(--color-border);
 }
 
+.sidebar hr {
+  color: var(--color-border);
+}
+
 .field {
   display: flex;
   flex-direction: column;

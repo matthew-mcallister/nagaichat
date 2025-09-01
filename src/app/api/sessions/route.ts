@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { CreateSessionRequest, Session } from '@/lib/session'
+import { CreateSessionRequest, Session } from '@/lib/frontend/api'
 import { handleErrors } from '@/lib/error'
 
+// @ts-ignore
 @handleErrors
 export async function POST(request: NextRequest) {
   const body: CreateSessionRequest = await request.json()
@@ -10,7 +11,7 @@ export async function POST(request: NextRequest) {
   // For now, return a dummy session with a random ID
   const dummySession: Session = {
     id: Math.floor(Math.random() * 10000) + 1,
-    parameters: body.parameters,
+    options: body.options,
     history: [
       {
         role: 'user',
