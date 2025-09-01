@@ -5,7 +5,7 @@ export default class GeminiApi implements IntegrationApi {
   private client: GoogleGenAI
 
   constructor(apiKey: string, baseUrl?: string) {
-    let options: GoogleGenAIOptions = { apiKey }
+    const options: GoogleGenAIOptions = { apiKey }
     if (baseUrl) {
       options.httpOptions = { baseUrl }
     }

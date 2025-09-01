@@ -5,13 +5,12 @@ import useSWR from "swr"
 async function raiseForStatus(response: Response | Promise<Response>): Promise<Response> {
   response = await response
   if (response.status >= 400) {
-  try {
-    let body = await response.json()
-    if (body.message) {
-      throw new BaseError(body.message)
-    }
-  } catch (e) {}
-    throw new BaseError()
+    let message = undefined
+    try {
+      const body = await response.json()
+      message = body.message
+    } catch {}
+    throw new BaseError(message)
   }
   return response
 }
@@ -20,7 +19,7 @@ async function unwrapJson<T>(response: Response | Promise<Response>): Promise<T>
   response = await raiseForStatus(response)
   try {
     return response.json()
-  } catch (e) {
+  } catch {
     throw new BaseError()
   }
 }

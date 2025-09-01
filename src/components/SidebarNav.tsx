@@ -8,7 +8,7 @@ interface Props {
   setOpen: (value: boolean) => void
 }
 
-export default function SidebarNav({ open, setOpen }: Props) {
+export default function SidebarNav({ setOpen }: Props) {
   const pathname = usePathname()
 
   const closeSidebar = () => {

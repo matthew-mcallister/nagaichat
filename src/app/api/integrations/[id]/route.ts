@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { handleErrors, NoSuchResource } from '@/lib/error'
+import { handleErrors } from '@/lib/error'
 import { Integration } from '@/lib/backend/integration'
 import { UpdateIntegrationRequest } from '@/lib/frontend/api'
 

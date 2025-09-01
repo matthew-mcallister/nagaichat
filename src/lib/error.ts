@@ -57,7 +57,7 @@ export function handleErrors(handler: NextHandler): NextHandler {
 }
 
 export function reportError(error: Error | any) {
-  let message = (error instanceof Error) ? error.message : String(error)
+  const message = (error instanceof Error) ? error.message : String(error)
   console.error(message, error)
   toast.error(message)
 }
