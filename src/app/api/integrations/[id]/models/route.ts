@@ -2,7 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { handleErrors } from '@/lib/error'
 import { Integration } from '@/lib/backend/integration'
 
-export const GET = handleErrors(async function get(
+// @ts-ignore
+@handleErrors
+export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
@@ -12,4 +14,4 @@ export const GET = handleErrors(async function get(
   const models = await integration.models()
 
   return NextResponse.json(models)
-})
+}

@@ -16,12 +16,12 @@ export class Integration extends Model {
 
   /// Returns an array of all integrations.
   public static async getAll(): Promise<Integration[]> {
-    return Integration.findAll()
+    return this.findAll()
   }
 
   /// Looks up an integration by ID.
   public static async getById(id: number): Promise<Integration> {
-    const integration = await Integration.findOne({ where: { id } })
+    const integration = await this.findOne({ where: { id } })
     if (!integration) {
       throw new NoSuchResource(`No such integration: ${id}`)
     }

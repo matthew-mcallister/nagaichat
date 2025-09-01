@@ -21,11 +21,6 @@ export default function IntegrationsPage() {
     baseUrl: '',
   })
 
-  // TODO: useSWR
-  useEffect(() => {
-    fetchIntegrations()
-  }, [])
-
   const fetchIntegrations = async () => {
     try {
       setLoading(true)
@@ -36,6 +31,11 @@ export default function IntegrationsPage() {
       setLoading(false)
     }
   }
+
+  // TODO: useSWR
+  useEffect(() => {
+    fetchIntegrations()
+  })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
