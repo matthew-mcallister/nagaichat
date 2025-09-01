@@ -3,17 +3,13 @@ import { handleErrors, ValidationError } from '@/lib/error'
 import { Integration } from '@/lib/backend/integration'
 import { CreateIntegrationRequest } from '@/lib/frontend/api'
 
-// @ts-ignore
-@handleErrors
-export async function GET() {
+export const GET = handleErrors(async () => {
   const integrations = (await Integration.getAll())
     .map(int => int.toApiJson())
   return NextResponse.json(integrations)
-}
+})
 
-// @ts-ignore
-@handleErrors
-export async function POST(request: NextRequest) {
+export const POST = handleErrors(async (request: NextRequest) => {
   const body: CreateIntegrationRequest = await request.json()
 
   // Basic validation
@@ -28,4 +24,4 @@ export async function POST(request: NextRequest) {
   // @ts-ignore
   const integration = await Integration.create(body)
   return NextResponse.json(integration.toApiJson(), { status: 201 })
-}
+})

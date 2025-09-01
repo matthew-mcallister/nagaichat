@@ -2,9 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { CreateSessionRequest, Session } from '@/lib/frontend/api'
 import { handleErrors } from '@/lib/error'
 
-// @ts-ignore
-@handleErrors
-export async function POST(request: NextRequest) {
+export const POST = handleErrors(async (request: NextRequest) => {
   const body: CreateSessionRequest = await request.json()
 
   // TODO: Implement actual session creation logic
@@ -21,4 +19,4 @@ export async function POST(request: NextRequest) {
   }
 
   return NextResponse.json(dummySession)
-}
+})
