@@ -32,6 +32,9 @@ export class NoSuchResource extends BaseError {
 
 type NextHandler = (request: NextRequest, context?: any) => Promise<NextResponse> | NextResponse
 
+/**
+ * Backend endpoint wrapper adding error handling.
+ */
 export function handleErrors(handler: NextHandler): NextHandler {
   return async (request, context) => {
     try {
@@ -56,7 +59,10 @@ export function handleErrors(handler: NextHandler): NextHandler {
   }
 }
 
-export function reportError(error: Error | any) {
+/**
+ * Frontend helper to display an error notification.
+ */
+export function reportError(error: Error | string | any) {
   const message = (error instanceof Error) ? error.message : String(error)
   console.error(message, error)
   toast.error(message)

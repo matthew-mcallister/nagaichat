@@ -53,6 +53,21 @@
   font-style: italic;
 }
 
+.presetSaveContainer {
+  display: flex;
+  gap: var(--space-2);
+  align-items: flex-end;
+
+  input {
+    flex: 1;
+  }
+
+  button {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+}
+
 // Responsive adjustments
 @media (max-width: 768px) {
   .sidebar {

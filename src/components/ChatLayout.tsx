@@ -11,7 +11,10 @@ import {
   Bars3Icon,
 } from '@heroicons/react/24/outline'
 import { SessionOptions } from '@/lib/frontend/api'
-import OptionSidebar from '@/components/OptionSidebar'
+import OptionSidebar, {
+  SessionOptionsFields,
+  validateOptions,
+} from '@/components/OptionSidebar'
 import { ChatContextProvider } from '@/components/context/ChatContext'
 
 interface Props {
@@ -26,14 +29,12 @@ export default function ChatLayout({ children }: Props) {
     undefined
   )
 
-  const [options, setOptions] = useState<SessionOptions>({
-    modelOptions: {
-      integration: undefined,
-      model: undefined,
-      systemPrompt: '',
-      temperature: 1,
-      thinkingEnabled: true,
-    },
+  const [options, setOptions] = useState<SessionOptionsFields>({
+    integration: undefined,
+    model: undefined,
+    systemPrompt: '',
+    temperature: 1,
+    thinkingEnabled: true,
     renderMarkdown: true,
   })
 
@@ -43,7 +44,7 @@ export default function ChatLayout({ children }: Props) {
   }, [])
 
   return (
-    <ChatContextProvider options={options} setOptions={setOptions}>
+    <ChatContextProvider options={validateOptions(options)}>
       <div className={styles.layoutContainer}>
         <Sidebar open={leftSidebarOpen} setOpen={setLeftSidebarOpen}>
           <SidebarNav open={leftSidebarOpen} setOpen={setLeftSidebarOpen} />

@@ -4,6 +4,7 @@ type CacheEntry<T> = {
 }
 
 /// Global in-memory cache (single-worker)
+// TODO: Check for race conditions in async code
 export class KVCache<K, V> {
   private cache = new Map<K, CacheEntry<V>>()
 
@@ -65,7 +66,6 @@ export type Cached<TArgs extends readonly unknown[], TReturn> = ((...args: TArgs
 
 /// Memoizes calls to a function. Also adds a method `clear` which can be used
 /// to clear a single key from the cache.
-// FIXME: TypeScript supports actual decorators???
 export function cached<TArgs extends readonly unknown[], TReturn>(
   ttlSeconds: number,
   fn: (...args: TArgs) => TReturn | Promise<TReturn>

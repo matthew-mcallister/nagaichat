@@ -1,9 +1,9 @@
 import { cached, Cached } from '@/lib/backend/cache'
 import { NoSuchResource } from '@/lib/error'
-import { getApi, ModelInfo } from '@/lib/integrations/interface'
+import { getApi } from '@/lib/backend/integrations/interface'
 import getDb from '@/lib/backend/database'
 import { DataTypes, Model } from 'sequelize'
-import { UpdateIntegrationRequest, Integration as ApiIntegration } from '@/lib/frontend/api'
+import { UpdateIntegrationRequest, Integration as ApiIntegration, ModelInfo } from '@/lib/frontend/api'
 
 export class Integration extends Model {
   declare id: number
@@ -21,7 +21,7 @@ export class Integration extends Model {
 
   /// Looks up an integration by ID.
   public static async getById(id: number): Promise<Integration> {
-    const integration = await this.findOne({ where: { id } })
+    const integration = await this.findByPk(id)
     if (!integration) {
       throw new NoSuchResource(`No such integration: ${id}`)
     }
@@ -64,8 +64,6 @@ export class Integration extends Model {
       name: this.name,
       interface: this.interface,
       baseUrl: this.baseUrl,
-      createdAt: this.createdAt.toISOString(),
-      updatedAt: this.updatedAt.toISOString(),
     }
   }
 }

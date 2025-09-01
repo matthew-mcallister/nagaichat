@@ -1,5 +1,6 @@
 import { GoogleGenAI, GoogleGenAIOptions } from "@google/genai"
-import { IntegrationApi, ModelInfo } from "@/lib/integrations/interface"
+import { IntegrationApi } from "@/lib/backend/integrations/interface"
+import { ModelInfo } from "@/lib/frontend/api"
 
 export default class GeminiApi implements IntegrationApi {
   private client: GoogleGenAI

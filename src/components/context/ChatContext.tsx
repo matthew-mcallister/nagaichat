@@ -4,8 +4,8 @@ import { createContext, useContext, ReactNode } from 'react'
 import { SessionOptions } from '@/lib/frontend/api'
 
 interface ChatContextType {
-  options: SessionOptions
-  setOptions: (options: SessionOptions) => void
+  options: SessionOptions | null
+  // TODO: Preset ID
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined)
@@ -20,18 +20,14 @@ export function useChatContext() {
 
 interface ChatContextProviderProps {
   children: ReactNode
-  options: SessionOptions
-  setOptions: (options: SessionOptions) => void
+  options: SessionOptions | null
 }
 
 export function ChatContextProvider({
   children,
   options,
-  setOptions,
 }: ChatContextProviderProps) {
   return (
-    <ChatContext.Provider value={{ options, setOptions }}>
-      {children}
-    </ChatContext.Provider>
+    <ChatContext.Provider value={{ options }}>{children}</ChatContext.Provider>
   )
 }

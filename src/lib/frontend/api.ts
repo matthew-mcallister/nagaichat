@@ -1,6 +1,5 @@
 import { BaseError } from "@/lib/error"
-import { ModelInfo } from "@/lib/integrations/interface"
-import useSWR from "swr"
+import useSWR, { mutate } from "swr"
 
 async function raiseForStatus(response: Response | Promise<Response>): Promise<Response> {
   response = await response
@@ -29,8 +28,6 @@ export interface Integration {
   name: string
   interface: 'openai' | 'gemini'
   baseUrl?: string
-  createdAt: string
-  updatedAt: string
 }
 
 export interface CreateIntegrationRequest {
@@ -47,9 +44,14 @@ export interface UpdateIntegrationRequest {
   baseUrl?: string
 }
 
+export interface ModelInfo {
+  name: string
+  displayName?: string
+}
+
 export interface ModelOptions {
-  integration?: number
-  model?: string
+  integration: number
+  model: string
   systemPrompt: string
   temperature: number
   thinkingEnabled: boolean
@@ -60,12 +62,15 @@ export interface SessionOptions {
   renderMarkdown: boolean,
 }
 
-export function areOptionsComplete(options: SessionOptions): boolean {
-  const modelOptions = options.modelOptions
-  return (
-    modelOptions.integration !== undefined
-    && modelOptions.model !== undefined
-  )
+export interface Preset {
+  id: number
+  name: string
+  options: SessionOptions
+}
+
+export interface CreatePresetRequest {
+  name: string
+  options: SessionOptions
 }
 
 export type TextContent = {
@@ -202,6 +207,26 @@ export class Api {
       content: [message],
       options,
     })
+  }
+
+  public async listPresets(): Promise<Preset[]> {
+    return this.get('/api/presets')
+  }
+
+  public usePresets(): Preset[] | null {
+    const { data } = useSWR('/api/presets', () => this.listPresets())
+    return data || null
+  }
+
+  public async createPreset(body: CreatePresetRequest): Promise<Preset> {
+    const result = await this.post<CreatePresetRequest, Preset>('/api/presets', body)
+    mutate('/api/presets')
+    return result
+  }
+
+  public async deletePreset(id: number): Promise<void> {
+    await this.delete(`/api/presets/${id}`)
+    mutate('/api/presets')
   }
 }
 

@@ -1,11 +1,7 @@
 import { Integration } from "@/lib/backend/integration"
 import { BaseError } from "@/lib/error"
-import GeminiApi from "@/lib/integrations/gemini"
-
-export interface ModelInfo {
-  name: string
-  displayName?: string
-}
+import GeminiApi from "@/lib/backend/integrations/gemini"
+import { ModelInfo } from "@/lib/frontend/api"
 
 /**
  * Abstract interface that defines an API-agnostic way of interacting with

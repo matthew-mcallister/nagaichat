@@ -1,9 +1,7 @@
 import { Sequelize, Transaction } from 'sequelize'
 
-function migrate_v1(db: Sequelize, transaction: Transaction): void {
-    console.log('running migration v1')
-
-    db.query(`
+async function migrate_v1(db: Sequelize, transaction: Transaction): Promise<void> {
+    await db.query(`
         CREATE TABLE integrations (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL UNIQUE,
@@ -23,22 +21,44 @@ function migrate_v1(db: Sequelize, transaction: Transaction): void {
     `, { transaction })
 }
 
-export default async function runMigrations(db: Sequelize): Promise<void> {
-    const [result, _] = await db.query('PRAGMA user_version')
-    const currentVersion = result[0] as number
+async function migrate_v2(db: Sequelize, transaction: Transaction): Promise<void> {
+    await db.query(`
+        CREATE TABLE presets (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL UNIQUE,
+            options TEXT NOT NULL,
+            createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
 
-    console.log('current schema version: ', currentVersion)
+        CREATE TRIGGER update_presets_timestamp
+        AFTER UPDATE ON presets
+        FOR EACH ROW
+        BEGIN
+            UPDATE presets SET updatedAt = CURRENT_TIMESTAMP WHERE id = NEW.id;
+        END;
+    `, { transaction })
+}
+
+export default async function runMigrations(db: Sequelize): Promise<void> {
+    const [result, _]: [any, unknown] = await db.query('PRAGMA user_version')
+    const currentVersion = result[0].user_version as number
+
+    console.log('current schema version:', currentVersion)
 
     const migrations = [
-        migrate_v1
+        migrate_v1,
+        migrate_v2
     ]
 
     // Run migrations that haven't been applied yet
     for (let i = currentVersion; i < migrations.length; i++) {
+        console.log('running migration version:', i + 1)
+
         const transaction = await db.transaction()
 
-        migrations[i](db, transaction)
-        db.query(`PRAGMA user_version = ${i + 1}`, { transaction })
+        await migrations[i](db, transaction)
+        await db.query(`PRAGMA user_version = ${i + 1}`, { transaction })
 
         transaction.commit()
     }

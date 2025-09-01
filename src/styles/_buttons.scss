@@ -11,7 +11,13 @@
         background-color: var(--color-secondary-focus);
     }
 
-    &.primary {
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    &.primary,
+    &.button-primary {
         background-color: var(--color-primary);
         color: var(--color-primary-foreground);
 
@@ -20,7 +26,8 @@
         }
     }
 
-    &.destructive {
+    &.destructive,
+    &.button-destructive {
         background-color: var(--color-destructive);
         color: var(--color-destructive-foreground);
 

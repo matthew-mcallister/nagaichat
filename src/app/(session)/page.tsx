@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import ChatBar from '@/components/ChatBar'
 import { useChatContext } from '@/components/context/ChatContext'
-import Api, { areOptionsComplete } from '@/lib/frontend/api'
+import Api from '@/lib/frontend/api'
 import styles from './page.module.scss'
 
 export default function NewChat() {
@@ -15,6 +15,7 @@ export default function NewChat() {
 
   const handleSend = async (message: string) => {
     if (!message.trim()) return
+    if (!options) return
 
     setLoading(true)
     try {
@@ -36,7 +37,7 @@ export default function NewChat() {
         </p>
         <ChatBar
           onSend={handleSend}
-          disabled={!areOptionsComplete(options)}
+          disabled={!options}
           loading={loading}
           placeholder='Send a message...'
         />

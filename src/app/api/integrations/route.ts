@@ -21,7 +21,6 @@ export const POST = handleErrors(async (request: NextRequest) => {
     throw new ValidationError('interface must be either "openai" or "gemini"')
   }
 
-  // @ts-expect-error Bad type inference
-  const integration = await Integration.create(body)
+  const integration = await Integration.create(body as any)
   return NextResponse.json(integration.toApiJson(), { status: 201 })
 })
