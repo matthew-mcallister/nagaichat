@@ -10,7 +10,6 @@ import {
   AdjustmentsHorizontalIcon,
   Bars3Icon,
 } from '@heroicons/react/24/outline'
-import { SessionOptions } from '@/lib/frontend/api'
 import OptionSidebar, {
   SessionOptionsFields,
   validateOptions,

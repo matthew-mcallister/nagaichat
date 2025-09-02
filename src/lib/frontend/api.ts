@@ -28,6 +28,8 @@ export interface Integration {
   name: string
   interface: 'openai' | 'gemini'
   baseUrl?: string
+  createdAt: string
+  updatedAt: string
 }
 
 export interface CreateIntegrationRequest {
@@ -69,6 +71,11 @@ export interface Preset {
 }
 
 export interface CreatePresetRequest {
+  name: string
+  options: SessionOptions
+}
+
+export interface UpdatePresetRequest {
   name: string
   options: SessionOptions
 }

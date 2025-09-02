@@ -64,6 +64,8 @@ export class Integration extends Model {
       name: this.name,
       interface: this.interface,
       baseUrl: this.baseUrl,
+      createdAt: this.createdAt.toISOString(),
+      updatedAt: this.updatedAt.toISOString()
     }
   }
 }
