@@ -41,137 +41,168 @@ export default function OptionSidebar({
     <aside className={styles.sidebar}>
       {/* Presets section */}
       <div className={styles.section}>
-        <h3 className={styles.sectionTitle}>Presets</h3>
-
-        <PresetManagement
-          preset={preset}
-          setPreset={setPreset}
-          options={options}
-          setOptions={setOptions}
+        <input
+          type='checkbox'
+          id='presets-toggle'
+          className={styles.sectionToggle}
+          defaultChecked
         />
+        <label htmlFor='presets-toggle' className={styles.sectionTitle}>
+          <span>Presets</span>
+          <span className={styles.chevron}>▼</span>
+        </label>
+        <div className={styles.sectionContent}>
+          <PresetManagement
+            preset={preset}
+            setPreset={setPreset}
+            options={options}
+            setOptions={setOptions}
+          />
+        </div>
       </div>
 
       <div className={styles.section}>
-        <h3 className={styles.sectionTitle}>Model</h3>
-
-        {/* Integration selection */}
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor='integration'>
-            Integration
-          </label>
-          <Select
-            id='integration'
-            placeholder='Select integration...'
-            selected={options.integration}
-            onChange={integrationId => {
-              handleOptionChange('integration', integrationId)
-              // Reset model when integration changes
-              if (integrationId !== options.integration) {
-                handleOptionChange('model', undefined)
-              }
-            }}
-            options={integrations?.map(integration => ({
-              key: integration.id,
-              value: integration.name,
-            }))}
-          />
-        </div>
-
-        {/* Model selection */}
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor='model'>
-            Model
-          </label>
-          <Select
-            id='model'
-            selected={options.model}
-            onChange={model => handleOptionChange('model', model)}
-            disabled={!options.integration || !models}
-            options={models?.map(model => ({
-              key: model.name,
-              value: model.displayName,
-            }))}
-          />
-          {options.integration && !models && (
-            <span className={styles.loading}>Loading models...</span>
-          )}
-        </div>
-
-        <hr />
-
-        {/* Temperature */}
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor='temperature'>
-            Temperature: {options.temperature.toFixed(2)}
-          </label>
-          <input
-            id='temperature'
-            type='range'
-            className='slider'
-            min='0'
-            max='2'
-            step='0.05'
-            value={options.temperature}
-            onChange={e =>
-              handleOptionChange('temperature', parseFloat(e.target.value))
-            }
-          />
-          <div className='description'>
-            Higher temperature responses are more varied.
+        <input
+          type='checkbox'
+          id='model-toggle'
+          className={styles.sectionToggle}
+          defaultChecked
+        />
+        <label htmlFor='model-toggle' className={styles.sectionTitle}>
+          <span>Model</span>
+          <span className={styles.chevron}>▼</span>
+        </label>
+        <div className={styles.sectionContent}>
+          {/* Integration selection */}
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor='integration'>
+              Integration
+            </label>
+            <Select
+              id='integration'
+              placeholder='Select integration...'
+              selected={options.integration}
+              onChange={integrationId => {
+                handleOptionChange('integration', integrationId)
+                // Reset model when integration changes
+                if (integrationId !== options.integration) {
+                  handleOptionChange('model', undefined)
+                }
+              }}
+              options={integrations?.map(integration => ({
+                key: integration.id,
+                value: integration.name,
+              }))}
+            />
           </div>
-        </div>
 
-        {/* Thinking enabled */}
-        <div className={styles.field}>
-          <label className='checkboxLabel'>
+          {/* Model selection */}
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor='model'>
+              Model
+            </label>
+            <Select
+              id='model'
+              selected={options.model}
+              onChange={model => handleOptionChange('model', model)}
+              disabled={!options.integration || !models}
+              options={models?.map(model => ({
+                key: model.name,
+                value: model.displayName,
+              }))}
+            />
+            {options.integration && !models && (
+              <span className={styles.loading}>Loading models...</span>
+            )}
+          </div>
+
+          <hr />
+
+          {/* Temperature */}
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor='temperature'>
+              Temperature: {options.temperature.toFixed(2)}
+            </label>
             <input
-              type='checkbox'
-              className='checkbox'
-              checked={options.thinkingEnabled}
+              id='temperature'
+              type='range'
+              className='slider'
+              min='0'
+              max='2'
+              step='0.05'
+              value={options.temperature}
               onChange={e =>
-                handleOptionChange('thinkingEnabled', e.target.checked)
+                handleOptionChange('temperature', parseFloat(e.target.value))
               }
             />
-            <span className='checkboxText'>Enable thinking</span>
-          </label>
-        </div>
+            <div className='description'>
+              Higher temperature responses are more varied.
+            </div>
+          </div>
 
-        <hr />
+          {/* Thinking enabled */}
+          <div className={styles.field}>
+            <label className='checkboxLabel'>
+              <input
+                type='checkbox'
+                className='checkbox'
+                checked={options.thinkingEnabled}
+                onChange={e =>
+                  handleOptionChange('thinkingEnabled', e.target.checked)
+                }
+              />
+              <span className='checkboxText'>Enable thinking</span>
+            </label>
+          </div>
 
-        {/* System prompt */}
-        <div className={styles.field}>
-          <label className={styles.label} htmlFor='systemPrompt'>
-            System prompt
-          </label>
-          <textarea
-            id='systemPrompt'
-            className='textarea'
-            value={options.systemPrompt}
-            onChange={e => handleOptionChange('systemPrompt', e.target.value)}
-            placeholder='Enter prompt (optional)...'
-            rows={6}
-          />
-          <p className='description'>
-            Provide specific instructions to the model on how to respond.
-          </p>
+          <hr />
+
+          {/* System prompt */}
+          <div className={styles.field}>
+            <label className={styles.label} htmlFor='systemPrompt'>
+              System prompt
+            </label>
+            <textarea
+              id='systemPrompt'
+              className='textarea'
+              value={options.systemPrompt}
+              onChange={e => handleOptionChange('systemPrompt', e.target.value)}
+              placeholder='Enter prompt (optional)...'
+              rows={6}
+            />
+            <p className='description'>
+              Provide specific instructions to the model on how to respond.
+            </p>
+          </div>
         </div>
       </div>
 
       {/* Markdown rendering */}
       <div className={styles.section}>
-        <h3 className={styles.sectionTitle}>Appearance</h3>
-        <div className={styles.field}>
-          <label className='checkboxLabel'>
-            <input
-              type='checkbox'
-              className='checkbox'
-              checked={options.renderMarkdown}
-              onChange={e =>
-                handleOptionChange('renderMarkdown', e.target.checked)
-              }
-            />
-            <span className='checkboxText'>Render Markdown</span>
-          </label>
+        <input
+          type='checkbox'
+          id='appearance-toggle'
+          className={styles.sectionToggle}
+          defaultChecked
+        />
+        <label htmlFor='appearance-toggle' className={styles.sectionTitle}>
+          <span>Appearance</span>
+          <span className={styles.chevron}>▼</span>
+        </label>
+        <div className={styles.sectionContent}>
+          <div className={styles.field}>
+            <label className='checkboxLabel'>
+              <input
+                type='checkbox'
+                className='checkbox'
+                checked={options.renderMarkdown}
+                onChange={e =>
+                  handleOptionChange('renderMarkdown', e.target.checked)
+                }
+              />
+              <span className='checkboxText'>Render Markdown</span>
+            </label>
+          </div>
         </div>
       </div>
     </aside>
