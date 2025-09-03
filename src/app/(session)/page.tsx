@@ -20,7 +20,11 @@ export default function NewChat() {
 
     setProcessing(true)
     try {
-      const session = await api.createSession(message, options)
+      const session = await api.createSession({
+        initialContent: message,
+        options,
+        presetId: preset?.id,
+      })
       router.push(`/session/${session.id}`)
     } catch (error) {
       reportError(error)

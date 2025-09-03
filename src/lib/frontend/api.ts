@@ -82,39 +82,33 @@ export interface UpdatePresetRequest {
 }
 
 export type TextContent = {
-  type: 'string'
-  message: string
+  type: 'text'
+  text: string
 }
 
-// TODO eventually: should support some kind of uploads API
 export type ImageContent = {
   type: 'image'
+  /** base64-encoded image data */
   data: string
 }
 
-export type Content = string | TextContent | ImageContent
+export type ContentObject = TextContent | ImageContent
 
-export type HistoryItem = {
-  role: 'user' | 'model'
-  content: Content
-}
+export type Content = string | ContentObject
 
 export interface Session {
   id: number
+  name: string
+  presetId?: number
   options: SessionOptions
-  history: HistoryItem[]
+  createdAt: string
+  updatedAt: string
 }
 
 /// Creates a new session with the given initial message and options.
 export interface CreateSessionRequest {
-  content: Content[]
-  options: SessionOptions
-}
-
-/// Adds a message and generated response to the session. The last used
-/// options will be saved to the session.
-export interface CreateResponseRequest {
-  content: Content[]
+  initialContent: Content | Content[]
+  presetId?: number
   options: SessionOptions
 }
 
@@ -215,11 +209,28 @@ export class Api {
     return data || null
   }
 
-  public async createSession(message: string, options: SessionOptions): Promise<Session> {
-    return this.post('/api/sessions', {
-      content: [message],
-      options,
-    })
+  public async listSessions(): Promise<Session[]> {
+    return this.get('/api/sessions')
+  }
+
+  public useSessions(): Session[] | null {
+    const { data } = useSWR('/api/sessions', () => this.listSessions())
+    return data || null
+  }
+
+  public async getSession(id: number): Promise<Session> {
+    return this.get(`/api/sessions/${id}`)
+  }
+
+  public async createSession(body: CreateSessionRequest): Promise<Session> {
+    const result = await this.post<CreateSessionRequest, Session>('/api/sessions', body)
+    await mutate('/api/sessions')
+    return result
+  }
+
+  public async deleteSession(id: number): Promise<void> {
+    await this.delete(`/api/sessions/${id}`)
+    await mutate('/api/sessions')
   }
 
   public async listPresets(): Promise<Preset[]> {

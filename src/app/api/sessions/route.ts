@@ -1,22 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { CreateSessionRequest, Session } from '@/lib/frontend/api'
+import { CreateSessionRequest } from '@/lib/frontend/api'
 import { handleErrors } from '@/lib/error'
+import { Session } from '@/lib/backend/session'
+
+export const GET = handleErrors(async () => {
+  const sessions = await Session.getAll()
+  const result = sessions.map(session => session.toApiJson())
+  return NextResponse.json(result)
+})
 
 export const POST = handleErrors(async (request: NextRequest) => {
   const body: CreateSessionRequest = await request.json()
-
-  // TODO: Implement actual session creation logic
-  // For now, return a dummy session with a random ID
-  const dummySession: Session = {
-    id: Math.floor(Math.random() * 10000) + 1,
-    options: body.options,
-    history: [
-      {
-        role: 'user',
-        content: Array.isArray(body.content) ? body.content[0] : body.content
-      }
-    ]
-  }
-
-  return NextResponse.json(dummySession)
+  const session = await Session.doCreate(body)
+  return NextResponse.json(session.toApiJson(), { status: 201 })
 })
