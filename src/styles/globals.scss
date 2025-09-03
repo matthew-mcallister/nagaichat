@@ -4,6 +4,7 @@
 @use 'buttons' as *;
 @use 'responsive' as *;
 @use 'form' as *;
+@use 'sidebar' as *;
 
 :root {
     // Light theme colors
@@ -243,14 +244,6 @@ h6 {
 
 p {
     margin-bottom: var(--space-4);
-}
-
-ul, ol {
-    margin-bottom: var(--space-4);
-    padding-left: var(--space-6);
-}
-li {
-    margin-bottom: var(--space-1);
 }
 
 code {

@@ -47,11 +47,7 @@ export class Session extends Model {
       const firstContent = contents[0]
       if (firstContent.type == 'text') {
         const text = firstContent.text
-        if (text.length > 50) {
-          name = text.slice(0, 47) + '...'
-        } else {
-          name = text
-        }
+        name = text.slice(0, 40)
       }
     }
 

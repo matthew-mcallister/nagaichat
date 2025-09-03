@@ -1,7 +1,8 @@
-import Link from 'next/link'
+import SessionList from '@/components/SessionList'
 import { ChevronLeftIcon } from '@heroicons/react/24/outline'
-import styles from './SidebarNav.module.scss'
+import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import styles from './SidebarNav.module.scss'
 
 interface Props {
   open?: boolean
@@ -16,7 +17,7 @@ export default function SidebarNav({ setOpen }: Props) {
   }
 
   return (
-    <nav>
+    <nav className='sidebar'>
       <div className={styles.sidebarHeader}>
         <span>Nagai</span>
         <button
@@ -44,6 +45,10 @@ export default function SidebarNav({ setOpen }: Props) {
           </Link>
         </li>
       </ul>
+      <section>
+        <h3>Sessions</h3>
+        <SessionList />
+      </section>
     </nav>
   )
 }

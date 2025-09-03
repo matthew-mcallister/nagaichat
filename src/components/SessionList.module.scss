@@ -1,0 +1,140 @@
+.sessionList {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.sessionItem {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-1) var(--space-2);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+    position: relative;
+    min-height: 2rem;
+
+    &.disabled {
+        pointer-events: none;
+        cursor: not-allowed;
+        color: var(--color-muted-foreground);
+        background-color: var(--color-muted);
+    }
+
+    &:hover, &.open {
+        background-color: var(--color-background);
+
+        .menuContainer {
+            display: flex;
+        }
+    }
+
+    &.current {
+        background-color: var(--color-primary);
+        color: var(--color-primary-foreground);
+
+        &:hover, &.open {
+            background-color: var(--color-primary-focus);
+        }
+    }
+}
+
+.sessionName {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    min-width: 0; // Ensures ellipsis works properly
+}
+
+.menuContainer {
+    display: none;
+    align-items: center;
+    position: relative;
+}
+
+.menuButton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    color: var(--color-foreground);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    transition: background-color 0.15s ease;
+
+    &:hover, .open & {
+        color: var(--color-secondary-foreground);
+        background-color: var(--color-secondary);
+    }
+
+    .current & {
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+    }
+}
+
+.menuIcon {
+    width: 16px;
+    height: 16px;
+}
+
+.dropdown {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: var(--space-1);
+    background: var(--color-background);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+    overflow: hidden;
+    z-index: 50;
+    min-width: 120px;
+}
+
+.dropdownItem {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    width: 100%;
+    padding: var(--space-3);
+    font-size: var(--font-size-sm);
+    color: var(--color-foreground);
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+
+    &:hover {
+        background-color: var(--color-focus);
+    }
+
+    &:focus {
+        outline: none;
+        background-color: var(--color-focus);
+    }
+}
+
+.dropdownIcon {
+    width: 16px;
+    height: 16px;
+    color: var(--color-destructive);
+}
+
+.loading,
+.empty {
+    padding: var(--space-4);
+    text-align: center;
+    font-size: var(--font-size-sm);
+    color: var(--color-muted-foreground);
+}
+
+.empty {
+    font-style: italic;
+}
