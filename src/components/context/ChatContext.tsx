@@ -1,11 +1,11 @@
 'use client'
 
-import { createContext, useContext, ReactNode } from 'react'
-import { SessionOptions } from '@/lib/frontend/api'
+import { Preset, SessionOptions } from '@/lib/frontend/api'
+import { createContext, ReactNode, useContext } from 'react'
 
 interface ChatContextType {
   options: SessionOptions | null
-  // TODO: Preset ID
+  preset?: Preset
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined)
@@ -21,13 +21,17 @@ export function useChatContext() {
 interface ChatContextProviderProps {
   children: ReactNode
   options: SessionOptions | null
+  preset?: Preset
 }
 
 export function ChatContextProvider({
   children,
   options,
+  preset,
 }: ChatContextProviderProps) {
   return (
-    <ChatContext.Provider value={{ options }}>{children}</ChatContext.Provider>
+    <ChatContext.Provider value={{ options, preset }}>
+      {children}
+    </ChatContext.Provider>
   )
 }

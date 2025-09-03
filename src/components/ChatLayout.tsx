@@ -1,20 +1,18 @@
 'use client'
 
-import { ReactNode, useEffect, useState } from 'react'
-import styles from './Layout.module.scss'
-import Navbar from '@/components/Navbar'
+import { ChatContextProvider } from '@/components/context/ChatContext'
 import ExpandButton from '@/components/ExpandButton'
+import Navbar from '@/components/Navbar'
+import OptionSidebar, { SessionOptionsFields } from '@/components/OptionSidebar'
 import Sidebar from '@/components/Sidebar'
 import SidebarNav from '@/components/SidebarNav'
+import { Preset, validateOptions } from '@/lib/frontend/api'
 import {
   AdjustmentsHorizontalIcon,
   Bars3Icon,
 } from '@heroicons/react/24/outline'
-import OptionSidebar, {
-  SessionOptionsFields,
-  validateOptions,
-} from '@/components/OptionSidebar'
-import { ChatContextProvider } from '@/components/context/ChatContext'
+import { ReactNode, useEffect, useState } from 'react'
+import styles from './Layout.module.scss'
 
 interface Props {
   children: ReactNode
@@ -22,10 +20,10 @@ interface Props {
 
 export default function ChatLayout({ children }: Props) {
   const [leftSidebarOpen, setLeftSidebarOpen] = useState<boolean | undefined>(
-    undefined
+    undefined,
   )
   const [rightSidebarOpen, setRightSidebarOpen] = useState<boolean | undefined>(
-    undefined
+    undefined,
   )
 
   const [options, setOptions] = useState<SessionOptionsFields>({
@@ -36,6 +34,7 @@ export default function ChatLayout({ children }: Props) {
     thinkingEnabled: true,
     renderMarkdown: true,
   })
+  const [preset, setPreset] = useState<Preset | undefined>(undefined)
 
   useEffect(() => {
     setLeftSidebarOpen(window.innerWidth >= 769)
@@ -43,7 +42,7 @@ export default function ChatLayout({ children }: Props) {
   }, [])
 
   return (
-    <ChatContextProvider options={validateOptions(options)}>
+    <ChatContextProvider options={validateOptions(options)} preset={preset}>
       <div className={styles.layoutContainer}>
         <Sidebar open={leftSidebarOpen} setOpen={setLeftSidebarOpen}>
           <SidebarNav open={leftSidebarOpen} setOpen={setLeftSidebarOpen} />
@@ -72,7 +71,12 @@ export default function ChatLayout({ children }: Props) {
             setOpen={setRightSidebarOpen}
             side='right'
           >
-            <OptionSidebar options={options} setOptions={setOptions} />
+            <OptionSidebar
+              options={options}
+              setOptions={setOptions}
+              preset={preset}
+              setPreset={setPreset}
+            />
           </Sidebar>
         </div>
       </div>

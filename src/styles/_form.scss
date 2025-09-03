@@ -103,3 +103,14 @@
   font-family: inherit;
   line-height: 1.5;
 }
+
+.description {
+  font-size: var(--font-size-xs);
+  color: var(--color-muted-foreground);
+  line-height: 1.4;
+  margin: 0;
+}
+
+em.description {
+  font-style: italic;
+}

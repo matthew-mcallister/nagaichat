@@ -1,30 +1,31 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import ChatBar from '@/components/ChatBar'
 import { useChatContext } from '@/components/context/ChatContext'
 import Api from '@/lib/frontend/api'
+import { useRouter } from 'next/navigation'
+import { useState } from 'react'
 import styles from './page.module.scss'
 
 export default function NewChat() {
-  const [loading, setLoading] = useState(false)
-  const { options } = useChatContext()
+  const { options, preset } = useChatContext()
   const router = useRouter()
   const api = new Api()
+
+  const [processing, setProcessing] = useState<boolean>(false)
 
   const handleSend = async (message: string) => {
     if (!message.trim()) return
     if (!options) return
 
-    setLoading(true)
+    setProcessing(true)
     try {
       const session = await api.createSession(message, options)
       router.push(`/session/${session.id}`)
     } catch (error) {
       reportError(error)
     } finally {
-      setLoading(false)
+      setProcessing(false)
     }
   }
 
@@ -38,7 +39,7 @@ export default function NewChat() {
         <ChatBar
           onSend={handleSend}
           disabled={!options}
-          loading={loading}
+          loading={processing}
           placeholder='Send a message...'
         />
       </div>

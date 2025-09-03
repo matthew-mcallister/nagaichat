@@ -1,7 +1,7 @@
-import Api, { Integration } from '@/lib/frontend/api'
-import styles from './OptionSidebar.module.scss'
-import { SessionOptions } from '@/lib/frontend/api'
 import Select from '@/components/form/Select'
+import PresetManagement from '@/components/PresetManagement'
+import Api, { Integration, Preset } from '@/lib/frontend/api'
+import styles from './OptionSidebar.module.scss'
 
 export interface SessionOptionsFields {
   integration?: number
@@ -13,38 +13,18 @@ export interface SessionOptionsFields {
 }
 
 interface Props {
+  preset?: Preset
+  setPreset: (preset?: Preset) => void
   options: SessionOptionsFields
   setOptions: (options: SessionOptionsFields) => void
 }
 
-export function validateOptions(
-  options: SessionOptionsFields
-): SessionOptions | null {
-  if (!options.integration || !options.model) return null
-  return {
-    modelOptions: {
-      integration: options.integration,
-      model: options.model,
-      systemPrompt: options.systemPrompt,
-      temperature: options.temperature,
-      thinkingEnabled: options.thinkingEnabled,
-    },
-    renderMarkdown: options.renderMarkdown,
-  }
-}
-
-function fromPreset(options: SessionOptions): SessionOptionsFields {
-  return {
-    integration: options.modelOptions.integration,
-    model: options.modelOptions.model,
-    systemPrompt: options.modelOptions.systemPrompt,
-    temperature: options.modelOptions.temperature,
-    thinkingEnabled: options.modelOptions.thinkingEnabled,
-    renderMarkdown: options.renderMarkdown,
-  }
-}
-
-export default function OptionSidebar({ options, setOptions }: Props) {
+export default function OptionSidebar({
+  preset,
+  setPreset,
+  options,
+  setOptions,
+}: Props) {
   const api = new Api()
   const integrations: Integration[] | null = api.useIntegrations()
   const models = api.useAvailableModels(options.integration || null)
@@ -63,7 +43,12 @@ export default function OptionSidebar({ options, setOptions }: Props) {
       <div className={styles.section}>
         <h3 className={styles.sectionTitle}>Presets</h3>
 
-        {/* TODO: Presets */}
+        <PresetManagement
+          preset={preset}
+          setPreset={setPreset}
+          options={options}
+          setOptions={setOptions}
+        />
       </div>
 
       <div className={styles.section}>
@@ -131,7 +116,7 @@ export default function OptionSidebar({ options, setOptions }: Props) {
               handleOptionChange('temperature', parseFloat(e.target.value))
             }
           />
-          <div className={styles.fieldDescription}>
+          <div className='description'>
             Higher temperature responses are more varied.
           </div>
         </div>
@@ -166,7 +151,7 @@ export default function OptionSidebar({ options, setOptions }: Props) {
             placeholder='Enter prompt (optional)...'
             rows={6}
           />
-          <p className={styles.fieldDescription}>
+          <p className='description'>
             Provide specific instructions to the model on how to respond.
           </p>
         </div>

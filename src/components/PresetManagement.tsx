@@ -1,7 +1,8 @@
-import Api, { Preset } from '@/lib/frontend/api'
-import { useState } from 'react'
+import { SessionOptionsFields } from '@/components/OptionSidebar'
+import { reportError, ValidationError } from '@/lib/error'
+import Api, { fromPreset, Preset, validateOptions } from '@/lib/frontend/api'
 import { FolderOpenIcon, TrashIcon } from '@heroicons/react/24/outline'
-import { reportError } from '@/lib/error'
+import { useState } from 'react'
 import styles from './PresetManagement.module.scss'
 
 interface PresetListProps {
@@ -22,6 +23,9 @@ function PresetList(props: PresetListProps) {
         props.disabled ? styles.disabled : ''
       }`}
     >
+      {props.presets.length == 0 ? (
+        <em className='description'>No saved presets</em>
+      ) : null}
       {props.presets.map(preset => (
         <div
           key={preset.id}
@@ -29,9 +33,7 @@ function PresetList(props: PresetListProps) {
             props.selected?.id === preset.id ? styles.selected : ''
           }`}
         >
-          <span className={styles.presetName} title={preset.name}>
-            {preset.name}
-          </span>
+          <span className={styles.presetName}>{preset.name}</span>
           <div className={styles.presetActions}>
             <button
               className={styles.actionButton}
@@ -109,7 +111,7 @@ function CreatePreset(props: CreatePresetProps) {
   )
 }
 
-interface PresetManagementProps {
+interface PresetUiProps {
   /** Previously loaded preset. */
   preset?: Preset
   /** Applies options from the given preset. */
@@ -120,18 +122,22 @@ interface PresetManagementProps {
   onCreate: (name: string) => Promise<void>
   /** Deletes the given preset. */
   onDelete: (preset: Preset) => Promise<void>
-  disabled?: boolean
+  /** Disables saving/creating presets. */
+  saveDisabled?: boolean
+  /** Globally disables controls. */
+  processing: boolean
+  /** Globally disables controls. */
+  setProcessing: (processing: boolean) => void
 }
 
-/**
- * Preset management portion of the options sidebar.
- */
-export function PresetManagement(props: PresetManagementProps) {
+export function PresetUi(props: PresetUiProps) {
   const api = new Api()
   const presets = api.usePresets()
 
   const [showCreateNew, setShowCreateNew] = useState<boolean>(false)
-  const [processing, setProcessing] = useState<boolean>(false)
+  const { processing, setProcessing } = props
+
+  const disabled = processing
 
   if (!presets) {
     return <div className={styles.loading}>Loading presets...</div>
@@ -193,14 +199,14 @@ export function PresetManagement(props: PresetManagementProps) {
         presets={presets}
         onLoad={handleLoad}
         onDelete={handleDelete}
-        disabled={processing}
+        disabled={disabled}
       />
 
       {!showCreateNew && (
         <button
           className={`${styles.button} ${styles.createNewButton}`}
           onClick={() => setShowCreateNew(true)}
-          disabled={processing}
+          disabled={disabled || props.saveDisabled}
         >
           Create new +
         </button>
@@ -210,22 +216,81 @@ export function PresetManagement(props: PresetManagementProps) {
         <CreatePreset
           onCreate={handleCreate}
           onCancel={handleCancel}
-          disabled={processing}
+          disabled={disabled || props.saveDisabled}
         />
       )}
 
       {props.preset && !showCreateNew && (
-        <div className={styles.selectedPreset}>
-          <div className={styles.selectedPresetName}>{props.preset.name}</div>
-          <button
-            className={`${styles.button} ${styles.primary}`}
-            onClick={handleSave}
-            disabled={processing}
-          >
-            Save
-          </button>
-        </div>
+        <button
+          className={`${styles.button} ${styles.primary}`}
+          onClick={handleSave}
+          disabled={disabled || props.saveDisabled}
+        >
+          Save "{props.preset.name}"
+        </button>
       )}
     </div>
+  )
+}
+
+export interface PresetManagementProps {
+  /** Previously loaded preset. */
+  preset?: Preset
+  /** Sets or clears the current preset. */
+  setPreset: (preset?: Preset) => void | Promise<void>
+  /** Current session options. */
+  options: SessionOptionsFields
+  /** Updates the current session options. */
+  setOptions: (options: SessionOptionsFields) => void | Promise<void>
+}
+
+/**
+ * Preset management portion of the options sidebar.
+ */
+export default function PresetManagement({
+  preset,
+  setPreset,
+  options: rawOptions,
+  setOptions,
+}: PresetManagementProps) {
+  const api = new Api()
+  const options = validateOptions(rawOptions)
+  const [processing, setProcessing] = useState<boolean>(false)
+
+  async function onLoad(preset: Preset): Promise<void> {
+    await setOptions(fromPreset(preset.options))
+    setPreset(preset)
+  }
+
+  async function onSave(): Promise<void> {
+    if (!preset || !options) {
+      throw new ValidationError("Can't save options")
+    }
+    await api.updatePreset(preset.id, { options })
+  }
+
+  async function onCreate(name: string): Promise<void> {
+    if (!options) {
+      throw new ValidationError("Can't create preset")
+    }
+    const preset = await api.createPreset({ name, options })
+    setPreset(preset)
+  }
+
+  async function onDelete(preset: Preset): Promise<void> {
+    await api.deletePreset(preset.id)
+  }
+
+  return (
+    <PresetUi
+      preset={preset}
+      onLoad={onLoad}
+      onSave={onSave}
+      onCreate={onCreate}
+      onDelete={onDelete}
+      processing={processing}
+      setProcessing={setProcessing}
+      saveDisabled={!options}
+    />
   )
 }

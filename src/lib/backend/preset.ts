@@ -44,10 +44,14 @@ Preset.init({
   options: {
     type: DataTypes.JSON,
     allowNull: false,
+    get() {
+      const v = this.getDataValue('options')
+      return typeof v === 'string' ? JSON.parse(v) : v
+    },
   },
 }, {
   sequelize: await getDb(),
   modelName: 'Preset',
   tableName: 'presets',
-  timestamps: true
+  timestamps: true,
 })

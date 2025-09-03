@@ -1,3 +1,4 @@
+import { SessionOptionsFields } from "@/components/OptionSidebar"
 import { BaseError } from "@/lib/error"
 import useSWR, { mutate } from "swr"
 
@@ -76,8 +77,8 @@ export interface CreatePresetRequest {
 }
 
 export interface UpdatePresetRequest {
-  name: string
-  options: SessionOptions
+  name?: string
+  options?: SessionOptions
 }
 
 export type TextContent = {
@@ -189,15 +190,20 @@ export class Api {
   }
 
   public async updateIntegration(id: number, body: UpdateIntegrationRequest): Promise<Integration> {
-    return this.patch(`/api/integrations/${id}`, body)
+    const result: Integration = await this.patch(`/api/integrations/${id}`, body)
+    await mutate('/api/integrations')
+    await mutate(`/api/integrations/${result.id}/models`)
+    return result
   }
 
   public async createIntegration(body: CreateIntegrationRequest): Promise<Integration> {
-    return this.post('/api/integrations', body)
+    const result: Integration = await this.post('/api/integrations', body)
+    await mutate('/api/integrations')
+    await mutate(`/api/integrations/${result.id}/models`)
+    return result
   }
 
   public async listModels(integrationId: number): Promise<ModelInfo[]> {
-    // TODO: Cache this output on backend
     return this.get(`/api/integrations/${integrationId}/models`)
   }
 
@@ -227,13 +233,45 @@ export class Api {
 
   public async createPreset(body: CreatePresetRequest): Promise<Preset> {
     const result = await this.post<CreatePresetRequest, Preset>('/api/presets', body)
-    mutate('/api/presets')
+    await mutate('/api/presets')
+    return result
+  }
+
+  public async updatePreset(id: number, body: UpdatePresetRequest): Promise<Preset> {
+    const result = await this.patch<UpdatePresetRequest, Preset>(`/api/presets/${id}`, body)
+    await mutate('/api/presets')
     return result
   }
 
   public async deletePreset(id: number): Promise<void> {
     await this.delete(`/api/presets/${id}`)
     mutate('/api/presets')
+  }
+}
+
+export function validateOptions(
+  options: SessionOptionsFields
+): SessionOptions | null {
+  if (!options.integration || !options.model) return null
+  return {
+    modelOptions: {
+      integration: options.integration,
+      model: options.model,
+      systemPrompt: options.systemPrompt,
+      temperature: options.temperature,
+      thinkingEnabled: options.thinkingEnabled,
+    },
+    renderMarkdown: options.renderMarkdown,
+  }
+}
+export function fromPreset(options: SessionOptions): SessionOptionsFields {
+  return {
+    integration: options.modelOptions.integration,
+    model: options.modelOptions.model,
+    systemPrompt: options.modelOptions.systemPrompt,
+    temperature: options.modelOptions.temperature,
+    thinkingEnabled: options.modelOptions.thinkingEnabled,
+    renderMarkdown: options.renderMarkdown,
   }
 }
 
