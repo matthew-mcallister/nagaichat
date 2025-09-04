@@ -15,9 +15,9 @@ export class Item extends Model {
   declare createdAt: Date
   declare updatedAt: Date
 
-  public static async getAll(): Promise<Item[]> {
+  public static async getBySession(sessionId: number): Promise<Item[]> {
     return await Item.findAll({
-      order: [['createdAt', 'DESC']]
+      where: { sessionId },
     })
   }
 

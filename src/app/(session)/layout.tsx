@@ -1,10 +1,10 @@
+import ChatLayout from '@/components/ChatLayout'
 import { Metadata } from 'next'
 import { ReactNode } from 'react'
-import ChatLayout from '@/components/ChatLayout'
 
 export const metadata: Metadata = {
   title: 'Nagai Chat',
-  description: 'Start new session',
+  description: 'Chat session',
 }
 
 interface Props {

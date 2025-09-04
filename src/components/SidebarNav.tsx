@@ -12,6 +12,9 @@ interface Props {
 export default function SidebarNav({ setOpen }: Props) {
   const pathname = usePathname()
 
+  const match = pathname.match(/^\/session\/(\d+)/)
+  const currentSessionId = match ? Number(match[1]) : undefined
+
   const closeSidebar = () => {
     setOpen(false)
   }
@@ -47,7 +50,7 @@ export default function SidebarNav({ setOpen }: Props) {
       </ul>
       <section>
         <h3>Sessions</h3>
-        <SessionList />
+        <SessionList currentSessionId={currentSessionId} />
       </section>
     </nav>
   )

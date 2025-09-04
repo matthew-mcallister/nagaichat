@@ -8,13 +8,13 @@ import { useEffect, useRef, useState } from 'react'
 import styles from './SessionList.module.scss'
 
 interface SessionListProp {
-  current?: Session
+  currentSessionId?: number
 }
 
 /**
  * List of previous sessions from the left-hand navigation sidebar.
  */
-export default function SessionList({ current }: SessionListProp) {
+export default function SessionList({ currentSessionId }: SessionListProp) {
   const [processing, setProcessing] = useState<boolean>(false)
   const [openMenuId, setOpenMenuId] = useState<number | null>(null)
   const router = useRouter()
@@ -63,7 +63,7 @@ export default function SessionList({ current }: SessionListProp) {
     try {
       setOpenMenuId(null)
       await api.deleteSession(sessionId)
-      if (sessionId === current?.id) {
+      if (sessionId === currentSessionId) {
         router.push(`/`)
       }
     } catch (error) {
@@ -88,7 +88,7 @@ export default function SessionList({ current }: SessionListProp) {
           key={session.id}
           className={`
             ${styles.sessionItem}
-            ${current?.id === session.id ? styles.current : ''}
+            ${currentSessionId === session.id ? styles.current : ''}
             ${disabled ? styles.disabled : ''}
             ${openMenuId === session.id ? styles.open : ''}
           `}

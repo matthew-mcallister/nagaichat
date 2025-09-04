@@ -68,6 +68,7 @@ export class Session extends Model {
       content: contents,
       role: 'user'
     }, { transaction })
+    session.update('latestItemId', item.id)
 
     await transaction.commit()
 
