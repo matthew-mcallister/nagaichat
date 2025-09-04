@@ -96,6 +96,8 @@ export type ContentObject = TextContent | ImageContent
 
 export type Content = string | ContentObject
 
+export type Role = 'user' | 'model'
+
 export interface Session {
   id: number
   name: string
@@ -110,6 +112,22 @@ export interface CreateSessionRequest {
   initialContent: Content | Content[]
   presetId?: number
   options: SessionOptions
+}
+
+export interface Item {
+  id: number
+  sessionId: number
+  parentId?: number
+  content: ContentObject[]
+  role: Role
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AppendMessageRequest {
+  sessionId: number
+  parentId?: number
+  content: ContentObject[]
 }
 
 /**

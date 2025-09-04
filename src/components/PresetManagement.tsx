@@ -16,6 +16,9 @@ interface PresetListProps {
 /**
  * A list/table of saved presets.
  */
+// TODO: Should copy the session list behavior.
+// - Click on a preset loads it
+// - Delete button is hidden behind a dropdown
 function PresetList(props: PresetListProps) {
   return (
     <div

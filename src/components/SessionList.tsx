@@ -63,6 +63,9 @@ export default function SessionList({ current }: SessionListProp) {
     try {
       setOpenMenuId(null)
       await api.deleteSession(sessionId)
+      if (sessionId === current?.id) {
+        router.push(`/`)
+      }
     } catch (error) {
       reportError(error)
     } finally {
