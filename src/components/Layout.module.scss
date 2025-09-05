@@ -1,3 +1,5 @@
+@use '@/components/Navbar.module.scss';
+
 .wideSidebar {
     --sidebar-width: 320px;
 }
@@ -13,6 +15,7 @@
 }
 
 .mainContent {
+    min-height: calc(100vh - Navbar.$navbar-height);
     background-color: var(--color-background);
 
     @media (max-width: 768px) {

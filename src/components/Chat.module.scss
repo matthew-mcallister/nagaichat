@@ -1,0 +1,13 @@
+.chatPage {
+  display: flex;
+  flex-direction: column;
+  max-width: 48rem;
+  margin: 0 auto;
+  padding: var(--space-4);
+}
+
+.chatBarContainer {
+  padding: var(--space-4) 0;
+  border-top: 1px solid var(--color-border);
+  background-color: var(--color-background);
+}

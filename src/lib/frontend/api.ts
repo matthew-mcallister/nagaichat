@@ -276,6 +276,15 @@ export class Api {
     await this.delete(`/api/presets/${id}`)
     mutate('/api/presets')
   }
+
+  public async listSessionItems(sessionId: number): Promise<Item[]> {
+    return this.get(`/api/items?sessionId=${sessionId}`)
+  }
+
+  public useSessionItems(sessionId: number): Item[] | null {
+    const { data } = useSWR(`/api/items?sessionId=${sessionId}`, () => this.listSessionItems(sessionId))
+    return data || null
+  }
 }
 
 export function validateOptions(

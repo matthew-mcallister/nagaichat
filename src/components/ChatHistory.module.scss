@@ -1,0 +1,27 @@
+.messagesContainer {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-4) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.message {
+  background-color: var(--color-muted);
+  color: var(--color-foreground);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  max-width: 80%;
+  align-self: flex-end;
+}
+
+.loadingMessage {
+  background-color: var(--color-secondary);
+  color: var(--color-secondary-foreground);
+  padding: var(--space-4);
+  border-radius: var(--radius-lg);
+  max-width: 80%;
+  align-self: flex-start;
+  font-style: italic;
+}

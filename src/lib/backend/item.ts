@@ -67,6 +67,10 @@ Item.init({
   content: {
     type: DataTypes.JSON,
     allowNull: false,
+    get() {
+      const v = this.getDataValue('content')
+      return typeof v === 'string' ? JSON.parse(v) : v
+    },
   },
   role: {
     type: DataTypes.ENUM('user', 'model'),
