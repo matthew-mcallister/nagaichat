@@ -35,7 +35,11 @@ export class Session extends Model {
   declare presetId?: number
   declare preset?: Preset
   declare options: SessionOptions
-  // TODO: Make a foreign key
+  /**
+   * Latest item added to the session. Used to restore the previous chat
+   * location on the frontend when there is no local state recorded in the
+   * browser.
+   */
   declare latestItemId?: number
   declare latestItem?: Item
   declare createdAt: Date

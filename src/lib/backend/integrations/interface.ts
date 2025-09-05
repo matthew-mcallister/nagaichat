@@ -1,23 +1,102 @@
 import { Integration } from "@/lib/backend/integration"
 import { BaseError } from "@/lib/error"
 import GeminiApi from "@/lib/backend/integrations/gemini"
-import { ModelInfo } from "@/lib/frontend/api"
+import { ContentObject, ModelInfo, ModelOptions, Role, SessionOptions } from "@/lib/frontend/api"
+import { Transaction } from "sequelize"
+import { Item } from "@/lib/backend/item"
+
+export interface HistoryEntry {
+  role: Role
+  content: ContentObject[]
+}
+
+export type ChatHistory = HistoryEntry[]
+
+export interface ModelResponse {
+  content: ContentObject[]
+}
 
 /**
  * Abstract interface that defines an API-agnostic way of interacting with
  * APIs.
  */
 export interface IntegrationApi {
-  getModels(): Promise<ModelInfo[]>
+  listModels(): Promise<ModelInfo[]>
+  generate(history: ChatHistory, options: ModelOptions): Promise<ModelResponse>
 }
 
-export function getApi(integration: Integration): IntegrationApi {
-  switch (integration.interface) {
-  case 'openai':
-    throw new BaseError('Not yet implemented')
-  case 'gemini':
-    return new GeminiApi(integration.apiKey, integration.baseUrl)
-  default:
-    throw new Error('unreachable')
+/**
+ * Wrapper around an integration that maps application logic to API calls.
+ */
+export class ApiConnector {
+  private integration: Integration
+  private api: IntegrationApi
+
+  constructor(integration: Integration) {
+    this.integration = integration
+
+    switch (integration.interface) {
+    case 'openai':
+      throw new BaseError('Not yet implemented')
+    case 'gemini':
+      this.api = new GeminiApi(integration.apiKey, integration.baseUrl)
+      break
+    default:
+      throw new Error('unreachable')
+    }
+  }
+
+  /**
+   * Lists models available for inference.
+   */
+  public listModels(): Promise<ModelInfo[]> {
+    return this.api.listModels()
+  }
+
+  /**
+   * Creates a new response to a chat item.
+   *
+   * - The chat history is automatically reconstructed from the given item.
+   * - A new item is created for the response.
+   * - The session is updated to reflect the latest used `options`, `presetId`,
+   *   and `latestItemId`.
+   * - The new item is returned.
+   */
+  public async generate(
+    parent: Item,
+    options: SessionOptions,
+    presetId: number | undefined,
+    transaction: Transaction,
+  ): Promise<Item> {
+    const session = parent.session
+
+    // Construct history
+    const items = [parent]
+    let it = parent
+    while (it.parent) {
+      it = it.parent
+      items.push(it)
+    }
+    items.reverse()
+    const history: ChatHistory = items.map(item => ({
+      role: item.role,
+      content: item.content,
+    }))
+
+    const response = await this.api.generate(history, session.options.modelOptions)
+
+    const item = await Item.create({
+      sessionId: parent.sessionId,
+      parentId: parent.id,
+      content: response.content,
+      role: 'model',
+    }, { transaction })
+
+    session.options = options
+    session.latestItemId = item.id
+    session.presetId = presetId
+    session.save({ transaction })
+
+    return item
   }
 }

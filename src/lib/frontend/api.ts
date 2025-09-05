@@ -57,6 +57,7 @@ export interface ModelOptions {
   systemPrompt: string
   temperature: number
   thinkingEnabled: boolean
+  // TODO: Explicit content settings
 }
 
 export interface SessionOptions {
@@ -85,13 +86,14 @@ export type TextContent = {
   text: string
 }
 
-export type ImageContent = {
-  type: 'image'
-  /** base64-encoded image data */
+export type InlineContent = {
+  type: 'inline'
+  mimeType: string
+  /** base64-encoded data */
   data: string
 }
 
-export type ContentObject = TextContent | ImageContent
+export type ContentObject = TextContent | InlineContent
 
 export type Content = string | ContentObject
 

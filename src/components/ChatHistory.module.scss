@@ -1,10 +1,12 @@
 @use './Chat.module.scss';
+@use './Navbar.module.scss';
 
 .chatHistory {
   display: flex;
   flex-direction: column;
   overflow-y: auto;
   align-items: center;
+  min-height: calc(100vh - Navbar.$navbar-height - Chat.$chat-bar-height);
 }
 
 .messagesContainer {

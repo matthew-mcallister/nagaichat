@@ -30,6 +30,11 @@ export class NoSuchResource extends BaseError {
   protected static defaultMessage = 'No such resource'
 }
 
+export class ApiResponseError extends BaseError {
+  protected static defaultStatusCode = 500
+  protected static defaultMessage = 'Unexpected response from API'
+}
+
 type NextHandler = (request: NextRequest, context?: any) => Promise<NextResponse> | NextResponse
 
 /**

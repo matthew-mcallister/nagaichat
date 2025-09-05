@@ -1,6 +1,6 @@
 import { cached, Cached } from '@/lib/backend/cache'
 import { NoSuchResource } from '@/lib/error'
-import { getApi } from '@/lib/backend/integrations/interface'
+import { ApiConnector } from '@/lib/backend/integrations/interface'
 import getDb from '@/lib/backend/database'
 import { DataTypes, Model } from 'sequelize'
 import { UpdateIntegrationRequest, Integration as ApiIntegration, ModelInfo } from '@/lib/frontend/api'
@@ -30,7 +30,7 @@ export class Integration extends Model {
 
   /// Clears any cache keys related to this integration
   private clearCache() {
-    Integration.getModels.clear(this.id)
+    Integration.listModels.clear(this.id)
   }
 
   /// Updates and returns an existing integration.
@@ -47,15 +47,15 @@ export class Integration extends Model {
     this.clearCache()
   }
 
-  private static getModels: Cached<[number], ModelInfo[]> = cached(24 * 3600, async (integrationId: number) => {
+  private static listModels: Cached<[number], ModelInfo[]> = cached(24 * 3600, async (integrationId: number) => {
     const integration = await Integration.getById(integrationId)
 
-    const api = getApi(integration)
-    return api.getModels()
+    const api = new ApiConnector(integration)
+    return api.listModels()
   })
 
   public async models(): Promise<ModelInfo[]> {
-    return Integration.getModels(this.id)
+    return Integration.listModels(this.id)
   }
 
   public toApiJson(): ApiIntegration {

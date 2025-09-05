@@ -22,6 +22,9 @@ export default function Chat() {
   const handleSend = (message: string) => {}
   const handleStop = () => {}
 
+  // TODO: Load options from session preset
+  //useEffect(() => {}, [sessionId])
+
   return (
     <div className={styles.chatPage}>
       <ChatHistory
