@@ -1,13 +1,20 @@
+@use './Navbar.module.scss';
+
+$chat-bar-height: 120px; // Approximate height including padding and borders
+
 .chatPage {
   display: flex;
   flex-direction: column;
-  max-width: 48rem;
-  margin: 0 auto;
-  padding: var(--space-4);
+  min-height: calc(100vh - Navbar.$navbar-height);
+  padding: 0;
 }
 
 .chatBarContainer {
-  padding: var(--space-4) 0;
+  position: sticky;
+  bottom: 0;
+  width: 100%;
+  padding: var(--space-4);
   border-top: 1px solid var(--color-border);
-  background-color: var(--color-background);
+  background: linear-gradient(to top, var(--color-background) 50%, rgba(255, 255, 255, 0) 100%);
+  margin: 0 auto;
 }

@@ -25,23 +25,25 @@ export default function ChatHistory(props: ChatHistoryProps) {
   const disabled = processing || props.disabled
 
   return (
-    <div className={styles.messagesContainer}>
-      {items.map(item => {
-        const text = itemText(item)
-        if (text) {
-          return (
-            <div key={item.id} className={styles.message}>
-              {text}
-            </div>
-          )
-        } else {
-          return null
-        }
-      })}
-      {awaitingResponse && (
-        // TODO: Better loading visual
-        <div className={styles.loadingMessage}>Waiting for response...</div>
-      )}
+    <div className={styles.chatHistory}>
+      <div className={styles.messagesContainer}>
+        {items.map(item => {
+          const text = itemText(item)
+          if (text) {
+            return (
+              <div key={item.id} className={styles.message}>
+                {text}
+              </div>
+            )
+          } else {
+            return null
+          }
+        })}
+        {awaitingResponse && (
+          // TODO: Better loading visual
+          <div className={styles.loadingMessage}>Waiting for response...</div>
+        )}
+      </div>
     </div>
   )
 }
