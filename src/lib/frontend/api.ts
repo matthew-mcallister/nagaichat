@@ -1,4 +1,3 @@
-import { SessionOptionsFields } from "@/components/OptionSidebar"
 import { BaseError } from "@/lib/error"
 import useSWR, { mutate } from "swr"
 
@@ -285,6 +284,15 @@ export class Api {
     const { data } = useSWR(`/api/items?sessionId=${sessionId}`, () => this.listSessionItems(sessionId))
     return data || null
   }
+}
+
+export interface SessionOptionsFields {
+  integration?: number
+  model?: string
+  systemPrompt: string
+  temperature: number
+  thinkingEnabled: boolean
+  renderMarkdown: boolean
 }
 
 export function validateOptions(

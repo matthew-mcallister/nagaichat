@@ -1,6 +1,10 @@
-import { SessionOptionsFields } from '@/components/OptionSidebar'
 import { reportError, ValidationError } from '@/lib/error'
-import Api, { fromPreset, Preset, validateOptions } from '@/lib/frontend/api'
+import Api, {
+  fromPreset,
+  Preset,
+  SessionOptionsFields,
+  validateOptions,
+} from '@/lib/frontend/api'
 import { FolderOpenIcon, TrashIcon } from '@heroicons/react/24/outline'
 import { useState } from 'react'
 import styles from './PresetManagement.module.scss'
@@ -236,7 +240,7 @@ export function PresetUi(props: PresetUiProps) {
   )
 }
 
-export interface PresetManagementProps {
+interface PresetManagementProps {
   /** Previously loaded preset. */
   preset?: Preset
   /** Sets or clears the current preset. */

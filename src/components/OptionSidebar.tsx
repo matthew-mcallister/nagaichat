@@ -1,16 +1,11 @@
 import Select from '@/components/form/Select'
 import PresetManagement from '@/components/PresetManagement'
-import Api, { Integration, Preset } from '@/lib/frontend/api'
+import Api, {
+  Integration,
+  Preset,
+  SessionOptionsFields,
+} from '@/lib/frontend/api'
 import styles from './OptionSidebar.module.scss'
-
-export interface SessionOptionsFields {
-  integration?: number
-  model?: string
-  systemPrompt: string
-  temperature: number
-  thinkingEnabled: boolean
-  renderMarkdown: boolean
-}
 
 interface Props {
   preset?: Preset

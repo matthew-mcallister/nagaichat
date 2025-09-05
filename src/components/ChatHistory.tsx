@@ -4,13 +4,13 @@ import { Item } from '@/lib/frontend/api'
 import { useState } from 'react'
 import styles from './ChatHistory.module.scss'
 
-export interface ChatHistoryProps {
+interface ChatHistoryProps {
   disabled?: boolean
   awaitingResponse?: boolean
   items: Item[]
 }
 
-export function itemText(item: Item): string | undefined {
+function itemText(item: Item): string | undefined {
   for (const content of item.content) {
     if (content.type === 'text') {
       return content.text
