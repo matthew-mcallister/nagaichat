@@ -1,15 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Integration, CreateIntegrationRequest } from '@/lib/frontend/api'
+import Api, { CreateIntegrationRequest, Integration } from '@/lib/frontend/api'
+import { useState } from 'react'
+import { mutate } from 'swr'
 import styles from './integrations.module.scss'
-import Api from '@/lib/frontend/api'
 
 export default function IntegrationsPage() {
   const api = new Api()
 
-  const [integrations, setIntegrations] = useState<Integration[]>([])
-  const [loading, setLoading] = useState(true)
+  const integrations = api.useIntegrations()
   const [isCreating, setIsCreating] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
 
@@ -19,22 +18,6 @@ export default function IntegrationsPage() {
     interface: 'openai',
     apiKey: '',
     baseUrl: '',
-  })
-
-  const fetchIntegrations = async () => {
-    try {
-      setLoading(true)
-      setIntegrations(await api.listIntegrations())
-    } catch (err) {
-      reportError(err)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // TODO: useSWR
-  useEffect(() => {
-    fetchIntegrations()
   })
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -51,7 +34,7 @@ export default function IntegrationsPage() {
       setFormData({ name: '', interface: 'openai', apiKey: '', baseUrl: '' })
       setIsCreating(false)
       setEditingId(null)
-      fetchIntegrations()
+      mutate('/api/integrations')
     } catch (err) {
       reportError(err)
     }
@@ -82,7 +65,7 @@ export default function IntegrationsPage() {
         throw new Error('Failed to delete integration')
       }
 
-      fetchIntegrations()
+      mutate('/api/integrations')
     } catch (err) {
       reportError(err)
     }
@@ -94,7 +77,7 @@ export default function IntegrationsPage() {
     setEditingId(null)
   }
 
-  if (loading) {
+  if (!integrations) {
     return <div className={styles.container}>Loading...</div>
   }
 
