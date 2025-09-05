@@ -6,6 +6,10 @@
 @use 'form' as *;
 @use 'sidebar' as *;
 
+// TODO: need a flexible, reactive color palette system.
+// - Multiple logical color palettes
+// - Each logical palette reacts to user preference
+// - Palette consists of a few base colors + shades
 :root {
     // Light theme colors
     --color-background: #{$gray-50};

@@ -1,5 +1,9 @@
 import SessionList from '@/components/SessionList'
-import { ChevronLeftIcon } from '@heroicons/react/24/outline'
+import {
+  ChevronLeftIcon,
+  PencilSquareIcon,
+  PuzzlePieceIcon,
+} from '@heroicons/react/24/outline'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import styles from './SidebarNav.module.scss'
@@ -22,7 +26,7 @@ export default function SidebarNav({ setOpen }: Props) {
   return (
     <nav className='sidebar'>
       <div className={styles.sidebarHeader}>
-        <span>Nagai</span>
+        <span>NagaiChat</span>
         <button
           className={styles.closeButton}
           onClick={closeSidebar}
@@ -34,8 +38,8 @@ export default function SidebarNav({ setOpen }: Props) {
       <ul className={styles.sidebarLinks}>
         <li>
           <Link href='/' className={pathname === '/' ? styles.active : ''}>
-            <span className={styles.linkIcon}>🏠</span>
-            Home
+            <PencilSquareIcon className={styles.linkIcon} />
+            New chat
           </Link>
         </li>
         <li>
@@ -43,7 +47,7 @@ export default function SidebarNav({ setOpen }: Props) {
             href='/integrations'
             className={pathname === '/integrations' ? styles.active : ''}
           >
-            <span className={styles.linkIcon}>🔗</span>
+            <PuzzlePieceIcon className={styles.linkIcon} />
             Integrations
           </Link>
         </li>
