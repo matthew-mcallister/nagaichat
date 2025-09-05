@@ -1,14 +1,23 @@
-'use client'
-
 import Chat from '@/components/Chat'
-import { useParams, useRouter } from 'next/navigation'
+import { Session } from '@/lib/backend/session'
+import { parseInteger } from '@/lib/util'
+import { Metadata, ResolvingMetadata } from 'next'
 
-export default function Session() {
-  const router = useRouter()
-  const { id } = useParams<{ id: string }>()
-  const sessionId = Number(id)
-  if (isNaN(sessionId)) {
-    router.push('/')
+type Props = {
+  params: Promise<{ id: string }>
+}
+
+export async function generateMetadata(
+  { params }: Props,
+  parent: ResolvingMetadata,
+): Promise<Metadata> {
+  const { id } = await params
+  const session = await Session.getById(parseInteger(id))
+  return {
+    title: session.name,
   }
-  return <Chat sessionId={sessionId} />
+}
+
+export default function SessionPage() {
+  return <Chat />
 }

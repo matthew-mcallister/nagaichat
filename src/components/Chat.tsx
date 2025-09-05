@@ -3,14 +3,18 @@
 import ChatBar from '@/components/ChatBar'
 import ChatHistory from '@/components/ChatHistory'
 import Api from '@/lib/frontend/api'
+import { useParams, useRouter } from 'next/navigation'
 import { useState } from 'react'
 import styles from './Chat.module.scss'
 
-export interface ChatProps {
-  sessionId: number
-}
+export default function Chat() {
+  const router = useRouter()
+  const { id } = useParams<{ id: string }>()
+  const sessionId = Number(id)
+  if (isNaN(sessionId)) {
+    router.push('/')
+  }
 
-export default function Chat({ sessionId }: ChatProps) {
   const api = new Api()
   const items = api.useSessionItems(sessionId)
   const [isLoading, setIsLoading] = useState(false)
