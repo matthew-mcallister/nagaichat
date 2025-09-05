@@ -151,5 +151,5 @@ Session.init({
 })
 Session.hasOne(Preset, { as: 'preset', foreignKey: 'id', sourceKey: 'presetId' })
 Session.hasMany(Item, { as: 'items', foreignKey: 'sessionId' })
-Session.hasOne(Item, { as: 'latestItem', foreignKey: 'latestItemId' })
+Session.belongsTo(Item, { as: 'latestItem', foreignKey: 'latestItemId' })
 Item.belongsTo(Session, { as: 'session', foreignKey: 'sessionId' })
