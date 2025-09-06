@@ -33,7 +33,7 @@ export class Session extends Model {
   /** Name pulled from first message content. */
   declare name: string
   declare presetId?: number
-  declare getPreset: () => Promise<Preset | undefined>
+  declare readonly getPreset: () => Promise<Preset | undefined>
   declare options: SessionOptions
   /**
    * Latest item added to the session. Used to restore the previous chat
@@ -41,7 +41,7 @@ export class Session extends Model {
    * browser.
    */
   declare latestItemId?: number
-  declare getLatestItem: () => Promise<Item | undefined>
+  declare readonly getLatestItem: () => Promise<Item | undefined>
   declare createdAt: Date
   // XXX: Touch updatedAt when posting a message to chat?
   declare updatedAt: Date

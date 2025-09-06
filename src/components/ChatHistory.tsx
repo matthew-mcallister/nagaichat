@@ -31,7 +31,11 @@ export default function ChatHistory(props: ChatHistoryProps) {
           const text = itemText(item)
           if (text) {
             return (
-              <div key={item.id} className={styles.message}>
+              <div
+                key={item.id}
+                className={styles.message}
+                data-role={item.role}
+              >
                 {text}
               </div>
             )
