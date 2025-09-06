@@ -2,14 +2,14 @@ import { NoSuchResource } from '@/lib/error'
 import getDb from '@/lib/backend/database'
 import { DataTypes, Model } from 'sequelize'
 import { Item as ApiItem, ContentObject, Role } from '@/lib/frontend/api'
-import { Session } from '@/lib/backend/session'
+import type { Session } from '@/lib/backend/session'
 
 export class Item extends Model {
   declare id: number
   declare sessionId: number
-  declare session: Session
+  declare readonly getSession: () => Promise<Session>
   declare parentId?: number
-  declare parent?: Item
+  declare readonly getParent: () => Promise<Item | undefined>
   declare content: ContentObject[]
   declare role: Role
   declare createdAt: Date

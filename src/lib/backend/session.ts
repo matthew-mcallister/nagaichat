@@ -33,7 +33,7 @@ export class Session extends Model {
   /** Name pulled from first message content. */
   declare name: string
   declare presetId?: number
-  declare preset?: Preset
+  declare getPreset: () => Promise<Preset | undefined>
   declare options: SessionOptions
   /**
    * Latest item added to the session. Used to restore the previous chat
@@ -41,7 +41,7 @@ export class Session extends Model {
    * browser.
    */
   declare latestItemId?: number
-  declare latestItem?: Item
+  declare getLatestItem: () => Promise<Item | undefined>
   declare createdAt: Date
   // XXX: Touch updatedAt when posting a message to chat?
   declare updatedAt: Date
@@ -72,7 +72,8 @@ export class Session extends Model {
       content: contents,
       role: 'user'
     }, { transaction })
-    session.update('latestItemId', item.id)
+    session.latestItemId = item.id
+    await session.save({ transaction })
 
     await transaction.commit()
 
@@ -119,7 +120,7 @@ Session.init({
     type: DataTypes.INTEGER,
     allowNull: true,
     references: {
-      model: Preset,
+      model: 'Preset',
       key: 'id',
     },
   },
@@ -135,7 +136,7 @@ Session.init({
     type: DataTypes.INTEGER,
     allowNull: true,
     references: {
-      model: Item,
+      model: 'Item',
       key: 'id',
     },
   },

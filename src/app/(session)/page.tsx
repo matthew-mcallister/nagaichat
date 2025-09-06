@@ -25,6 +25,7 @@ export default function NewChat() {
         options,
         presetId: preset?.id,
       })
+      localStorage.setItem('generate-response-for', String(session.id))
       router.push(`/session/${session.id}`)
     } catch (error) {
       reportError(error)

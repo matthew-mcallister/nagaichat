@@ -1,7 +1,7 @@
 import { Integration } from "@/lib/backend/integration"
 import { BaseError } from "@/lib/error"
 import GeminiApi from "@/lib/backend/integrations/gemini"
-import { ContentObject, ModelInfo, ModelOptions, Role, SessionOptions } from "@/lib/frontend/api"
+import { ContentObject, ModelInfo, ModelOptions, Role } from "@/lib/frontend/api"
 import { Transaction } from "sequelize"
 import { Item } from "@/lib/backend/item"
 
@@ -58,23 +58,19 @@ export class ApiConnector {
    *
    * - The chat history is automatically reconstructed from the given item.
    * - A new item is created for the response.
-   * - The session is updated to reflect the latest used `options`, `presetId`,
-   *   and `latestItemId`.
    * - The new item is returned.
    */
   public async generate(
     parent: Item,
-    options: SessionOptions,
-    presetId: number | undefined,
     transaction: Transaction,
   ): Promise<Item> {
-    const session = parent.session
+    const session = await parent.getSession()
 
     // Construct history
     const items = [parent]
     let it = parent
-    while (it.parent) {
-      it = it.parent
+    while (it.parentId) {
+      it = await it.getParent() as Item
       items.push(it)
     }
     items.reverse()
@@ -91,11 +87,6 @@ export class ApiConnector {
       content: response.content,
       role: 'model',
     }, { transaction })
-
-    session.options = options
-    session.latestItemId = item.id
-    session.presetId = presetId
-    session.save({ transaction })
 
     return item
   }

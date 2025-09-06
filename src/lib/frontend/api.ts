@@ -125,11 +125,24 @@ export interface Item {
   updatedAt: string
 }
 
-export interface AppendMessageRequest {
+export interface CreateModelItemRequest {
+  role: 'model'
   sessionId: number
   parentId?: number
+  presetId?: number
+  options: SessionOptions
+}
+
+export interface CreateUserItemRequest {
+  role: 'user'
+  sessionId: number
+  parentId?: number
+  presetId?: number
+  options: SessionOptions
   content: ContentObject[]
 }
+
+export type CreateItemRequest = CreateModelItemRequest | CreateUserItemRequest
 
 /**
  * Wrapper around the backend API.
@@ -268,7 +281,7 @@ export class Api {
   }
 
   public async updatePreset(id: number, body: UpdatePresetRequest): Promise<Preset> {
-    const result = await this.patch<UpdatePresetRequest, Preset>(`/api/presets/${id}`, body)
+    const result: Preset = await this.patch(`/api/presets/${id}`, body)
     await mutate('/api/presets')
     return result
   }
@@ -285,6 +298,12 @@ export class Api {
   public useSessionItems(sessionId: number): Item[] | null {
     const { data } = useSWR(`/api/items?sessionId=${sessionId}`, () => this.listSessionItems(sessionId))
     return data || null
+  }
+
+  public async createItem(body: CreateItemRequest): Promise<Item> {
+    const result: Item = await this.post('/api/items', body)
+    await mutate(`/api/items?sessionId=${body.sessionId}`)
+    return result
   }
 }
 
