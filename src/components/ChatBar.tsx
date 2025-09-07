@@ -1,38 +1,37 @@
-import { useState, useRef, KeyboardEvent } from 'react'
+import { ChatBarAction } from '@/lib/frontend/common'
+import { ArrowPathIcon } from '@heroicons/react/24/outline'
 import { PaperAirplaneIcon, StopIcon } from '@heroicons/react/24/solid'
+import { KeyboardEvent, useRef, useState } from 'react'
 import styles from './ChatBar.module.scss'
 
 interface ChatBarProps {
-  onSend?: (message: string) => void
+  onSend: (message: string) => void
   onStop?: () => void
+  onRefresh?: () => void
+  action: ChatBarAction
   disabled?: boolean
-  loading?: boolean
   placeholder?: string
 }
 
 export default function ChatBar({
   onSend,
   onStop,
-  disabled = false,
-  loading = false,
+  onRefresh,
+  action,
+  disabled,
   placeholder = 'Type a message...',
 }: ChatBarProps) {
   const [message, setMessage] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   const handleSend = () => {
-    if (message.trim() && onSend && !disabled && !loading) {
-      onSend(message.trim())
-      setMessage('')
-      if (textareaRef.current) {
-        textareaRef.current.style.height = 'auto'
-      }
+    if (!message.trim()) {
+      return
     }
-  }
-
-  const handleStop = () => {
-    if (onStop && loading) {
-      onStop()
+    onSend(message.trim())
+    setMessage('')
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto'
     }
   }
 
@@ -48,20 +47,19 @@ export default function ChatBar({
     setMessage(value)
 
     // Auto-resize textarea
+    // XXX: Why is this a thing?
     const textarea = e.target
     textarea.style.height = 'auto'
     textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`
   }
 
-  const canSend = message.trim().length > 0 && !disabled && !loading
-  const isInputDisabled = disabled || loading
+  const canSend = message.trim().length > 0
 
+  // TODO: Fix style when input is disabled but button is enabled
   return (
     <div className={styles.chatBar}>
       <div
-        className={`${styles.inputContainer} ${
-          isInputDisabled ? styles.disabled : ''
-        }`}
+        className={`${styles.inputContainer} ${disabled ? styles.disabled : ''}`}
       >
         <textarea
           ref={textareaRef}
@@ -69,29 +67,38 @@ export default function ChatBar({
           onChange={handleTextareaChange}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          disabled={isInputDisabled}
+          disabled={disabled}
           className={styles.textarea}
           rows={1}
         />
 
-        {loading ? (
+        {action === 'stop' ? (
           <button
-            onClick={handleStop}
+            onClick={onStop}
             className={`${styles.button} ${styles.stopButton}`}
             type='button'
             aria-label='Stop generation'
+            disabled={disabled}
           >
             <StopIcon className={styles.icon} />
+          </button>
+        ) : action === 'refresh' ? (
+          <button
+            onClick={onRefresh}
+            className={`${styles.button} ${styles.sendButton}`}
+            type='button'
+            aria-label='Generate response'
+            disabled={disabled}
+          >
+            <ArrowPathIcon className={styles.icon} />
           </button>
         ) : (
           <button
             onClick={handleSend}
-            disabled={!canSend}
-            className={`${styles.button} ${styles.sendButton} ${
-              canSend ? styles.active : ''
-            }`}
+            className={`${styles.button} ${styles.sendButton} ${canSend ? styles.active : ''}`}
             type='button'
             aria-label='Send message'
+            disabled={disabled || !canSend}
           >
             <PaperAirplaneIcon className={styles.icon} />
           </button>

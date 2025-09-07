@@ -43,8 +43,8 @@ export default function NewChat() {
         </p>
         <ChatBar
           onSend={handleSend}
-          disabled={!options}
-          loading={processing}
+          action={'send'}
+          disabled={!options || processing}
           placeholder='Send a message...'
         />
       </div>

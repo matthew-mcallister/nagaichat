@@ -5,6 +5,7 @@ import ChatHistory from '@/components/ChatHistory'
 import { useChatContext } from '@/components/context/ChatContext'
 import { reportError } from '@/lib/error'
 import Api from '@/lib/frontend/api'
+import { ChatBarAction } from '@/lib/frontend/common'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import styles from './Chat.module.scss'
@@ -24,15 +25,51 @@ export default function Chat() {
   const [loadingState, setLoadingState] = useState<LoadingState>(null)
   const processing = loadingState !== null
   const awaitingResponse = loadingState === 'awaitingResponse'
-
   const { preset, options } = useChatContext()
 
-  async function handleSend(message: string) {}
+  const latestItem = items ? items[items.length - 1] : null
+
+  async function handleSend(message: string) {
+    if (!items || !options) return
+    setLoadingState('processing')
+    const parent = items.length > 0 ? items[items.length - 1] : null
+    if (parent?.role === 'user') {
+      return
+    }
+    try {
+      const userMessage = await api.createItem({
+        role: 'user',
+        sessionId: sessionId,
+        content: [
+          {
+            type: 'text',
+            text: message,
+          },
+        ],
+        parentId: parent?.id,
+        presetId: preset?.id,
+        options,
+      })
+      setLoadingState('awaitingResponse')
+      await api.createItem({
+        role: 'model',
+        sessionId: sessionId,
+        parentId: userMessage.id,
+        presetId: preset?.id,
+        options,
+      })
+    } catch (e) {
+      reportError(e)
+    } finally {
+      setLoadingState(null)
+    }
+  }
+
   async function handleStop() {}
 
   async function getResponse() {
-    setLoadingState('awaitingResponse')
     if (!items || !options) return
+    setLoadingState('awaitingResponse')
     const parent = items[items.length - 1]
     try {
       await api.createItem({
@@ -60,6 +97,15 @@ export default function Chat() {
   // TODO: Restore options from session on initial load
   //useEffect(() => {}, [sessionId])
 
+  let chatBarAction: ChatBarAction
+  if (loadingState === 'awaitingResponse') {
+    chatBarAction = 'stop'
+  } else if (latestItem?.role === 'user') {
+    chatBarAction = 'refresh'
+  } else {
+    chatBarAction = 'send'
+  }
+
   return (
     <div className={styles.chatPage}>
       <ChatHistory
@@ -72,7 +118,9 @@ export default function Chat() {
         <ChatBar
           onSend={handleSend}
           onStop={handleStop}
-          loading={processing}
+          onRefresh={getResponse}
+          action={chatBarAction}
+          disabled={!items || !options || processing}
           placeholder='Send a message...'
         />
       </div>

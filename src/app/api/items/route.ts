@@ -15,6 +15,7 @@ export const GET = handleErrors(async (request: NextRequest) => {
 })
 
 export const POST = handleErrors(async (request: NextRequest) => {
-  const item = await createItem(await request.json())
+  const body = await request.json()
+  const item = await createItem(body)
   return NextResponse.json(item.toApiJson())
 })
