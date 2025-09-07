@@ -120,7 +120,7 @@ export default function Chat() {
           onStop={handleStop}
           onRefresh={getResponse}
           action={chatBarAction}
-          disabled={!items || !options || processing}
+          disabled={!items || !options || loadingState === 'processing'}
           placeholder='Send a message...'
         />
       </div>

@@ -27,7 +27,7 @@
     }
 
     &.disabled {
-        opacity: 0.6;
+        color: var(--color-muted-foreground);
         background-color: var(--color-muted);
 
         &:focus-within {

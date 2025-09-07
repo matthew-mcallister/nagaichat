@@ -59,7 +59,7 @@ export default function ChatBar({
   return (
     <div className={styles.chatBar}>
       <div
-        className={`${styles.inputContainer} ${disabled ? styles.disabled : ''}`}
+        className={`${styles.inputContainer} ${disabled || action !== 'send' ? styles.disabled : ''}`}
       >
         <textarea
           ref={textareaRef}
@@ -67,7 +67,7 @@ export default function ChatBar({
           onChange={handleTextareaChange}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
-          disabled={disabled}
+          disabled={disabled || action !== 'send'}
           className={styles.textarea}
           rows={1}
         />
