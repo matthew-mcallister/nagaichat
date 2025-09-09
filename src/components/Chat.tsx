@@ -7,7 +7,7 @@ import { reportError } from '@/lib/error'
 import Api from '@/lib/frontend/api'
 import { ChatBarAction } from '@/lib/frontend/common'
 import { useParams, useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import styles from './Chat.module.scss'
 
 type LoadingState = null | 'processing' | 'awaitingResponse'
@@ -26,6 +26,7 @@ export default function Chat() {
   const processing = loadingState !== null
   const awaitingResponse = loadingState === 'awaitingResponse'
   const { preset, options } = useChatContext()
+  const controller = useRef(new AbortController())
 
   const latestItem = items ? items[items.length - 1] : null
 
@@ -37,27 +38,33 @@ export default function Chat() {
       return
     }
     try {
-      const userMessage = await api.createItem({
-        role: 'user',
-        sessionId: sessionId,
-        content: [
-          {
-            type: 'text',
-            text: message,
-          },
-        ],
-        parentId: parent?.id,
-        presetId: preset?.id,
-        options,
-      })
+      const userMessage = await api.createItem(
+        {
+          role: 'user',
+          sessionId: sessionId,
+          content: [
+            {
+              type: 'text',
+              text: message,
+            },
+          ],
+          parentId: parent?.id,
+          presetId: preset?.id,
+          options,
+        },
+        controller.current,
+      )
       setLoadingState('awaitingResponse')
-      await api.createItem({
-        role: 'model',
-        sessionId: sessionId,
-        parentId: userMessage.id,
-        presetId: preset?.id,
-        options,
-      })
+      await api.createItem(
+        {
+          role: 'model',
+          sessionId: sessionId,
+          parentId: userMessage.id,
+          presetId: preset?.id,
+          options,
+        },
+        controller.current,
+      )
     } catch (e) {
       reportError(e)
     } finally {
@@ -65,20 +72,26 @@ export default function Chat() {
     }
   }
 
-  async function handleStop() {}
+  async function handleStop() {
+    controller.current.abort()
+    controller.current = new AbortController()
+  }
 
   async function getResponse() {
     if (!items || !options) return
     setLoadingState('awaitingResponse')
     const parent = items[items.length - 1]
     try {
-      await api.createItem({
-        role: 'model',
-        sessionId: sessionId,
-        parentId: parent.id,
-        presetId: preset?.id,
-        options,
-      })
+      await api.createItem(
+        {
+          role: 'model',
+          sessionId: sessionId,
+          parentId: parent.id,
+          presetId: preset?.id,
+          options,
+        },
+        controller.current,
+      )
     } catch (e) {
       reportError(e)
     } finally {
@@ -94,7 +107,7 @@ export default function Chat() {
     }
   }, [items, options, sessionId])
 
-  // TODO: Restore options from session on initial load
+  // TODO: Restore options and preset from session on initial load
   //useEffect(() => {}, [sessionId])
 
   let chatBarAction: ChatBarAction

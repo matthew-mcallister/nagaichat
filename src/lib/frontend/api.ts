@@ -180,8 +180,9 @@ export class Api {
     }))
   }
 
-  private async post<S, T>(endpoint: string, json: S): Promise<T> {
+  private async post<S, T>(endpoint: string, json: S, fetchOptions?: any): Promise<T> {
     return unwrapJson(fetch(this.baseUrl + endpoint, {
+      ...fetchOptions,
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -300,8 +301,12 @@ export class Api {
     return data || null
   }
 
-  public async createItem(body: CreateItemRequest): Promise<Item> {
-    const result: Item = await this.post('/api/items', body)
+  public async createItem(body: CreateItemRequest, controller?: AbortController): Promise<Item> {
+    const options: any = {}
+    if (controller) {
+      options.signal = controller.signal
+    }
+    const result: Item = await this.post('/api/items', body, options)
     await mutate(`/api/items?sessionId=${body.sessionId}`)
     return result
   }

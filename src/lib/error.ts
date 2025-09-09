@@ -64,10 +64,15 @@ export function handleErrors(handler: NextHandler): NextHandler {
   }
 }
 
+export function isAbortRequest(error: any): boolean {
+  return error instanceof DOMException && error.name === 'AbortError'
+}
+
 /**
  * Frontend helper to display an error notification.
  */
 export function reportError(error: Error | string | any) {
+  if (isAbortRequest(error)) return
   const message = (error instanceof Error) ? error.message : String(error)
   console.error(message, error)
   toast.error(message)
