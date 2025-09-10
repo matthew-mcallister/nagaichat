@@ -6,10 +6,11 @@ import {
   HarmBlockThreshold,
   HarmCategory,
   GenerateContentParameters,
+  GenerateContentConfig,
 } from "@google/genai"
 import { ChatHistory, IntegrationApi, ModelResponse } from "@/lib/backend/integrations/interface"
 import { ContentObject, ModelInfo, ModelOptions } from "@/lib/frontend/api"
-import { ApiResponseError } from "@/lib/error"
+import { ApiResponseError, BaseError } from "@/lib/error"
 
 function contentToGoogle(content: ContentObject): GooglePart {
   switch (content.type) {
@@ -73,26 +74,30 @@ export default class GeminiApi implements IntegrationApi {
     return models
   }
 
-  async generate(history: ChatHistory, options: ModelOptions): Promise<ModelResponse> {
+  async generate(history: ChatHistory, options: ModelOptions, signal?: AbortSignal): Promise<ModelResponse> {
     const contents = mapHistory(history)
-    const body: any = {
-      contents,
-      model: options.model,
-      config: {
-        safetySettings: [
-          { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.OFF },
-          { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.OFF },
-          { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.OFF },
-          { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.OFF },
-        ],
-        systemInstruction: options.systemPrompt,
-        temperature: options.temperature,
-      },
+    const config: GenerateContentConfig = {
+      safetySettings: [
+        { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.OFF },
+        { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.OFF },
+        { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.OFF },
+        { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.OFF },
+      ],
+      systemInstruction: options.systemPrompt,
+      temperature: options.temperature,
     }
     if (!options.thinkingEnabled) {
-      body.config.thinkingConfig = {
+      config.thinkingConfig = {
         thinkingBudget: 0,
       }
+    }
+    if (signal) {
+      config.abortSignal = signal
+    }
+    const body: GenerateContentParameters = {
+      contents,
+      model: options.model,
+      config,
     }
     const response = await this.client.models.generateContent(body as GenerateContentParameters)
     const candidate = (response.candidates || [])[0]

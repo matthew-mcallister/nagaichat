@@ -14,7 +14,6 @@ export class BaseError extends Error {
 
   public toJson(): any {
     return {
-      statusCode: this.statusCode,
       message: this.message,
     }
   }
@@ -35,6 +34,21 @@ export class ApiResponseError extends BaseError {
   protected static defaultMessage = 'Unexpected response from API'
 }
 
+export class AbortError extends BaseError {
+  protected static defaultStatusCode = 200
+  protected static defaultMessage = 'Request aborted'
+}
+
+function mapError(e: any): BaseError {
+  if (e instanceof BaseError) {
+    return e
+  } else if (e instanceof DOMException && e.message === 'AbortError') {
+    return new AbortError()
+  } else {
+    return new BaseError('An unexpected error occurred')
+  }
+}
+
 type NextHandler = (request: NextRequest, context?: any) => Promise<NextResponse> | NextResponse
 
 /**
@@ -44,21 +58,12 @@ export function handleErrors(handler: NextHandler): NextHandler {
   return async (request, context) => {
     try {
       return await handler(request, context)
-    } catch (e: any) {
-      let response
-      if ('toJson' in e) {
-        response = NextResponse.json({ error: e.message }, { status: e.statusCode })
-      } else {
-        response = NextResponse.json(
-          { error: 'An unexpected error occurred' },
-          { status: 500 },
-        )
-      }
-
+    } catch (error: any) {
+      const e = mapError(error)
+      let response = NextResponse.json(e.toJson(), { status: e.statusCode })
       if (response.status === 500) {
         console.error('Uncaught exception:', e)
       }
-
       return response
     }
   }

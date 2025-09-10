@@ -301,10 +301,10 @@ export class Api {
     return data || null
   }
 
-  public async createItem(body: CreateItemRequest, controller?: AbortController): Promise<Item> {
+  public async createItem(body: CreateItemRequest, signal?: AbortSignal): Promise<Item> {
     const options: any = {}
-    if (controller) {
-      options.signal = controller.signal
+    if (signal) {
+      options.signal = signal
     }
     const result: Item = await this.post('/api/items', body, options)
     await mutate(`/api/items?sessionId=${body.sessionId}`)

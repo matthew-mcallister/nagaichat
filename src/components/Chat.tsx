@@ -52,7 +52,7 @@ export default function Chat() {
           presetId: preset?.id,
           options,
         },
-        controller.current,
+        controller.current.signal,
       )
       setLoadingState('awaitingResponse')
       await api.createItem(
@@ -63,7 +63,7 @@ export default function Chat() {
           presetId: preset?.id,
           options,
         },
-        controller.current,
+        controller.current.signal,
       )
     } catch (e) {
       reportError(e)
@@ -90,7 +90,7 @@ export default function Chat() {
           presetId: preset?.id,
           options,
         },
-        controller.current,
+        controller.current.signal,
       )
     } catch (e) {
       reportError(e)

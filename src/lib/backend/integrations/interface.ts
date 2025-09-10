@@ -22,7 +22,11 @@ export interface ModelResponse {
  */
 export interface IntegrationApi {
   listModels(): Promise<ModelInfo[]>
-  generate(history: ChatHistory, options: ModelOptions): Promise<ModelResponse>
+  generate(
+    history: ChatHistory,
+    options: ModelOptions,
+    signal?: AbortSignal,
+  ): Promise<ModelResponse>
 }
 
 /**
@@ -63,6 +67,7 @@ export class ApiConnector {
   public async generate(
     parent: Item,
     transaction: Transaction,
+    signal?: AbortSignal,
   ): Promise<Item> {
     const session = await parent.getSession()
 
@@ -79,7 +84,7 @@ export class ApiConnector {
       content: item.content,
     }))
 
-    const response = await this.api.generate(history, session.options.modelOptions)
+    const response = await this.api.generate(history, session.options.modelOptions, signal)
 
     const item = await Item.create({
       sessionId: parent.sessionId,

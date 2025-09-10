@@ -6,7 +6,7 @@ import { Session } from "@/lib/backend/session"
 import { ValidationError } from "@/lib/error"
 import { CreateItemRequest } from "@/lib/frontend/api"
 
-export async function createItem(body: CreateItemRequest): Promise<Item> {
+export async function createItem(body: CreateItemRequest, signal?: AbortSignal): Promise<Item> {
   const session = await Session.getById(body.sessionId)
 
   const db = await getDb()
@@ -41,7 +41,7 @@ export async function createItem(body: CreateItemRequest): Promise<Item> {
     const options = body.options.modelOptions
     const integration = await Integration.getById(options.integration)
     const api = new ApiConnector(integration)
-    item = await api.generate(parent, transaction)
+    item = await api.generate(parent, transaction, signal)
   }
 
   session.latestItemId = item.id
