@@ -3,30 +3,35 @@
 import ChatHistoryMessage from '@/components/ChatHistoryMessage'
 import { Item } from '@/lib/frontend/api'
 import ChatTree from '@/lib/frontend/chat-tree'
-import { useState } from 'react'
 import styles from './ChatHistory.module.scss'
 
 interface ChatHistoryProps {
   disabled?: boolean
+  forkDisabled?: boolean
   awaitingResponse?: boolean
-  items: Item[]
+  items: Item[] | null
   latestItemId: number | null
   setLatestItemId: (id: number) => void
+  onOverwrite(item: Item, newText: string): void | Promise<void>
+  onFork(item: Item, newText: string): void | Promise<void>
 }
 
 export default function ChatHistory({
-  disabled: propDisabled,
+  disabled,
+  forkDisabled,
   items,
   awaitingResponse,
   latestItemId,
   setLatestItemId,
+  onOverwrite,
+  onFork,
 }: ChatHistoryProps) {
-  const [processing, setProcessing] = useState(false)
+  if (!items) {
+    return <div className={styles.chatHistory} />
+  }
 
   const tree = new ChatTree(items)
   const history = tree.getLinearHistory(latestItemId)
-
-  const disabled = processing || propDisabled
 
   return (
     <div className={styles.chatHistory}>
@@ -38,24 +43,26 @@ export default function ChatHistory({
             <ChatHistoryMessage
               key={item.id}
               item={item}
+              disabled={disabled}
+              forkDisabled={forkDisabled}
               siblingCount={siblingCount}
               index={index}
+              left={left}
+              right={right}
               onMoveLeft={() => {
                 if (left) {
-                  setLatestItemId(left.id)
+                  const latest = tree.getFirstLeaf(left)
+                  setLatestItemId(latest.id)
                 }
               }}
               onMoveRight={() => {
                 if (right) {
-                  setLatestItemId(right.id)
+                  const latest = tree.getFirstLeaf(right)
+                  setLatestItemId(latest.id)
                 }
               }}
-              onOverwrite={(newText: string) => {
-                // TODO: implement editing on the backend
-              }}
-              onFork={(newText: string) => {
-                // TODO: implement editing on the backend
-              }}
+              onOverwrite={(newText: string) => onOverwrite(item, newText)}
+              onFork={(newText: string) => onFork(item, newText)}
             />
           )
         })}

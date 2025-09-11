@@ -30,7 +30,7 @@ export default class ChatTree {
     while (currentId !== null) {
       const item = this.items.get(currentId)
       if (!item) {
-        throw new Error(`unreachable. currentId = ${currentId}`)
+        throw new Error('unreachable')
       }
       history.push(item)
       currentId = item.parentId
@@ -42,7 +42,7 @@ export default class ChatTree {
 
   public get(id: number): Item {
     const item = this.items.get(id)
-    if (!item) throw new Error(`unreachable. id = ${id}`)
+    if (!item) throw new Error('unreachable')
     return item
   }
 
@@ -64,6 +64,9 @@ export default class ChatTree {
     const right = index < siblings.length - 1 ? siblings[index + 1] : null
     return [index, left, right]
   }
+
+  public getFirstLeaf(item: Item): Item
+  public getFirstLeaf(item: null): Item | null
 
   /**
    * Returns the leftmost leaf descendant of an item, which may be the item

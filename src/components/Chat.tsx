@@ -4,7 +4,7 @@ import ChatBar from '@/components/ChatBar'
 import ChatHistory from '@/components/ChatHistory'
 import { useChatContext } from '@/components/context/ChatContext'
 import { reportError } from '@/lib/error'
-import Api from '@/lib/frontend/api'
+import Api, { Item } from '@/lib/frontend/api'
 import ChatTree from '@/lib/frontend/chat-tree'
 import { ChatBarAction } from '@/lib/frontend/common'
 import { useParams, useRouter } from 'next/navigation'
@@ -64,23 +64,25 @@ export default function Chat() {
               text: message,
             },
           ],
-          parentId: parent?.id,
-          presetId: preset?.id,
+          parentId: parent?.id || null,
+          presetId: preset?.id || null,
           options,
         },
         controller.current.signal,
       )
+      setLatestItemId(userMessage.id)
       setLoadingState('awaitingResponse')
-      await api.createItem(
+      const modelResponse = await api.createItem(
         {
           role: 'model',
           sessionId: sessionId,
           parentId: userMessage.id,
-          presetId: preset?.id,
+          presetId: preset?.id || null,
           options,
         },
         controller.current.signal,
       )
+      setLatestItemId(modelResponse.id)
     } catch (e) {
       reportError(e)
     } finally {
@@ -103,11 +105,67 @@ export default function Chat() {
           role: 'model',
           sessionId: sessionId,
           parentId: parent.id,
-          presetId: preset?.id,
+          presetId: preset?.id || null,
           options,
         },
         controller.current.signal,
       )
+    } catch (e) {
+      reportError(e)
+    } finally {
+      setLoadingState(null)
+    }
+  }
+
+  async function handleOverwrite(item: Item, newText: string): Promise<void> {
+    setLoadingState('processing')
+    try {
+      await api.updateItem(item.id, {
+        content: [{ type: 'text', text: newText }],
+      })
+    } catch (e) {
+      reportError(e)
+    } finally {
+      setLoadingState(null)
+    }
+  }
+
+  async function handleFork(item: Item, newText: string): Promise<void> {
+    if (!options) return
+    setLoadingState('processing')
+    try {
+      const newItem = await api.createItem(
+        {
+          role: item.role,
+          sessionId: sessionId,
+          content: [
+            {
+              type: 'text',
+              text: newText,
+            },
+          ],
+          parentId: item.parentId,
+          presetId: preset?.id || null,
+          options,
+        },
+        controller.current.signal,
+      )
+      setLatestItemId(newItem.id)
+      if (item.role === 'user') {
+        // Immediately generate a response when forking a user message
+        setLoadingState('awaitingResponse')
+        const modelResponse = await api.createItem(
+          {
+            role: 'model',
+            sessionId: sessionId,
+            parentId: newItem.id,
+            presetId: preset?.id || null,
+            options,
+          },
+          controller.current.signal,
+        )
+        setLatestItemId(modelResponse.id)
+      }
     } catch (e) {
       reportError(e)
     } finally {
@@ -137,15 +195,16 @@ export default function Chat() {
 
   return (
     <div className={styles.chatPage}>
-      {items && latestItemId && (
-        <ChatHistory
-          disabled={processing}
-          awaitingResponse={awaitingResponse}
-          items={items || []}
-          latestItemId={latestItemId}
-          setLatestItemId={setLatestItemId}
-        />
-      )}
+      <ChatHistory
+        disabled={processing}
+        forkDisabled={!options}
+        awaitingResponse={awaitingResponse}
+        items={items}
+        latestItemId={latestItemId}
+        setLatestItemId={setLatestItemId}
+        onOverwrite={handleOverwrite}
+        onFork={handleFork}
+      />
 
       <div className={styles.chatBarContainer}>
         <ChatBar

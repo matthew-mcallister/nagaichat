@@ -12,8 +12,9 @@ import { useState } from 'react'
 import styles from './ChatHistoryMessage.module.scss'
 
 export interface ChatHistoryMessageProps {
-  disabled?: boolean
   item: Item
+  disabled?: boolean
+  forkDisabled?: boolean
   siblingCount: number
   index: number
   left?: Item | null
@@ -42,6 +43,7 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
     left,
     right,
     disabled,
+    forkDisabled,
     onMoveLeft,
     onMoveRight,
     onOverwrite,
@@ -60,26 +62,23 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
   }
 
   const handleSave = async () => {
-    if (editText !== null) {
-      await onOverwrite(editText)
-      setEditText(null)
-    }
+    if (editText === null) return
+    await onOverwrite(editText)
+    setEditText(null)
   }
 
   const handleFork = async () => {
-    if (editText !== null) {
-      await onFork(editText)
-      setEditText(null)
-    }
+    if (editText === null) return
+    await onFork(editText)
+    setEditText(null)
   }
 
   const handleCopy = async () => {
-    if (text) {
-      try {
-        await navigator.clipboard.writeText(text)
-      } catch (err) {
-        console.error('Failed to copy text:', err)
-      }
+    if (!text) return
+    try {
+      await navigator.clipboard.writeText(text)
+    } catch (err) {
+      reportError(err)
     }
   }
 
@@ -132,7 +131,7 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
             <button
               className={styles.controlButton}
               onClick={handleFork}
-              disabled={disabled}
+              disabled={disabled || forkDisabled}
               title='Fork'
             >
               <ArrowUturnRightIcon className={styles.icon} />
