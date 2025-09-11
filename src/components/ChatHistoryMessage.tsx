@@ -60,26 +60,23 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
   }
 
   const handleSave = async () => {
-    if (editText !== null) {
-      await onOverwrite(editText)
-      setEditText(null)
-    }
+    if (editText === null) return
+    await onOverwrite(editText)
+    setEditText(null)
   }
 
   const handleFork = async () => {
-    if (editText !== null) {
-      await onFork(editText)
-      setEditText(null)
-    }
+    if (editText === null) return
+    await onFork(editText)
+    setEditText(null)
   }
 
   const handleCopy = async () => {
-    if (text) {
-      try {
-        await navigator.clipboard.writeText(text)
-      } catch (err) {
-        console.error('Failed to copy text:', err)
-      }
+    if (!text) return
+    try {
+      await navigator.clipboard.writeText(text)
+    } catch (err) {
+      reportError(err)
     }
   }
 

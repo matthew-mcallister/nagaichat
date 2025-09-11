@@ -145,6 +145,10 @@ export interface CreateUserItemRequest {
 
 export type CreateItemRequest = CreateModelItemRequest | CreateUserItemRequest
 
+export interface UpdateItemRequest {
+  content: ContentObject[]
+}
+
 /**
  * Wrapper around the backend API.
  */
@@ -314,6 +318,12 @@ export class Api {
     }
     const result: Item = await this.post('/api/items', body, options)
     await mutate(`/api/items?sessionId=${body.sessionId}`)
+    return result
+  }
+
+  public async updateItem(id: number, body: UpdateItemRequest): Promise<Item> {
+    const result: Item = await this.patch(`/api/items/${id}`, body)
+    await mutate(`/api/items?sessionId=${result.sessionId}`)
     return result
   }
 }

@@ -137,15 +137,13 @@ export default function Chat() {
 
   return (
     <div className={styles.chatPage}>
-      {items && latestItemId && (
-        <ChatHistory
-          disabled={processing}
-          awaitingResponse={awaitingResponse}
-          items={items || []}
-          latestItemId={latestItemId}
-          setLatestItemId={setLatestItemId}
-        />
-      )}
+      <ChatHistory
+        disabled={processing}
+        awaitingResponse={awaitingResponse}
+        items={items}
+        latestItemId={latestItemId}
+        setLatestItemId={setLatestItemId}
+      />
 
       <div className={styles.chatBarContainer}>
         <ChatBar

@@ -1,7 +1,7 @@
 'use client'
 
 import ChatHistoryMessage from '@/components/ChatHistoryMessage'
-import { Item } from '@/lib/frontend/api'
+import Api, { Item } from '@/lib/frontend/api'
 import ChatTree from '@/lib/frontend/chat-tree'
 import { useState } from 'react'
 import styles from './ChatHistory.module.scss'
@@ -9,7 +9,7 @@ import styles from './ChatHistory.module.scss'
 interface ChatHistoryProps {
   disabled?: boolean
   awaitingResponse?: boolean
-  items: Item[]
+  items: Item[] | null
   latestItemId: number | null
   setLatestItemId: (id: number) => void
 }
@@ -23,6 +23,11 @@ export default function ChatHistory({
 }: ChatHistoryProps) {
   const [processing, setProcessing] = useState(false)
 
+  if (!items) {
+    return <div className={styles.chatHistory} />
+  }
+
+  const api = new Api()
   const tree = new ChatTree(items)
   const history = tree.getLinearHistory(latestItemId)
 
@@ -50,9 +55,7 @@ export default function ChatHistory({
                   setLatestItemId(right.id)
                 }
               }}
-              onOverwrite={(newText: string) => {
-                // TODO: implement editing on the backend
-              }}
+              onOverwrite={(newText: string) => {}}
               onFork={(newText: string) => {
                 // TODO: implement editing on the backend
               }}
