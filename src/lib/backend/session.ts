@@ -32,7 +32,7 @@ export class Session extends Model {
   declare id: number
   /** Name pulled from first message content. */
   declare name: string
-  declare presetId?: number
+  declare presetId: number
   declare readonly getPreset: () => Promise<Preset | undefined>
   declare options: SessionOptions
   /**
@@ -40,7 +40,7 @@ export class Session extends Model {
    * location on the frontend when there is no local state recorded in the
    * browser.
    */
-  declare latestItemId?: number
+  declare latestItemId: number
   declare readonly getLatestItem: () => Promise<Item | undefined>
   declare createdAt: Date
   // XXX: Touch updatedAt when posting a message to chat?
@@ -98,6 +98,7 @@ export class Session extends Model {
     return {
       id: this.id,
       name: this.name,
+      latestItemId: this.latestItemId,
       presetId: this.presetId,
       options: this.options,
       createdAt: this.createdAt.toISOString(),

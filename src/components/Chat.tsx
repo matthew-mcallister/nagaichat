@@ -5,6 +5,7 @@ import ChatHistory from '@/components/ChatHistory'
 import { useChatContext } from '@/components/context/ChatContext'
 import { reportError } from '@/lib/error'
 import Api from '@/lib/frontend/api'
+import ChatTree from '@/lib/frontend/chat-tree'
 import { ChatBarAction } from '@/lib/frontend/common'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
@@ -22,13 +23,28 @@ export default function Chat() {
 
   const api = new Api()
   const items = api.useSessionItems(sessionId)
+  const session = api.useSession(sessionId)
   const [loadingState, setLoadingState] = useState<LoadingState>(null)
   const processing = loadingState !== null
   const awaitingResponse = loadingState === 'awaitingResponse'
   const { preset, options } = useChatContext()
   const controller = useRef(new AbortController())
 
-  const latestItem = items ? items[items.length - 1] : null
+  const [latestItemId, setLatestItemId] = useState<number | null>(null)
+  let tree = null
+  if (items) {
+    tree = new ChatTree(items)
+  }
+  const latestItem = latestItemId !== null ? tree?.get(latestItemId) : null
+
+  const [sessionLoaded, setSessionLoaded] = useState(false)
+  useEffect(() => {
+    if (sessionLoaded || !session || !items) return
+    setLatestItemId(
+      session.latestItemId || tree?.getFirstLeaf(null)?.id || null,
+    )
+    setSessionLoaded(true)
+  }, [items, session])
 
   async function handleSend(message: string) {
     if (!items || !options) return
@@ -107,7 +123,7 @@ export default function Chat() {
     }
   }, [items, options, sessionId])
 
-  // TODO: Restore options and preset from session on initial load
+  // TODO: Restore session options, preset, and latest item ID from session after initial load
   //useEffect(() => {}, [sessionId])
 
   let chatBarAction: ChatBarAction
@@ -121,11 +137,15 @@ export default function Chat() {
 
   return (
     <div className={styles.chatPage}>
-      <ChatHistory
-        disabled={processing}
-        awaitingResponse={awaitingResponse}
-        items={items || []}
-      />
+      {items && latestItemId && (
+        <ChatHistory
+          disabled={processing}
+          awaitingResponse={awaitingResponse}
+          items={items || []}
+          latestItemId={latestItemId}
+          setLatestItemId={setLatestItemId}
+        />
+      )}
 
       <div className={styles.chatBarContainer}>
         <ChatBar

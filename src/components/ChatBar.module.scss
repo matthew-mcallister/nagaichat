@@ -30,6 +30,12 @@
         color: var(--color-muted-foreground);
         background-color: var(--color-muted);
 
+        @media (prefers-color-scheme: dark) {
+            // Prevents the chat bar from blending in with the background
+            // TODO: Actually fix theming
+            box-shadow: 0 0 7px 2px rgb(0 0 0 / 0.2);
+        }
+
         &:focus-within {
             border-color: var(--color-border);
             box-shadow: var(--shadow-sm);

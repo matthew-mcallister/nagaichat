@@ -18,22 +18,6 @@
   padding: var(--space-4);
 }
 
-.message {
-  color: var(--color-foreground);
-  border-radius: var(--radius-lg);
-  width: 100%;
-  max-width: 100%;
-  align-self: flex-end;
-  white-space: pre-wrap;
-
-  &[data-role="user"] {
-    width: auto;
-    color: var(--color-secondary-foreground);
-    background-color: var(--color-secondary);
-    padding: var(--space-4);
-  }
-}
-
 .loadingMessage {
   padding: var(--space-4);
   border-radius: var(--radius-lg);

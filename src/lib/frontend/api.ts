@@ -27,7 +27,7 @@ export interface Integration {
   id: number
   name: string
   interface: 'openai' | 'gemini'
-  baseUrl?: string
+  baseUrl: string | null
   createdAt: string
   updatedAt: string
 }
@@ -48,7 +48,7 @@ export interface UpdateIntegrationRequest {
 
 export interface ModelInfo {
   name: string
-  displayName?: string
+  displayName: string | null
 }
 
 export interface ModelOptions {
@@ -102,7 +102,8 @@ export type Role = 'user' | 'model'
 export interface Session {
   id: number
   name: string
-  presetId?: number
+  presetId: number | null
+  latestItemId: number | null
   options: SessionOptions
   createdAt: string
   updatedAt: string
@@ -118,7 +119,7 @@ export interface CreateSessionRequest {
 export interface Item {
   id: number
   sessionId: number
-  parentId?: number
+  parentId: number | null
   content: ContentObject[]
   role: Role
   createdAt: string
@@ -253,6 +254,11 @@ export class Api {
 
   public async getSession(id: number): Promise<Session> {
     return this.get(`/api/sessions/${id}`)
+  }
+
+  public useSession(id: number): Session | null {
+    const { data } = useSWR(`/api/sessions/{id}`, () => this.getSession(id))
+    return data || null
   }
 
   public async createSession(body: CreateSessionRequest): Promise<Session> {
