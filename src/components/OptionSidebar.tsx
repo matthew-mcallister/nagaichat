@@ -8,6 +8,7 @@ import Api, {
 import styles from './OptionSidebar.module.scss'
 
 interface Props {
+  presets: Preset[] | null
   preset?: Preset
   setPreset: (preset?: Preset) => void
   options: SessionOptionsFields
@@ -15,6 +16,7 @@ interface Props {
 }
 
 export default function OptionSidebar({
+  presets,
   preset,
   setPreset,
   options,
@@ -48,6 +50,7 @@ export default function OptionSidebar({
         </label>
         <div className={styles.sectionContent}>
           <PresetManagement
+            presets={presets}
             preset={preset}
             setPreset={setPreset}
             options={options}

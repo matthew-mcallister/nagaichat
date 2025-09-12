@@ -25,7 +25,7 @@ export function ChatInner({ session, items }: ChatInnerProps) {
   const [loadingState, setLoadingState] = useState<LoadingState>(null)
   const processing = loadingState !== null
   const awaitingResponse = loadingState === 'awaitingResponse'
-  const { preset, options, rawOptions } = useChatContext()
+  const { preset, setPreset, presets, options, setOptions, rawOptions } = useChatContext()
   const controller = useRef(new AbortController())
 
   let tree = new ChatTree(items)
@@ -35,7 +35,12 @@ export function ChatInner({ session, items }: ChatInnerProps) {
   const latestItem = latestItemId ? tree.get(latestItemId) : null
 
   useEffect(() => {
-    // FIXME: Update options and preset from session
+    // FIXME: This is a race condition between presets and session loading
+    if (presets && session.presetId !== null) {
+      const ps = presets.find(preset => preset.id === session.presetId)
+      if (ps !== undefined) setPreset(ps)
+    }
+    setOptions(session.options)
   }, [])
 
   async function handleSend(message: string) {

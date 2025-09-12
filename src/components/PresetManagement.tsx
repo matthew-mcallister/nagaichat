@@ -119,6 +119,7 @@ function CreatePreset(props: CreatePresetProps) {
 }
 
 interface PresetUiProps {
+  presets: Preset[] | null
   /** Previously loaded preset. */
   preset?: Preset
   /** Applies options from the given preset. */
@@ -138,14 +139,14 @@ interface PresetUiProps {
 }
 
 export function PresetUi(props: PresetUiProps) {
-  const api = new Api()
-  const presets = api.usePresets()
+  const presets = props.presets
 
   const [showCreateNew, setShowCreateNew] = useState<boolean>(false)
   const { processing, setProcessing } = props
 
   const disabled = processing
 
+  // TODO: Proper placeholder
   if (!presets) {
     return <div className={styles.loading}>Loading presets...</div>
   }
@@ -241,6 +242,7 @@ export function PresetUi(props: PresetUiProps) {
 }
 
 interface PresetManagementProps {
+  presets: Preset[] | null
   /** Previously loaded preset. */
   preset?: Preset
   /** Sets or clears the current preset. */
@@ -255,6 +257,7 @@ interface PresetManagementProps {
  * Preset management portion of the options sidebar.
  */
 export default function PresetManagement({
+  presets,
   preset,
   setPreset,
   options: rawOptions,
@@ -290,6 +293,7 @@ export default function PresetManagement({
 
   return (
     <PresetUi
+      presets={presets}
       preset={preset}
       onLoad={onLoad}
       onSave={onSave}

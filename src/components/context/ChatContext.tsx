@@ -8,9 +8,15 @@ import {
 import { createContext, ReactNode, useContext } from 'react'
 
 interface ChatContextType {
+  // TODO: Ah, probably this should be
+  // options: SessionOptionsFields
+  // modelOptions: ModelOptions | null
   options: SessionOptions | null
+  setOptions: (options: SessionOptions) => void
   rawOptions: SessionOptionsFields
+  presets: Preset[] | null
   preset: Preset | null
+  setPreset: (preset: Preset) => void
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined)
@@ -23,22 +29,21 @@ export function useChatContext(): ChatContextType {
   return context
 }
 
-interface ChatContextProviderProps {
+interface ChatContextProviderProps extends ChatContextType {
   children: ReactNode
-  // TODO: Ah, probably just the modelOptions should be nullable instead
-  options: SessionOptions | null
-  rawOptions: SessionOptionsFields
-  preset: Preset | null
 }
 
 export function ChatContextProvider({
   children,
   options,
   rawOptions,
+  setOptions,
   preset,
+  presets,
+  setPreset,
 }: ChatContextProviderProps) {
   return (
-    <ChatContext.Provider value={{ options, preset, rawOptions }}>
+    <ChatContext.Provider value={{ options, setOptions, preset, presets, setPreset, rawOptions }}>
       {children}
     </ChatContext.Provider>
   )

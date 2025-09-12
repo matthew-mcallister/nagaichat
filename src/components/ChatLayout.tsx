@@ -6,8 +6,10 @@ import Navbar from '@/components/Navbar'
 import OptionSidebar from '@/components/OptionSidebar'
 import Sidebar from '@/components/Sidebar'
 import SidebarNav from '@/components/SidebarNav'
-import {
+import Api, {
+  fromPreset,
   Preset,
+  SessionOptions,
   SessionOptionsFields,
   validateOptions,
 } from '@/lib/frontend/api'
@@ -40,6 +42,9 @@ export default function ChatLayout({ children }: Props) {
   })
   const [preset, setPreset] = useState<Preset | undefined>(undefined)
 
+  const api = new Api()
+  const presets = api.usePresets()
+
   useEffect(() => {
     setLeftSidebarOpen(window.innerWidth >= 769)
     setRightSidebarOpen(window.innerWidth >= 769)
@@ -48,7 +53,10 @@ export default function ChatLayout({ children }: Props) {
   return (
     <ChatContextProvider
       options={validateOptions(options)}
+      setOptions={(options: SessionOptions) => setOptions(fromPreset(options))}
+      presets={presets}
       preset={preset || null}
+      setPreset={setPreset}
       rawOptions={options}
     >
       <div className={styles.layoutContainer}>
@@ -82,6 +90,7 @@ export default function ChatLayout({ children }: Props) {
             <OptionSidebar
               options={options}
               setOptions={setOptions}
+              presets={presets}
               preset={preset}
               setPreset={setPreset}
             />
