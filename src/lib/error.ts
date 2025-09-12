@@ -45,6 +45,7 @@ function mapError(e: any): BaseError {
   } else if (e instanceof DOMException && e.message === 'AbortError') {
     return new AbortError()
   } else {
+    console.error('Original exception:', e)
     return new BaseError('An unexpected error occurred')
   }
 }

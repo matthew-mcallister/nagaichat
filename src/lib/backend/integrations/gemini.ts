@@ -7,6 +7,7 @@ import {
   HarmCategory,
   GenerateContentParameters,
   GenerateContentConfig,
+  Candidate as GoogleCandidate,
 } from "@google/genai"
 import { ChatHistory, IntegrationApi, ModelResponse } from "@/lib/backend/integrations/interface"
 import { ContentObject, ModelInfo, ModelOptions } from "@/lib/frontend/api"
@@ -67,7 +68,7 @@ export default class GeminiApi implements IntegrationApi {
       if (!model.name) { continue }
       models.push({
         name: model.name,
-        displayName: model.displayName,
+        displayName: model.displayName || null,
       })
     }
 
@@ -100,9 +101,10 @@ export default class GeminiApi implements IntegrationApi {
       config,
     }
     const response = await this.client.models.generateContent(body as GenerateContentParameters)
-    const candidate = (response.candidates || [])[0]
-    const content = candidate.content?.parts?.map(googleToContent)
+    const candidate: GoogleCandidate | undefined = (response.candidates || [])[0]
+    const content = candidate?.content?.parts?.map(googleToContent)
     if (!content) {
+      console.error(response)
       throw new ApiResponseError()
     }
     return { content }

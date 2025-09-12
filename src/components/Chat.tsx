@@ -97,7 +97,7 @@ export function ChatInner({ session, items }: ChatInnerProps) {
     setLoadingState('awaitingResponse')
     const parent = items[items.length - 1]
     try {
-      await api.createItem(
+      const item = await api.createItem(
         {
           role: 'model',
           sessionId: sessionId,
@@ -107,6 +107,7 @@ export function ChatInner({ session, items }: ChatInnerProps) {
         },
         controller.current.signal,
       )
+      setLatestItemId(item.id)
     } catch (e) {
       reportError(e)
     } finally {
