@@ -10,7 +10,7 @@ interface ChatHistoryProps {
   disabled?: boolean
   forkDisabled?: boolean
   awaitingResponse?: boolean
-  items: Item[] | null
+  tree: ChatTree
   renderMarkdown?: boolean
   latestItemId: number | null
   setLatestItemId: (id: number) => void
@@ -32,7 +32,7 @@ export function ChatHistoryPlaceholder() {
 export default function ChatHistory({
   disabled,
   forkDisabled,
-  items,
+  tree,
   awaitingResponse,
   renderMarkdown,
   latestItemId,
@@ -40,11 +40,6 @@ export default function ChatHistory({
   onOverwrite,
   onFork,
 }: ChatHistoryProps) {
-  if (!items) {
-    return <div className={styles.chatHistory} />
-  }
-
-  const tree = new ChatTree(items)
   const history = tree.getLinearHistory(latestItemId)
 
   return (

@@ -8,10 +8,11 @@ export const PATCH = handleErrors(async (
   request: NextRequest,
   { params }: { params: { id: string } }
 ) => {
+  params = await params
   const body: UpdatePresetRequest = await request.json()
   const preset = await Preset.getById(parseInteger(params.id))
   await preset.update(body as any)
-  return new NextResponse(preset.toApiJson() as any, { status: 200 })
+  return NextResponse.json(preset.toApiJson() as any, { status: 200 })
 })
 
 export const DELETE = handleErrors(async (

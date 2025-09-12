@@ -44,9 +44,9 @@ export function ChatInner({ session, items }: ChatInnerProps) {
   }, [])
 
   async function handleSend(message: string) {
-    if (!items || !options) return
+    if (!options) return
     setLoadingState('processing')
-    const parent = items.length > 0 ? items[items.length - 1] : null
+    const parent = latestItem
     if (parent?.role === 'user') {
       return
     }
@@ -93,15 +93,15 @@ export function ChatInner({ session, items }: ChatInnerProps) {
   }
 
   async function getResponse() {
-    if (!items || !options) return
+    if (!options) return
+    if (latestItem?.role === 'model') return
     setLoadingState('awaitingResponse')
-    const parent = items[items.length - 1]
     try {
       const item = await api.createItem(
         {
           role: 'model',
           sessionId: sessionId,
-          parentId: parent.id,
+          parentId: latestItem?.id || null,
           presetId: preset?.id || null,
           options,
         },
@@ -197,7 +197,7 @@ export function ChatInner({ session, items }: ChatInnerProps) {
         disabled={processing}
         forkDisabled={!options}
         awaitingResponse={awaitingResponse}
-        items={items}
+        tree={tree}
         renderMarkdown={rawOptions?.renderMarkdown}
         latestItemId={latestItemId}
         setLatestItemId={setLatestItemId}
