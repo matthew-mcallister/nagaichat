@@ -261,7 +261,7 @@ export class Api {
   }
 
   public useSession(id: number): Session | null {
-    const { data } = useSWR(`/api/sessions/{id}`, () => this.getSession(id))
+    const { data } = useSWR(`/api/sessions/${id}`, () => this.getSession(id))
     return data || null
   }
 
