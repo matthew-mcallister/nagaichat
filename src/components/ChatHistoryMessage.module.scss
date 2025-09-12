@@ -3,7 +3,7 @@
   border-radius: var(--radius-lg);
   width: 100%;
   max-width: 100%;
-  align-self: flex-end;
+  align-self: flex-start;
   white-space: pre-wrap;
 
   &[data-role="user"] {
@@ -11,6 +11,7 @@
     color: var(--color-secondary-foreground);
     background-color: var(--color-secondary);
     padding: var(--space-4);
+  align-self: flex-end;
   }
 }
 

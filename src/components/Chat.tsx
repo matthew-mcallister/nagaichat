@@ -1,10 +1,10 @@
 'use client'
 
 import ChatBar from '@/components/ChatBar'
-import ChatHistory from '@/components/ChatHistory'
+import ChatHistory, { ChatHistoryPlaceholder } from '@/components/ChatHistory'
 import { useChatContext } from '@/components/context/ChatContext'
 import { reportError } from '@/lib/error'
-import Api, { Item } from '@/lib/frontend/api'
+import Api, { Item, Session } from '@/lib/frontend/api'
 import ChatTree from '@/lib/frontend/chat-tree'
 import { ChatBarAction } from '@/lib/frontend/common'
 import { useParams, useRouter } from 'next/navigation'
@@ -13,38 +13,30 @@ import styles from './Chat.module.scss'
 
 type LoadingState = null | 'processing' | 'awaitingResponse'
 
-export default function Chat() {
-  const router = useRouter()
-  const { id } = useParams<{ id: string }>()
-  const sessionId = Number(id)
-  if (isNaN(sessionId)) {
-    router.push('/')
-  }
+interface ChatInnerProps {
+  session: Session
+  items: Item[]
+}
 
+export function ChatInner({ session, items }: ChatInnerProps) {
   const api = new Api()
-  const items = api.useSessionItems(sessionId)
-  const session = api.useSession(sessionId)
+  const sessionId = session.id
+
   const [loadingState, setLoadingState] = useState<LoadingState>(null)
   const processing = loadingState !== null
   const awaitingResponse = loadingState === 'awaitingResponse'
   const { preset, options, rawOptions } = useChatContext()
   const controller = useRef(new AbortController())
 
-  const [latestItemId, setLatestItemId] = useState<number | null>(null)
-  let tree = null
-  if (items) {
-    tree = new ChatTree(items)
-  }
-  const latestItem = latestItemId !== null ? tree?.get(latestItemId) : null
+  let tree = new ChatTree(items)
+  const [latestItemId, setLatestItemId] = useState<number | null>(
+    session.latestItemId || tree?.getFirstLeaf(null)?.id || null,
+  )
+  const latestItem = latestItemId ? tree.get(latestItemId) : null
 
-  const [sessionLoaded, setSessionLoaded] = useState(false)
   useEffect(() => {
-    if (sessionLoaded || !session || !items) return
-    setLatestItemId(
-      session.latestItemId || tree?.getFirstLeaf(null)?.id || null,
-    )
-    setSessionLoaded(true)
-  }, [items, session])
+    // FIXME: Update options and preset from session
+  }, [])
 
   async function handleSend(message: string) {
     if (!items || !options) return
@@ -219,4 +211,30 @@ export default function Chat() {
       </div>
     </div>
   )
+}
+
+export default function Chat() {
+  const router = useRouter()
+  const { id } = useParams<{ id: string }>()
+  const sessionId = Number(id)
+  if (isNaN(sessionId)) {
+    router.push('/')
+  }
+
+  const api = new Api()
+  const items = api.useSessionItems(sessionId)
+  const session = api.useSession(sessionId)
+
+  if (!items || !session) {
+    return (
+      <div className={styles.chatPage}>
+        <ChatHistoryPlaceholder />
+        <div className={styles.chatBarContainer}>
+          <ChatBar onSend={() => {}} action={'send'} disabled={true} />
+        </div>
+      </div>
+    )
+  }
+
+  return <ChatInner session={session} items={items} />
 }

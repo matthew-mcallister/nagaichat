@@ -4,6 +4,7 @@ import ChatHistoryMessage from '@/components/ChatHistoryMessage'
 import { Item } from '@/lib/frontend/api'
 import ChatTree from '@/lib/frontend/chat-tree'
 import styles from './ChatHistory.module.scss'
+import ReactPlaceholder from 'react-placeholder'
 
 interface ChatHistoryProps {
   disabled?: boolean
@@ -15,6 +16,17 @@ interface ChatHistoryProps {
   setLatestItemId: (id: number) => void
   onOverwrite(item: Item, newText: string): void | Promise<void>
   onFork(item: Item, newText: string): void | Promise<void>
+}
+
+export function ChatHistoryPlaceholder() {
+    return (
+      <div className={styles.chatHistory}>
+        <div className={styles.messagesContainer}>
+          <div className={`${styles.placeholder} ${styles.small}`}/>
+          <div className={`${styles.placeholder} ${styles.large}`}/>
+        </div>
+      </div>
+    )
 }
 
 export default function ChatHistory({

@@ -40,7 +40,7 @@ export class Session extends Model {
    * location on the frontend when there is no local state recorded in the
    * browser.
    */
-  declare latestItemId: number
+  declare latestItemId: number | null
   declare readonly getLatestItem: () => Promise<Item | undefined>
   declare createdAt: Date
   // XXX: Touch updatedAt when posting a message to chat?
