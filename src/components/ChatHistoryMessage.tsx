@@ -10,7 +10,7 @@ import {
   PencilIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline'
-import { useState } from 'react'
+import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import styles from './ChatHistoryMessage.module.scss'
 import toast from 'react-hot-toast'
 
@@ -60,6 +60,7 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
   const [editText, setEditText] = useState<string | null>(null)
   const editing = editText !== null
   const rawText = itemText(item)
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null)
 
   const handleStartEdit = () => {
     setEditText(rawText || '')
@@ -91,6 +92,21 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
     }
   }
 
+  function adjustTextAreaHeight() {
+    const textarea = textareaRef.current
+    if (textarea) {
+      textarea.style.height = 'auto'
+      textarea.style.height = `${textarea.scrollHeight}px`
+    }
+  }
+
+  useEffect(() => adjustTextAreaHeight(), [editing])
+
+  function handleTextEdit(e: ChangeEvent<HTMLTextAreaElement>): void {
+    setEditText(e.target.value)
+    adjustTextAreaHeight()
+  }
+
   // Below the text should be a row of controls. The buttons should be
   // displayed as plain icons from Hero icons (with hover and focus states).
   //
@@ -106,15 +122,16 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
   // 2. A "save" button which overwrites the current text. Icon: check
   // 3. A "fork" button which creates a new sibling from the edited text. Icon: arrow-uturn-right. Also, the text "Fork"
   return (
-    <div key={item.id} className={styles.message} data-role={item.role}>
+    <div key={item.id} className={styles.message} data-role={item.role} data-editing={editing}>
       <div className={styles.messageBubble}>
         {editing ? (
           // TODO: Resize this text area to fit contents
           <textarea
             className={styles.editTextarea}
             value={editText}
-            onChange={e => setEditText(e.target.value)}
+            onChange={handleTextEdit}
             disabled={disabled}
+            ref={textareaRef}
           />
         ) : null}
         {
