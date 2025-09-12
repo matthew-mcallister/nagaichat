@@ -14,6 +14,6 @@ export default function Markdown({ text, render }: MarkdownProps) {
       <div className='markdown' dangerouslySetInnerHTML={{ __html: body }} />
     )
   } else {
-    return <div className='markdown'>{text}</div>
+    return <div>{text}</div>
   }
 }
