@@ -171,6 +171,33 @@ export function ChatInner({ session, items }: ChatInnerProps) {
     }
   }
 
+  async function handleReroll(item: Item): Promise<void> {
+    if (!options) return
+    if (item.role === 'user' || !item.parentId) return
+    const parentId = item.parentId
+    const oldLatestItemId = latestItemId
+    setLoadingState('awaitingResponse')
+    try {
+      setLatestItemId(parentId)
+      const newItem = await api.createItem(
+        {
+          role: 'model',
+          sessionId: sessionId,
+          parentId,
+          presetId: preset?.id || null,
+          options,
+        },
+        controller.current.signal,
+      )
+      setLatestItemId(newItem.id)
+    } catch (e) {
+      setLatestItemId(oldLatestItemId)
+      reportError(e)
+    } finally {
+      setLoadingState(null)
+    }
+  }
+
   useEffect(() => {
     if (!sessionId || !items || !options) return
     if (String(sessionId) === localStorage.getItem('generate-response-for')) {
@@ -203,6 +230,7 @@ export function ChatInner({ session, items }: ChatInnerProps) {
         setLatestItemId={setLatestItemId}
         onOverwrite={handleOverwrite}
         onFork={handleFork}
+        onReroll={handleReroll}
       />
 
       <div className={styles.chatBarContainer}>

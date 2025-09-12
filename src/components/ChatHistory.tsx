@@ -4,7 +4,6 @@ import ChatHistoryMessage from '@/components/ChatHistoryMessage'
 import { Item } from '@/lib/frontend/api'
 import ChatTree from '@/lib/frontend/chat-tree'
 import styles from './ChatHistory.module.scss'
-import ReactPlaceholder from 'react-placeholder'
 
 interface ChatHistoryProps {
   disabled?: boolean
@@ -13,9 +12,10 @@ interface ChatHistoryProps {
   tree: ChatTree
   renderMarkdown?: boolean
   latestItemId: number | null
-  setLatestItemId: (id: number) => void
+  setLatestItemId(id: number): void
   onOverwrite(item: Item, newText: string): void | Promise<void>
   onFork(item: Item, newText: string): void | Promise<void>
+  onReroll(item: Item): void | Promise<void>
 }
 
 export function ChatHistoryPlaceholder() {
@@ -39,6 +39,7 @@ export default function ChatHistory({
   setLatestItemId,
   onOverwrite,
   onFork,
+  onReroll,
 }: ChatHistoryProps) {
   const history = tree.getLinearHistory(latestItemId)
 
@@ -73,6 +74,7 @@ export default function ChatHistory({
               }}
               onOverwrite={(newText: string) => onOverwrite(item, newText)}
               onFork={(newText: string) => onFork(item, newText)}
+              onReroll={() => onReroll(item)}
             />
           )
         })}

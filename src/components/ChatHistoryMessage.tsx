@@ -1,6 +1,7 @@
 import Markdown from '@/components/Markdown'
 import { Item } from '@/lib/frontend/api'
 import {
+  ArrowPathIcon,
   ArrowUturnRightIcon,
   CheckIcon,
   ChevronLeftIcon,
@@ -21,12 +22,14 @@ export interface ChatHistoryMessageProps {
   left?: Item | null
   right?: Item | null
   renderMarkdown?: boolean
-  onMoveLeft: () => void
-  onMoveRight: () => void
+  onMoveLeft(): void
+  onMoveRight(): void
   /** Overwrites the text of this item. */
-  onOverwrite: (newText: string) => void | Promise<void>
+  onOverwrite(newText: string): void | Promise<void>
   /** Creates a new sibling item with the updated text. */
-  onFork: (newText: string) => void | Promise<void>
+  onFork(newText: string): void | Promise<void>
+  /** Generates a new sibling item with the same parent. */
+  onReroll(): void | Promise<void>
 }
 
 function itemText(item: Item): string | undefined {
@@ -51,6 +54,7 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
     onMoveRight,
     onOverwrite,
     onFork,
+    onReroll,
   } = props
   const [editText, setEditText] = useState<string | null>(null)
   const editing = editText !== null
@@ -191,6 +195,16 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
               >
                 <PencilIcon className={styles.icon} />
               </button>
+              {item.role === 'model' && (
+                <button
+                  className={styles.controlButton}
+                  onClick={onReroll}
+                  disabled={disabled}
+                  title='New response'
+                >
+                  <ArrowPathIcon className={styles.icon} />
+                </button>
+              )}
             </>
           )}
         </div>
