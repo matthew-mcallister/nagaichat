@@ -27,7 +27,7 @@ export default function Chat() {
   const [loadingState, setLoadingState] = useState<LoadingState>(null)
   const processing = loadingState !== null
   const awaitingResponse = loadingState === 'awaitingResponse'
-  const { preset, options } = useChatContext()
+  const { preset, options, rawOptions } = useChatContext()
   const controller = useRef(new AbortController())
 
   const [latestItemId, setLatestItemId] = useState<number | null>(null)
@@ -200,6 +200,7 @@ export default function Chat() {
         forkDisabled={!options}
         awaitingResponse={awaitingResponse}
         items={items}
+        renderMarkdown={rawOptions?.renderMarkdown}
         latestItemId={latestItemId}
         setLatestItemId={setLatestItemId}
         onOverwrite={handleOverwrite}

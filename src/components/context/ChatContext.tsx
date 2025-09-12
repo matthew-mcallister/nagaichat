@@ -1,10 +1,15 @@
 'use client'
 
-import { Preset, SessionOptions } from '@/lib/frontend/api'
+import {
+  Preset,
+  SessionOptions,
+  SessionOptionsFields,
+} from '@/lib/frontend/api'
 import { createContext, ReactNode, useContext } from 'react'
 
 interface ChatContextType {
   options: SessionOptions | null
+  rawOptions: SessionOptionsFields
   preset: Preset | null
 }
 
@@ -20,17 +25,20 @@ export function useChatContext(): ChatContextType {
 
 interface ChatContextProviderProps {
   children: ReactNode
+  // TODO: Ah, probably just the modelOptions should be nullable instead
   options: SessionOptions | null
+  rawOptions: SessionOptionsFields
   preset: Preset | null
 }
 
 export function ChatContextProvider({
   children,
   options,
+  rawOptions,
   preset,
 }: ChatContextProviderProps) {
   return (
-    <ChatContext.Provider value={{ options, preset }}>
+    <ChatContext.Provider value={{ options, preset, rawOptions }}>
       {children}
     </ChatContext.Provider>
   )

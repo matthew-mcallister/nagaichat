@@ -10,6 +10,7 @@ interface ChatHistoryProps {
   forkDisabled?: boolean
   awaitingResponse?: boolean
   items: Item[] | null
+  renderMarkdown?: boolean
   latestItemId: number | null
   setLatestItemId: (id: number) => void
   onOverwrite(item: Item, newText: string): void | Promise<void>
@@ -21,6 +22,7 @@ export default function ChatHistory({
   forkDisabled,
   items,
   awaitingResponse,
+  renderMarkdown,
   latestItemId,
   setLatestItemId,
   onOverwrite,
@@ -46,6 +48,7 @@ export default function ChatHistory({
               disabled={disabled}
               forkDisabled={forkDisabled}
               siblingCount={siblingCount}
+              renderMarkdown={renderMarkdown}
               index={index}
               left={left}
               right={right}

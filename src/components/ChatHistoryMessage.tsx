@@ -1,3 +1,4 @@
+import Markdown from '@/components/Markdown'
 import { Item } from '@/lib/frontend/api'
 import {
   ArrowUturnRightIcon,
@@ -19,6 +20,7 @@ export interface ChatHistoryMessageProps {
   index: number
   left?: Item | null
   right?: Item | null
+  renderMarkdown?: boolean
   onMoveLeft: () => void
   onMoveRight: () => void
   /** Overwrites the text of this item. */
@@ -44,6 +46,7 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
     right,
     disabled,
     forkDisabled,
+    renderMarkdown,
     onMoveLeft,
     onMoveRight,
     onOverwrite,
@@ -51,10 +54,10 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
   } = props
   const [editText, setEditText] = useState<string | null>(null)
   const editing = editText !== null
-  const text = itemText(item)
+  const rawText = itemText(item)
 
   const handleStartEdit = () => {
-    setEditText(text || '')
+    setEditText(rawText || '')
   }
 
   const handleCancelEdit = () => {
@@ -74,9 +77,9 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
   }
 
   const handleCopy = async () => {
-    if (!text) return
+    if (!rawText) return
     try {
-      await navigator.clipboard.writeText(text)
+      await navigator.clipboard.writeText(rawText)
     } catch (err) {
       reportError(err)
     }
@@ -99,15 +102,21 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
   return (
     <div key={item.id} className={styles.message} data-role={item.role}>
       {editing ? (
+        // TODO: Resize this text area to fit contents
         <textarea
           className={styles.editTextarea}
           value={editText}
           onChange={e => setEditText(e.target.value)}
           disabled={disabled}
         />
-      ) : (
-        <div className={styles.messageText}>{text}</div>
-      )}
+      ) : null}
+      {
+        // This element is rendered but hidden during editing so that the
+        // markdown is never re-rendered unless the raw text changes.
+      }
+      <div className={`${styles.messageBody} ${editing ? styles.hidden : ''}`}>
+        <Markdown text={rawText || ''} render={renderMarkdown} />
+      </div>
 
       <div className={styles.controls}>
         {editing ? (

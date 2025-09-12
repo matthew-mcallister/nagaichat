@@ -3,10 +3,14 @@
 import { ChatContextProvider } from '@/components/context/ChatContext'
 import ExpandButton from '@/components/ExpandButton'
 import Navbar from '@/components/Navbar'
-import OptionSidebar, { SessionOptionsFields } from '@/components/OptionSidebar'
+import OptionSidebar from '@/components/OptionSidebar'
 import Sidebar from '@/components/Sidebar'
 import SidebarNav from '@/components/SidebarNav'
-import { Preset, validateOptions } from '@/lib/frontend/api'
+import {
+  Preset,
+  SessionOptionsFields,
+  validateOptions,
+} from '@/lib/frontend/api'
 import {
   AdjustmentsHorizontalIcon,
   Bars3Icon,
@@ -42,7 +46,11 @@ export default function ChatLayout({ children }: Props) {
   }, [])
 
   return (
-    <ChatContextProvider options={validateOptions(options)} preset={preset}>
+    <ChatContextProvider
+      options={validateOptions(options)}
+      preset={preset || null}
+      rawOptions={options}
+    >
       <div className={styles.layoutContainer}>
         <Sidebar open={leftSidebarOpen} setOpen={setLeftSidebarOpen}>
           <SidebarNav open={leftSidebarOpen} setOpen={setLeftSidebarOpen} />

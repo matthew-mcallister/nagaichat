@@ -5,6 +5,8 @@
 @use 'responsive' as *;
 @use 'form' as *;
 @use 'sidebar' as *;
+@use 'reset' as *;
+@use 'markdown' as *;
 
 // TODO: need a flexible, reactive color palette system.
 // - Multiple logical color palettes
