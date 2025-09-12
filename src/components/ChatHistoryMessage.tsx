@@ -12,6 +12,7 @@ import {
 } from '@heroicons/react/24/outline'
 import { useState } from 'react'
 import styles from './ChatHistoryMessage.module.scss'
+import toast from 'react-hot-toast'
 
 export interface ChatHistoryMessageProps {
   item: Item
@@ -84,6 +85,7 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
     if (!rawText) return
     try {
       await navigator.clipboard.writeText(rawText)
+      toast.success('Copied to clipboard')
     } catch (err) {
       reportError(err)
     }
