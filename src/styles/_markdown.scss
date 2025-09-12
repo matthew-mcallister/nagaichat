@@ -324,45 +324,4 @@
             margin-bottom: 0;
         }
     }
-
-    // Responsive adjustments
-    // TODO: These sizes are too small
-    /*
-    @media (max-width: 768px) {
-        font-size: var(--font-size-sm);
-
-        h1 {
-            font-size: var(--font-size-2xl);
-        }
-
-        h2 {
-            font-size: var(--font-size-xl);
-        }
-
-        h3 {
-            font-size: var(--font-size-lg);
-        }
-
-        ul, ol {
-            padding-left: var(--space-4);
-        }
-
-        table {
-            font-size: var(--font-size-sm);
-        }
-
-        th, td {
-            padding: var(--space-2);
-        }
-
-        pre {
-            padding: var(--space-3);
-        }
-
-        blockquote {
-            padding-left: var(--space-3);
-            margin: var(--space-3) 0;
-        }
-    }
-    */
 }
