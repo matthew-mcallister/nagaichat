@@ -101,95 +101,99 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
   // 3. A "fork" button which creates a new sibling from the edited text. Icon: arrow-uturn-right. Also, the text "Fork"
   return (
     <div key={item.id} className={styles.message} data-role={item.role}>
-      {editing ? (
-        // TODO: Resize this text area to fit contents
-        <textarea
-          className={styles.editTextarea}
-          value={editText}
-          onChange={e => setEditText(e.target.value)}
-          disabled={disabled}
-        />
-      ) : null}
-      {
-        // This element is rendered but hidden during editing so that the
-        // markdown is never re-rendered unless the raw text changes.
-      }
-      <div className={`${styles.messageBody} ${editing ? styles.hidden : ''}`}>
-        <Markdown text={rawText || ''} render={renderMarkdown} />
+      <div className={styles.messageBubble}>
+        {editing ? (
+          // TODO: Resize this text area to fit contents
+          <textarea
+            className={styles.editTextarea}
+            value={editText}
+            onChange={e => setEditText(e.target.value)}
+            disabled={disabled}
+          />
+        ) : null}
+        {
+          // This element is rendered but hidden during editing so that the
+          // markdown is never re-rendered unless the raw text changes.
+        }
+        <div className={editing ? styles.hidden : ''}>
+          <Markdown text={rawText || ''} render={renderMarkdown} />
+        </div>
       </div>
 
-      <div className={styles.controls}>
-        {editing ? (
-          <>
-            <button
-              className={styles.controlButton}
-              onClick={handleCancelEdit}
-              disabled={disabled}
-              title='Cancel'
-            >
-              <XMarkIcon className={styles.icon} />
-            </button>
-            <button
-              className={styles.controlButton}
-              onClick={handleSave}
-              disabled={disabled}
-              title='Save'
-            >
-              <CheckIcon className={styles.icon} />
-            </button>
-            <button
-              className={styles.controlButton}
-              onClick={handleFork}
-              disabled={disabled || forkDisabled}
-              title='Fork'
-            >
-              <ArrowUturnRightIcon className={styles.icon} />
-              <span className={styles.buttonText}>Fork</span>
-            </button>
-          </>
-        ) : (
-          <>
-            {siblingCount > 1 && (
-              <>
-                <button
-                  className={styles.controlButton}
-                  onClick={onMoveLeft}
-                  disabled={disabled || !left}
-                  title='Previous'
-                >
-                  <ChevronLeftIcon className={styles.icon} />
-                </button>
-                <span className={styles.messageCounter}>
-                  {index + 1} / {siblingCount}
-                </span>
-                <button
-                  className={styles.controlButton}
-                  onClick={onMoveRight}
-                  disabled={disabled || !right}
-                  title='Next'
-                >
-                  <ChevronRightIcon className={styles.icon} />
-                </button>
-              </>
-            )}
-            <button
-              className={styles.controlButton}
-              onClick={handleCopy}
-              disabled={disabled}
-              title='Copy'
-            >
-              <ClipboardDocumentIcon className={styles.icon} />
-            </button>
-            <button
-              className={styles.controlButton}
-              onClick={handleStartEdit}
-              disabled={disabled}
-              title='Edit'
-            >
-              <PencilIcon className={styles.icon} />
-            </button>
-          </>
-        )}
+      <div className={styles.controlsContainer}>
+        <div className={styles.controls}>
+          {editing ? (
+            <>
+              <button
+                className={styles.controlButton}
+                onClick={handleCancelEdit}
+                disabled={disabled}
+                title='Cancel'
+              >
+                <XMarkIcon className={styles.icon} />
+              </button>
+              <button
+                className={styles.controlButton}
+                onClick={handleSave}
+                disabled={disabled}
+                title='Save'
+              >
+                <CheckIcon className={styles.icon} />
+              </button>
+              <button
+                className={styles.controlButton}
+                onClick={handleFork}
+                disabled={disabled || forkDisabled}
+                title='Fork'
+              >
+                <ArrowUturnRightIcon className={styles.icon} />
+                <span className={styles.buttonText}>Fork</span>
+              </button>
+            </>
+          ) : (
+            <>
+              {siblingCount > 1 && (
+                <>
+                  <button
+                    className={styles.controlButton}
+                    onClick={onMoveLeft}
+                    disabled={disabled || !left}
+                    title='Previous'
+                  >
+                    <ChevronLeftIcon className={styles.icon} />
+                  </button>
+                  <span className={styles.messageCounter}>
+                    {index + 1} / {siblingCount}
+                  </span>
+                  <button
+                    className={styles.controlButton}
+                    onClick={onMoveRight}
+                    disabled={disabled || !right}
+                    title='Next'
+                  >
+                    <ChevronRightIcon className={styles.icon} />
+                  </button>
+                </>
+              )}
+              <button
+                className={styles.controlButton}
+                onClick={handleCopy}
+                disabled={disabled}
+                title='Copy'
+              >
+                <ClipboardDocumentIcon className={styles.icon} />
+              </button>
+              <button
+                className={styles.controlButton}
+                onClick={handleStartEdit}
+                disabled={disabled}
+                title='Edit'
+              >
+                <PencilIcon className={styles.icon} />
+              </button>
+            </>
+          )}
+        </div>
       </div>
     </div>
   )
