@@ -10,7 +10,7 @@ export class Integration extends Model {
   declare name: string
   declare interface: 'openai' | 'gemini'
   declare apiKey: string
-  declare baseUrl?: string
+  declare baseUrl: string | null
   declare createdAt: Date
   declare updatedAt: Date
 

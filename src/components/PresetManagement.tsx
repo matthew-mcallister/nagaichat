@@ -234,7 +234,7 @@ export function PresetUi(props: PresetUiProps) {
           onClick={handleSave}
           disabled={disabled || props.saveDisabled}
         >
-          Save "{props.preset.name}"
+          Save &quot;{props.preset.name}&quot;
         </button>
       )}
     </div>

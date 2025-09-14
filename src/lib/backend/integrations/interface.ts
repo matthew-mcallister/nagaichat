@@ -43,7 +43,7 @@ export class ApiConnector {
     case 'openai':
       throw new BaseError('Not yet implemented')
     case 'gemini':
-      this.api = new GeminiApi(integration.apiKey, integration.baseUrl)
+      this.api = new GeminiApi(integration.apiKey, integration.baseUrl || undefined)
       break
     default:
       throw new Error('unreachable')

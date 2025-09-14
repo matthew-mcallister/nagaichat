@@ -28,7 +28,7 @@ export function ChatInner({ session, items }: ChatInnerProps) {
   const { preset, setPreset, presets, options, setOptions, rawOptions } = useChatContext()
   const controller = useRef(new AbortController())
 
-  let tree = new ChatTree(items)
+  const tree = new ChatTree(items)
   const [latestItemId, setLatestItemId] = useState<number | null>(
     session.latestItemId || tree?.getFirstLeaf(null)?.id || null,
   )
@@ -41,7 +41,7 @@ export function ChatInner({ session, items }: ChatInnerProps) {
       if (ps !== undefined) setPreset(ps)
     }
     setOptions(session.options)
-  }, [])
+  })
 
   async function handleSend(message: string) {
     if (!options) return

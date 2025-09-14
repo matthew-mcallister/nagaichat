@@ -61,7 +61,7 @@ export function handleErrors(handler: NextHandler): NextHandler {
       return await handler(request, context)
     } catch (error: any) {
       const e = mapError(error)
-      let response = NextResponse.json(e.toJson(), { status: e.statusCode })
+      const response = NextResponse.json(e.toJson(), { status: e.statusCode })
       if (response.status === 500) {
         console.error('Uncaught exception:', e)
       }

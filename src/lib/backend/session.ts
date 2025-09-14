@@ -32,7 +32,7 @@ export class Session extends Model {
   declare id: number
   /** Name pulled from first message content. */
   declare name: string
-  declare presetId: number
+  declare presetId: number | null
   declare readonly getPreset: () => Promise<Preset | undefined>
   declare options: SessionOptions
   /**
@@ -47,7 +47,7 @@ export class Session extends Model {
   declare updatedAt: Date
 
   public static async doCreate(body: CreateSessionRequest): Promise<Session> {
-    let contents = convertContents(body.initialContent)
+    const contents = convertContents(body.initialContent)
 
     // Extract name from first content item
     let name = 'New Chat'

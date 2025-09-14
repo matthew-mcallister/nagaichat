@@ -11,7 +11,7 @@ import {
 } from "@google/genai"
 import { ChatHistory, IntegrationApi, ModelResponse } from "@/lib/backend/integrations/interface"
 import { ContentObject, ModelInfo, ModelOptions } from "@/lib/frontend/api"
-import { ApiResponseError, BaseError } from "@/lib/error"
+import { ApiResponseError } from "@/lib/error"
 
 function contentToGoogle(content: ContentObject): GooglePart {
   switch (content.type) {
