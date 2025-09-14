@@ -41,7 +41,7 @@ export function ChatInner({ session, items }: ChatInnerProps) {
       if (ps !== undefined) setPreset(ps)
     }
     setOptions(session.options)
-  })
+  }, [])
 
   async function handleSend(message: string) {
     if (!options) return
