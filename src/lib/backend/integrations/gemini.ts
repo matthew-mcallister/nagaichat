@@ -9,9 +9,9 @@ import {
   GenerateContentConfig,
   Candidate as GoogleCandidate,
 } from "@google/genai"
-import { ChatHistory, IntegrationApi, ModelResponse } from "@/lib/backend/integrations/interface"
-import { ContentObject, ModelInfo, ModelOptions } from "@/lib/frontend/api"
-import { ApiResponseError } from "@/lib/error"
+import { ChatHistory, IntegrationApi, ModelResponse } from '@/lib/backend/integrations/interface'
+import { ContentObject, ModelInfo, ModelOptions } from '@/lib/frontend/api'
+import { ApiResponseError } from '@/lib/error'
 
 function contentToGoogle(content: ContentObject): GooglePart {
   switch (content.type) {

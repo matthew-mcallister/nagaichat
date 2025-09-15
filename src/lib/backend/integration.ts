@@ -63,7 +63,7 @@ export class Integration extends Model {
       id: this.id,
       name: this.name,
       interface: this.interface,
-      baseUrl: this.baseUrl,
+      baseUrl: this.baseUrl || null,
       createdAt: this.createdAt.toISOString(),
       updatedAt: this.updatedAt.toISOString()
     }

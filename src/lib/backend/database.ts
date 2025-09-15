@@ -8,6 +8,8 @@ let _db: Sequelize | null = null
 const _mutex: Mutex = new Mutex()
 
 async function getDb(): Promise<Sequelize> {
+  // XXX: Sadly this caching does *not* work in dev mode. The KVCache works so
+  // the bug must have something to do with getDb being called at module level
   if (_db !== null) return _db
 
   await _mutex.runExclusive(async () => {

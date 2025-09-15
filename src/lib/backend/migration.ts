@@ -86,6 +86,25 @@ async function migrate_v4(db: Sequelize, transaction: Transaction): Promise<void
     `, { transaction })
 }
 
+async function migrate_v5(db: Sequelize, transaction: Transaction): Promise<void> {
+    await db.query(`
+        CREATE TABLE staticContents (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            mimeType TEXT NOT NULL,
+            sha1Hex TEXT NOT NULL,
+            createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+        );
+
+        CREATE TRIGGER update_staticContents_timestamp
+        AFTER UPDATE ON staticContents
+        FOR EACH ROW
+        BEGIN
+            UPDATE staticContents SET updatedAt = CURRENT_TIMESTAMP WHERE id = NEW.id;
+        END;
+    `, { transaction })
+}
+
 export default async function runMigrations(db: Sequelize): Promise<void> {
     const [result, _]: [any, unknown] = await db.query('PRAGMA user_version')
     const currentVersion = result[0].user_version as number
@@ -96,7 +115,8 @@ export default async function runMigrations(db: Sequelize): Promise<void> {
         migrate_v1,
         migrate_v2,
         migrate_v3,
-        migrate_v4
+        migrate_v4,
+        migrate_v5,
     ]
 
     // Run migrations that haven't been applied yet

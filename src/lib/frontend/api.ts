@@ -1,4 +1,4 @@
-import { BaseError } from "@/lib/error"
+import { BaseError } from '@/lib/error'
 import useSWR, { mutate } from "swr"
 
 async function raiseForStatus(response: Response | Promise<Response>): Promise<Response> {

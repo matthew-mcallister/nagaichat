@@ -1,4 +1,4 @@
-import { Item } from "@/lib/frontend/api"
+import { Item } from '@/lib/frontend/api'
 
 export default class ChatTree {
   /** Items by ID. */

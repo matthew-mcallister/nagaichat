@@ -1,4 +1,4 @@
-import { ValidationError } from "@/lib/error"
+import { ValidationError } from '@/lib/error'
 
 export function parseInteger(x: string): number {
     const num = parseInt(x)
