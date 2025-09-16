@@ -9,7 +9,6 @@ import { StaticContent } from '@/lib/backend/static'
 export class Item extends Model {
   declare id: number
   declare sessionId: number
-  declare readonly getSession: () => Promise<Session>
   declare parentId: number | null
   declare readonly getParent: () => Promise<Item | undefined>
   declare content: Content[]
@@ -62,6 +61,7 @@ export class Item extends Model {
           as: 'staticContent',
         }],
       }],
+      transaction,
     })
   }
 

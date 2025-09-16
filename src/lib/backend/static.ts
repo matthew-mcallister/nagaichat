@@ -72,7 +72,7 @@ export class StaticContent extends Model {
     const statcon = await StaticContent.create({
       mimeType: info.mimeType,
       sha1Hex: sha1,
-    })
+    }, { transaction: info.transaction })
     // If this fails, the created file will just lie around as garbage
     storeContent(statcon, content)
 

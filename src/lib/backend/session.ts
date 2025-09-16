@@ -1,6 +1,6 @@
 import { NoSuchResource, ValidationError } from '@/lib/error'
 import getDb from '@/lib/backend/database'
-import { DataTypes, Model } from 'sequelize'
+import { DataTypes, Model, Transaction } from 'sequelize'
 import { Session as ApiSession, Content, ContentObject, CreateSessionRequest, SessionOptions } from '@/lib/frontend/api'
 import { Item } from '@/lib/backend/item'
 import { Preset } from '@/lib/backend/preset'
@@ -86,8 +86,8 @@ export class Session extends Model {
     })
   }
 
-  public static async getById(id: number): Promise<Session> {
-    const session = await this.findByPk(id)
+  public static async getById(id: number, transaction?: Transaction): Promise<Session> {
+    const session = await this.findByPk(id, { transaction })
     if (!session) {
       throw new NoSuchResource(`No such session: ${id}`)
     }

@@ -38,8 +38,10 @@ export default function ChatLayout({ children }: Props) {
     systemPrompt: '',
     temperature: 1,
     thinkingEnabled: true,
+    imageGenerationEnabled: false,
     renderMarkdown: true,
   })
+  console.log(options.imageGenerationEnabled)
   const [preset, setPreset] = useState<Preset | undefined>(undefined)
 
   const api = new Api()

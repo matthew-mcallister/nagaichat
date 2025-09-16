@@ -153,6 +153,21 @@ export default function OptionSidebar({
             </label>
           </div>
 
+          {/* Image generation enabled */}
+          <div className={styles.field}>
+            <label className='checkboxLabel'>
+              <input
+                type='checkbox'
+                className='checkbox'
+                checked={options.imageGenerationEnabled}
+                onChange={e =>
+                  handleOptionChange('imageGenerationEnabled', e.target.checked)
+                }
+              />
+              <span className='checkboxText'>Enable image generation</span>
+            </label>
+          </div>
+
           <hr />
 
           {/* System prompt */}

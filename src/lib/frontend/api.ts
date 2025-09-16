@@ -57,9 +57,11 @@ export interface ModelOptions {
   systemPrompt: string
   temperature: number
   thinkingEnabled: boolean
+  imageGenerationEnabled: boolean
   // TODO: Explicit content settings
 }
 
+// FIXME: Handle missing options correctly
 export interface SessionOptions {
   modelOptions: ModelOptions,
   renderMarkdown: boolean,
@@ -339,6 +341,7 @@ export interface SessionOptionsFields {
   systemPrompt: string
   temperature: number
   thinkingEnabled: boolean
+  imageGenerationEnabled: boolean
   renderMarkdown: boolean
 }
 
@@ -353,6 +356,7 @@ export function validateOptions(
       systemPrompt: options.systemPrompt,
       temperature: options.temperature,
       thinkingEnabled: options.thinkingEnabled,
+      imageGenerationEnabled: options.imageGenerationEnabled,
     },
     renderMarkdown: options.renderMarkdown,
   }
@@ -364,6 +368,7 @@ export function fromPreset(options: SessionOptions): SessionOptionsFields {
     systemPrompt: options.modelOptions.systemPrompt,
     temperature: options.modelOptions.temperature,
     thinkingEnabled: options.modelOptions.thinkingEnabled,
+    imageGenerationEnabled: options.modelOptions.imageGenerationEnabled || false,
     renderMarkdown: options.renderMarkdown,
   }
 }

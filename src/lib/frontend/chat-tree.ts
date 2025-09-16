@@ -72,6 +72,7 @@ export default class ChatTree {
    * Returns the leftmost leaf descendant of an item, which may be the item
    * itself.
    */
+  // TODO: Get latest leaf
   public getFirstLeaf(item: Item | null): Item | null {
     let currentItem = item
     while (true) {

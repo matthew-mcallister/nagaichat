@@ -8,6 +8,7 @@ import {
   GenerateContentParameters,
   GenerateContentConfig,
   Candidate as GoogleCandidate,
+  Modality,
 } from "@google/genai"
 import { ChatHistory, IntegrationApi, ModelResponse } from '@/lib/backend/integrations/interface'
 import { ModelInfo, ModelOptions, Content as ApiContent, InlineContent } from '@/lib/frontend/api'
@@ -94,6 +95,10 @@ export default class GeminiApi implements IntegrationApi {
 
   async generate(history: ChatHistory, options: ModelOptions, signal?: AbortSignal): Promise<ModelResponse> {
     const contents = await mapHistory(history)
+    const responseModalities = [Modality.TEXT]
+    if (options.imageGenerationEnabled) {
+      responseModalities.push(Modality.IMAGE)
+    }
     const config: GenerateContentConfig = {
       safetySettings: [
         { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.OFF },
@@ -101,7 +106,8 @@ export default class GeminiApi implements IntegrationApi {
         { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.OFF },
         { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.OFF },
       ],
-      systemInstruction: options.systemPrompt,
+      systemInstruction: options.systemPrompt || undefined,
+      responseModalities,
       temperature: options.temperature,
     }
     if (!options.thinkingEnabled) {

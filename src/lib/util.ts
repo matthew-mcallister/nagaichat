@@ -1,4 +1,6 @@
+import getDb from '@/lib/backend/database'
 import { ValidationError } from '@/lib/error'
+import { Transaction } from 'sequelize'
 
 export function parseInteger(x: string): number {
   const num = parseInt(x)
@@ -49,4 +51,17 @@ export function retry<F extends (...args: any[]) => Promise<any>>(
     return wrapped
   }
   return decorator
+}
+
+export async function withTransaction<T>(fn: (transaction: Transaction) => Promise<T>): Promise<T> {
+  const db = await getDb()
+  const transaction = await db.transaction()
+  try {
+    const result = await fn(transaction)
+    await transaction.commit()
+    return result
+  } catch (e) {
+    await transaction.rollback()
+    throw e
+  }
 }

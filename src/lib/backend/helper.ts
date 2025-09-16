@@ -1,22 +1,17 @@
-import getDb from '@/lib/backend/database'
 import { Integration } from '@/lib/backend/integration'
 import { ApiConnector } from '@/lib/backend/integrations/interface'
 import { Item } from '@/lib/backend/item'
 import { Session } from '@/lib/backend/session'
 import { ValidationError } from '@/lib/error'
 import { CreateItemRequest } from '@/lib/frontend/api'
+import { Transaction } from 'sequelize'
 
-export async function createItem(body: CreateItemRequest, signal?: AbortSignal): Promise<Item> {
+export async function createItem(body: CreateItemRequest, transaction: Transaction, signal?: AbortSignal): Promise<Item> {
   const session = await Session.getById(body.sessionId)
 
-  const db = await getDb()
-  const transaction = await db.transaction()
+  const parent = body.parentId ? await Item.getById(body.parentId, transaction) : null
 
-  const parent = body.parentId ? await Item.getById(body.parentId) : null
-
-  session.options = body.options
-  session.presetId = body.presetId
-  await session.save()
+  await session.update({ options: body.options, presetId: body.presetId }, { transaction })
 
   let item: Item
   if (body.role == 'user') {
@@ -30,7 +25,7 @@ export async function createItem(body: CreateItemRequest, signal?: AbortSignal):
       parentId: parent?.id,
       content: body.content,
       role: 'user',
-    })
+    }, { transaction })
   } else {
     // body.role === 'model'
     if (!parent || parent.role === 'model') {
@@ -39,15 +34,13 @@ export async function createItem(body: CreateItemRequest, signal?: AbortSignal):
 
     // Generate a response
     const options = body.options.modelOptions
-    const integration = await Integration.getById(options.integration)
+    const integration = await Integration.getById(options.integration, transaction)
     const api = new ApiConnector(integration)
     item = await api.generate(parent, transaction, signal)
   }
 
   session.latestItemId = item.id
   await session.save({ transaction })
-
-  await transaction.commit()
 
   return item
 }

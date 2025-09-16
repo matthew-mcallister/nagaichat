@@ -5,6 +5,7 @@ import { ModelInfo, ModelOptions, Role, Content as ApiContent } from '@/lib/fron
 import { Transaction } from "sequelize"
 import { Item } from '@/lib/backend/item'
 import { Content } from '@/lib/backend/content'
+import { Session } from '@/lib/backend/session'
 
 export interface HistoryEntry {
   role: Role
@@ -70,7 +71,7 @@ export class ApiConnector {
     transaction: Transaction,
     signal?: AbortSignal,
   ): Promise<Item> {
-    const session = await parent.getSession()
+    const session = await Session.getById(parent.sessionId, transaction)
 
     // Construct history
     const items = [parent]
