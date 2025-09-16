@@ -1,6 +1,6 @@
 import { NoSuchResource } from '@/lib/error'
 import getDb from '@/lib/backend/database'
-import { DataTypes, Model } from 'sequelize'
+import { DataTypes, Model, Transaction } from 'sequelize'
 import { Item as ApiItem, Role } from '@/lib/frontend/api'
 import type { Session } from '@/lib/backend/session'
 import { Content } from '@/lib/backend/content'
@@ -31,26 +31,38 @@ export class Item extends Model {
     })
   }
 
-  public static async getById(id: number): Promise<Item> {
+  public static async getById(id: number, transaction?: Transaction): Promise<Item> {
     const session = await this.findByPk(
       id,
       {
-        include: [
-          {
-            model: Content,
-            required: true,
-          },
-          {
+        include: [{
+          model: Content,
+          as: 'content',
+          include: [{
             model: StaticContent,
-            required: true,
-          },
-        ],
+            as: 'staticContent',
+          }],
+        }],
+        transaction,
       },
     )
     if (!session) {
       throw new NoSuchResource(`No such item: ${id}`)
     }
     return session
+  }
+
+  public async doReload(transaction: Transaction): Promise<void> {
+    await this.reload({
+      include: [{
+        model: Content,
+        as: 'content',
+        include: [{
+          model: StaticContent,
+          as: 'staticContent',
+        }],
+      }],
+    })
   }
 
   public toApiJson(): ApiItem {

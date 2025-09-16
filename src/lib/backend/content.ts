@@ -71,7 +71,7 @@ export class Content extends Model {
           itemId: item.id,
           type: 'static',
           staticContentId: content.id,
-        })
+        }, { transaction })
       }
     }
   }

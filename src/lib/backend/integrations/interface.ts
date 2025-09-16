@@ -96,7 +96,7 @@ export class ApiConnector {
       await Content.createFromApiJson(item, content, transaction)
     }
     // Reload contents
-    await item.reload()
+    await item.doReload(transaction)
 
     return item
   }
