@@ -19,7 +19,7 @@
     border: 1px solid var(--color-border);
     border-radius: 2rem;
     box-shadow: var(--shadow-md);
-    transition: all 0.2s ease-in-out;
+    transition: all 0.1s ease-in-out;
 
     &:focus-within {
         border-color: var(--color-primary);
@@ -84,7 +84,7 @@
     border: none;
     border-radius: var(--radius-lg);
     cursor: pointer;
-    transition: all 0.2s ease-in-out;
+    transition: all 0.1s ease-in-out;
     flex-shrink: 0;
 
     &:disabled {
@@ -134,10 +134,29 @@
     }
 }
 
+.uploadButton {
+    color: var(--color-muted-foreground);
+    border-radius: var(--radius-inf);
+
+    &:hover:not(:disabled) {
+        background-color: var(--color-secondary);
+        color: var(--color-foreground);
+    }
+
+    &:disabled {
+        opacity: 0.4;
+    }
+
+    & .icon {
+        width: 24px;
+        height: 24px;
+    }
+}
+
 .icon {
     width: 20px;
     height: 20px;
-    transition: transform 0.2s ease-in-out;
+    transition: transform 0.1s ease-in-out;
 }
 
 .characterCount {

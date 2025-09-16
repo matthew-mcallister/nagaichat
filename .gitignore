@@ -44,3 +44,5 @@ next-env.d.ts
 *.sqlite*
 
 /public/static/content
+*instructions.md
+.vscode
