@@ -1,8 +1,10 @@
 import { NoSuchResource } from '@/lib/error'
 import getDb from '@/lib/backend/database'
 import { DataTypes, Model } from 'sequelize'
-import { Item as ApiItem, ContentObject, Role } from '@/lib/frontend/api'
+import { Item as ApiItem, Role } from '@/lib/frontend/api'
 import type { Session } from '@/lib/backend/session'
+import { Content } from '@/lib/backend/content'
+import { StaticContent } from '@/lib/backend/static'
 
 export class Item extends Model {
   declare id: number
@@ -10,7 +12,7 @@ export class Item extends Model {
   declare readonly getSession: () => Promise<Session>
   declare parentId: number | null
   declare readonly getParent: () => Promise<Item | undefined>
-  declare content: ContentObject[]
+  declare content: Content[]
   declare role: Role
   declare createdAt: Date
   declare updatedAt: Date
@@ -18,11 +20,33 @@ export class Item extends Model {
   public static async getBySession(sessionId: number): Promise<Item[]> {
     return await Item.findAll({
       where: { sessionId },
+      include: [{
+        model: Content,
+        as: 'content',
+        include: [{
+          model: StaticContent,
+          as: 'staticContent',
+        }],
+      }],
     })
   }
 
   public static async getById(id: number): Promise<Item> {
-    const session = await this.findByPk(id)
+    const session = await this.findByPk(
+      id,
+      {
+        include: [
+          {
+            model: Content,
+            required: true,
+          },
+          {
+            model: StaticContent,
+            required: true,
+          },
+        ],
+      },
+    )
     if (!session) {
       throw new NoSuchResource(`No such item: ${id}`)
     }
@@ -34,7 +58,7 @@ export class Item extends Model {
       id: this.id,
       sessionId: this.sessionId,
       parentId: this.parentId,
-      content: this.content,
+      content: this.content.map(c => c.toApiJson()),
       role: this.role,
       createdAt: this.createdAt.toISOString(),
       updatedAt: this.updatedAt.toISOString()
@@ -64,14 +88,6 @@ Item.init({
       key: 'id',
     },
   },
-  content: {
-    type: DataTypes.JSON,
-    allowNull: false,
-    get() {
-      const v = this.getDataValue('content')
-      return typeof v === 'string' ? JSON.parse(v) : v
-    },
-  },
   role: {
     type: DataTypes.ENUM('user', 'model'),
     allowNull: false,
@@ -91,3 +107,5 @@ Item.init({
   timestamps: true
 })
 Item.belongsTo(Item, { as: 'parent', foreignKey: 'parentId' })
+Item.hasMany(Content, { as: 'content' })
+Content.belongsTo(Item, { as: 'item' })

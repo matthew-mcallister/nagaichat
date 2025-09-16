@@ -11,7 +11,7 @@ export const GET = handleErrors(async (request: NextRequest) => {
     throw new ValidationError('sessionId is required')
   }
   const items = await Item.getBySession(parseInteger(sessionId))
-  return NextResponse.json(items)
+  return NextResponse.json(items.map(item => item.toApiJson()))
 })
 
 export const POST = handleErrors(async (request: NextRequest) => {

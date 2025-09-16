@@ -10,22 +10,34 @@ import {
   Candidate as GoogleCandidate,
 } from "@google/genai"
 import { ChatHistory, IntegrationApi, ModelResponse } from '@/lib/backend/integrations/interface'
-import { ContentObject, ModelInfo, ModelOptions } from '@/lib/frontend/api'
+import { ModelInfo, ModelOptions, Content as ApiContent, InlineContent } from '@/lib/frontend/api'
 import { ApiResponseError } from '@/lib/error'
+import { Content, TextContent } from "@/lib/backend/content"
+import { StaticContent } from "@/lib/backend/static"
+import { retry } from "@/lib/util"
 
-function contentToGoogle(content: ContentObject): GooglePart {
-  switch (content.type) {
-  case 'text':
-    return { text: content.text }
-  case 'inline':
+async function contentToGoogle(content: Content): Promise<GooglePart> {
+  const inner = content.inner()
+  if (inner instanceof TextContent) {
+    return { text: content.text || undefined }
+  } else if (inner instanceof StaticContent) {
+    const data = (await inner.read()).toString('base64')
     return { inlineData: {
-      mimeType: content.mimeType,
-      data: content.data,
+      mimeType: inner.mimeType,
+      data,
     } }
+  } else {
+    throw new Error('unreachable')
   }
 }
 
-function googleToContent(content: GooglePart): ContentObject {
+const downloadContent = retry({ retries: 2 })(async (uri: string): Promise<string> => {
+  const res = await fetch(uri)
+  const buffer = Buffer.from(await res.arrayBuffer())
+  return buffer.toString('base64')
+})
+
+async function googleToContent(content: GooglePart): Promise<ApiContent> {
   if (content.text) {
     return { type: 'text', text: content.text }
   } else if (content.inlineData) {
@@ -34,18 +46,23 @@ function googleToContent(content: GooglePart): ContentObject {
       throw new ApiResponseError()
     }
     return { type: 'inline', mimeType, data }
+  } else if (content.fileData) {
+    const { mimeType, fileUri } = content.fileData
+    if (!mimeType || !fileUri) throw new ApiResponseError()
+    const data = await downloadContent(fileUri)
+    return { type: 'inline', mimeType, data }
   } else {
     throw new ApiResponseError()
   }
 }
 
-function mapHistory(history: ChatHistory): GoogleContent[] {
-  return history.map(entry => {
+async function mapHistory(history: ChatHistory): Promise<GoogleContent[]> {
+  return Promise.all(history.map(async entry => {
     const role = entry.role
-    const parts = entry.content.map(contentToGoogle)
+    const parts = await Promise.all(entry.content.map(contentToGoogle))
     const content: GoogleContent = { role, parts }
     return content
-  })
+  }))
 }
 
 export default class GeminiApi implements IntegrationApi {
@@ -76,7 +93,7 @@ export default class GeminiApi implements IntegrationApi {
   }
 
   async generate(history: ChatHistory, options: ModelOptions, signal?: AbortSignal): Promise<ModelResponse> {
-    const contents = mapHistory(history)
+    const contents = await mapHistory(history)
     const config: GenerateContentConfig = {
       safetySettings: [
         { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.OFF },
@@ -102,11 +119,12 @@ export default class GeminiApi implements IntegrationApi {
     }
     const response = await this.client.models.generateContent(body as GenerateContentParameters)
     const candidate: GoogleCandidate | undefined = (response.candidates || [])[0]
-    const content = candidate?.content?.parts?.map(googleToContent)
-    if (!content) {
+    const mapped = candidate?.content?.parts?.map(googleToContent)
+    if (!mapped) {
       console.error(response)
       throw new ApiResponseError()
     }
+    const content = await Promise.all(mapped)
     return { content }
   }
 }

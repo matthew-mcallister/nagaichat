@@ -93,9 +93,14 @@ export type InlineContent = {
   data: string
 }
 
-export type ContentObject = TextContent | InlineContent
+export type StaticContent = {
+  type: 'static'
+  id: number
+  url: string
+}
 
-export type Content = string | ContentObject
+export type ContentObject = TextContent | InlineContent | StaticContent
+export type Content = ContentObject
 
 export type Role = 'user' | 'model'
 

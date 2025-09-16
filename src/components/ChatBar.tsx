@@ -5,7 +5,7 @@ import { KeyboardEvent, useRef, useState } from 'react'
 import styles from './ChatBar.module.scss'
 
 interface ChatBarProps {
-  onSend: (message: string) => void
+  onSend: (message: string) => void | Promise<void>
   onStop?: () => void
   onRefresh?: () => void
   action: ChatBarAction
@@ -24,11 +24,15 @@ export default function ChatBar({
   const [message, setMessage] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  const handleSend = () => {
+  const handleSend = async () => {
     if (!message.trim()) {
       return
     }
-    onSend(message.trim())
+    try {
+      await onSend(message.trim())
+    } catch (e) {
+      return
+    }
     setMessage('')
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto'

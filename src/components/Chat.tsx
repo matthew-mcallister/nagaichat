@@ -25,7 +25,8 @@ export function ChatInner({ session, items }: ChatInnerProps) {
   const [loadingState, setLoadingState] = useState<LoadingState>(null)
   const processing = loadingState !== null
   const awaitingResponse = loadingState === 'awaitingResponse'
-  const { preset, setPreset, presets, options, setOptions, rawOptions } = useChatContext()
+  const { preset, setPreset, presets, options, setOptions, rawOptions } =
+    useChatContext()
   const controller = useRef(new AbortController())
 
   const tree = new ChatTree(items)
@@ -82,6 +83,7 @@ export function ChatInner({ session, items }: ChatInnerProps) {
       setLatestItemId(modelResponse.id)
     } catch (e) {
       reportError(e)
+      throw e
     } finally {
       setLoadingState(null)
     }

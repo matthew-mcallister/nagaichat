@@ -1,19 +1,20 @@
 import { Integration } from '@/lib/backend/integration'
 import { BaseError } from '@/lib/error'
 import GeminiApi from '@/lib/backend/integrations/gemini'
-import { ContentObject, ModelInfo, ModelOptions, Role } from '@/lib/frontend/api'
+import { ModelInfo, ModelOptions, Role, Content as ApiContent } from '@/lib/frontend/api'
 import { Transaction } from "sequelize"
 import { Item } from '@/lib/backend/item'
+import { Content } from '@/lib/backend/content'
 
 export interface HistoryEntry {
   role: Role
-  content: ContentObject[]
+  content: Content[]
 }
 
 export type ChatHistory = HistoryEntry[]
 
 export interface ModelResponse {
-  content: ContentObject[]
+  content: ApiContent[]
 }
 
 /**
@@ -89,9 +90,13 @@ export class ApiConnector {
     const item = await Item.create({
       sessionId: parent.sessionId,
       parentId: parent.id,
-      content: response.content,
       role: 'model',
     }, { transaction })
+    for (const content of response.content) {
+      await Content.createFromApiJson(item, content, transaction)
+    }
+    // Reload contents
+    await item.reload()
 
     return item
   }
