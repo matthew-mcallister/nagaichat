@@ -5,7 +5,7 @@ import getDb from '@/lib/backend/database'
 import { DataTypes, Model, Transaction } from 'sequelize'
 import { Content as ApiContent } from '@/lib/frontend/api'
 
-export const UPLOAD_DIR: string = `${process.cwd()}/public/content`
+export const UPLOAD_DIR: string = `${process.cwd()}/public/static/content`
 export const STATIC_CONTENT_URL: string = `${process.env.BASE_URL || ''}/static/content`
 
 fs.mkdirSync(UPLOAD_DIR, { recursive: true })

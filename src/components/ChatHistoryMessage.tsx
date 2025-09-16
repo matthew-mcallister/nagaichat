@@ -11,8 +11,8 @@ import {
   XMarkIcon,
 } from '@heroicons/react/24/outline'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
-import styles from './ChatHistoryMessage.module.scss'
 import toast from 'react-hot-toast'
+import styles from './ChatHistoryMessage.module.scss'
 
 export interface ChatHistoryMessageProps {
   item: Item
@@ -41,6 +41,20 @@ function itemText(item: Item): string | undefined {
   }
 }
 
+function itemImageUris(item: Item): string[] {
+  const uris = []
+  for (const content of item.content) {
+    switch (content.type) {
+      case 'static':
+        uris.push(content.url)
+        break
+      case 'inline':
+        uris.push(`data:${content.mimeType};base64,${content.data}`)
+    }
+  }
+  return uris
+}
+
 export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
   const {
     item,
@@ -60,6 +74,7 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
   const [editText, setEditText] = useState<string | null>(null)
   const editing = editText !== null
   const rawText = itemText(item)
+  const imageUris = itemImageUris(item)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
 
   const handleStartEdit = () => {
@@ -107,25 +122,28 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
     adjustTextAreaHeight()
   }
 
-  // Below the text should be a row of controls. The buttons should be
-  // displayed as plain icons from Hero icons (with hover and focus states).
-  //
-  // 1. A left arrow to go left. Icon: chevron-left
-  // 2. Current message and total messages, formatted as `{index} / {siblingCount}`.
-  // 3. A right arrow to go right. Icon: chevron-right
-  // 4. A "copy" button that copies the current text to the clipboard. Icon: clipboard-document
-  // 5. An "edit" button. Icon: pencil
-  //
-  // In edit mode, the text area becomes editable. There are three available
-  // control buttons.
-  // 1. A cancel button. Icon: x-mark
-  // 2. A "save" button which overwrites the current text. Icon: check
-  // 3. A "fork" button which creates a new sibling from the edited text. Icon: arrow-uturn-right. Also, the text "Fork"
   return (
-    <div key={item.id} className={styles.message} data-role={item.role} data-editing={editing}>
+    <div
+      key={item.id}
+      className={styles.message}
+      data-role={item.role}
+      data-editing={editing}
+    >
+      {imageUris.length > 0 && (
+        <div className={styles.imageContainer}>
+          {imageUris.map((uri, index) => (
+            <img
+              key={index}
+              src={uri}
+              alt={`Image ${index + 1}`}
+              className={styles.messageImage}
+            />
+          ))}
+        </div>
+      )}
+
       <div className={styles.messageBubble}>
         {editing ? (
-          // TODO: Resize this text area to fit contents
           <textarea
             className={styles.editTextarea}
             value={editText}

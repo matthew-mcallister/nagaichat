@@ -124,10 +124,10 @@ export default class GeminiApi implements IntegrationApi {
       config,
     }
     const response = await this.client.models.generateContent(body as GenerateContentParameters)
+    console.dir(response, { depth: null })
     const candidate: GoogleCandidate | undefined = (response.candidates || [])[0]
     const mapped = candidate?.content?.parts?.map(googleToContent)
     if (!mapped) {
-      console.error(response)
       throw new ApiResponseError()
     }
     const content = await Promise.all(mapped)

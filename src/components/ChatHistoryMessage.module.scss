@@ -34,7 +34,6 @@
 .editTextarea {
   width: 100%;
   min-height: calc(2 * var(--space-3));
-  max-height: calc(28 * var(--space-3));
   color: var(--color-foreground);
   font-family: inherit;
   font-size: inherit;
@@ -48,6 +47,7 @@
 
   [data-role='user'] & {
     padding: var(--space-2);
+    max-height: calc(28 * var(--space-3));
   }
 }
 
@@ -115,4 +115,39 @@
   font-size: var(--font-size-sm);
   color: var(--color-muted-foreground);
   margin: 0 var(--space-1);
+}
+
+.imageContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
+  width: 100%;
+  max-width: 22rem;
+
+  [data-role='user'] & {
+    justify-content: flex-end;
+  }
+
+  [data-role='model'] & {
+    justify-content: flex-start;
+  }
+}
+
+.messageImage {
+  max-width: 100%;
+  max-height: 22rem;
+  border-radius: var(--radius-3xl);
+  object-fit: cover;
+
+  // Square off corners when images are adjacent
+  & + & {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+
+  &:has(+ &) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
 }
