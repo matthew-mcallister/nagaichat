@@ -65,20 +65,21 @@ export default class ChatTree {
     return [index, left, right]
   }
 
-  public getFirstLeaf(item: Item): Item
-  public getFirstLeaf(item: null): Item | null
+  public getLatestLeaf(item: Item): Item
+  public getLatestLeaf(item: null): Item | null
 
   /**
-   * Returns the leftmost leaf descendant of an item, which may be the item
+   * Returns the rightmost leaf descendant of an item, which may be the item
    * itself.
    */
-  // TODO: Get latest leaf
-  public getFirstLeaf(item: Item | null): Item | null {
+  // TODO: Maybe should return the *actual* newest descendant. Not as cheap to
+  // compute.
+  public getLatestLeaf(item: Item | null): Item | null {
     let currentItem = item
     while (true) {
       const children = this.getChildren(currentItem?.id || null)
       if (children.length === 0) break
-      currentItem = children[0]
+      currentItem = children[children.length - 1]
     }
     return currentItem
   }

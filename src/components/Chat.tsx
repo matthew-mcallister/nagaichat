@@ -31,7 +31,7 @@ export function ChatInner({ session, items }: ChatInnerProps) {
 
   const tree = new ChatTree(items)
   const [latestItemId, setLatestItemId] = useState<number | null>(
-    session.latestItemId || tree?.getFirstLeaf(null)?.id || null,
+    session.latestItemId || tree?.getLatestLeaf(null)?.id || null,
   )
   const latestItem = latestItemId ? tree.get(latestItemId) : null
 

@@ -19,14 +19,14 @@ interface ChatHistoryProps {
 }
 
 export function ChatHistoryPlaceholder() {
-    return (
-      <div className={styles.chatHistory}>
-        <div className={styles.messagesContainer}>
-          <div className={`${styles.placeholder} ${styles.small}`}/>
-          <div className={`${styles.placeholder} ${styles.large}`}/>
-        </div>
+  return (
+    <div className={styles.chatHistory}>
+      <div className={styles.messagesContainer}>
+        <div className={`${styles.placeholder} ${styles.small}`} />
+        <div className={`${styles.placeholder} ${styles.large}`} />
       </div>
-    )
+    </div>
+  )
 }
 
 export default function ChatHistory({
@@ -62,13 +62,13 @@ export default function ChatHistory({
               right={right}
               onMoveLeft={() => {
                 if (left) {
-                  const latest = tree.getFirstLeaf(left)
+                  const latest = tree.getLatestLeaf(left)
                   setLatestItemId(latest.id)
                 }
               }}
               onMoveRight={() => {
                 if (right) {
-                  const latest = tree.getFirstLeaf(right)
+                  const latest = tree.getLatestLeaf(right)
                   setLatestItemId(latest.id)
                 }
               }}
