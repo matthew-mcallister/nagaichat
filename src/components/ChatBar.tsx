@@ -118,6 +118,37 @@ export default function ChatBar({
     fileInputRef.current?.click()
   }
 
+  const handlePaste = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const clipboardData = e.clipboardData
+    if (!clipboardData) return
+
+    const items = Array.from(clipboardData.items)
+    const imageItems = items.filter(item => item.type.startsWith('image/'))
+
+    if (imageItems.length > 0) {
+      e.preventDefault() // Prevent default paste behavior for images
+
+      for (const item of imageItems) {
+        if (item.type === 'image/png' || item.type === 'image/jpeg') {
+          const file = item.getAsFile()
+          if (file) {
+            try {
+              const base64 = await fileToBase64(file)
+              const inlineContent: InlineContent = {
+                type: 'inline',
+                mimeType: file.type,
+                data: base64,
+              }
+              setImages(prev => [...prev, inlineContent])
+            } catch (e) {
+              reportError(e)
+            }
+          }
+        }
+      }
+    }
+  }
+
   const canSend = message.trim().length > 0
 
   // TODO: Fix style when input is disabled but button is enabled
@@ -132,6 +163,7 @@ export default function ChatBar({
           value={message}
           onChange={handleTextareaChange}
           onKeyDown={handleKeyDown}
+          onPaste={handlePaste}
           placeholder={placeholder}
           disabled={disabled || action !== 'send'}
           className={styles.textarea}
