@@ -130,17 +130,15 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
       data-editing={editing}
     >
       {imageUris.length > 0 && (
-        <div className={styles.imageContainerOuter}>
-          <div className={styles.imageContainer}>
-            {imageUris.map((uri, index) => (
-              <img
-                key={index}
-                src={uri}
-                alt={`Image ${index + 1}`}
-                className={styles.messageImage}
-              />
-            ))}
-          </div>
+        <div className={styles.imageContainer}>
+          {imageUris.map((uri, index) => (
+            <img
+              key={index}
+              src={uri}
+              alt={`Image ${index + 1}`}
+              className={styles.messageImage}
+            />
+          ))}
         </div>
       )}
 

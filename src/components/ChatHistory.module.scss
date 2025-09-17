@@ -10,8 +10,6 @@
 }
 
 .messagesContainer {
-  display: flex;
-  flex-direction: column;
   gap: var(--space-6);
   width: 100%;
   max-width: 48rem;

@@ -1,17 +1,12 @@
 .message {
+  display: flex;
+  flex-direction: column;
   width: 100%;
-  max-width: 100%;
-  max-height: 1000rem;
-  align-self: flex-start;
   white-space: pre-wrap;
+  align-items: flex-start;
 
   &[data-role='user'] {
-    width: auto;
-    align-self: flex-end;
-  }
-
-  &[data-editing=true] {
-    width: 100%;
+    align-items: flex-end;
   }
 }
 
@@ -24,6 +19,10 @@
     padding: var(--space-2) var(--space-4);
     background-color: var(--color-secondary);
     margin-bottom: var(--space-1);
+  }
+
+  [data-editing=true] & {
+    width: 100%;
   }
 }
 
@@ -117,61 +116,38 @@
   margin: 0 var(--space-1);
 }
 
-.imageContainerOuter {
-  display: flex;
-  width: 100%;
-
-  [data-role='user'] & {
-    justify-content: flex-end;
-  }
-
-  [data-role='model'] & {
-    justify-content: flex-start;
-  }
-}
-
 .imageContainer {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   gap: var(--space-1);
-  width: 100%;
-  max-width: 22rem;
+  height: 16rem;
 
   [data-role='user'] & {
     // User images are smaller
-    max-width: 14rem;
     margin-bottom: var(--space-1);
-    align-items: flex-end;
+    justify-items: flex-end;
   }
 
   [data-role='model'] & {
     margin-bottom: var(--space-3);
-    align-items: flex-start;
+    justify-items: flex-start;
   }
 }
 
 .messageImage {
-  max-width: 100%;
-  max-height: 22rem;
+  height: 100%;
+  min-width: 12rem;
   border-radius: var(--radius-2xl);
   object-fit: cover;
 
   // Square off corners when images are adjacent
   & + & {
-    [data-role='user'] & {
-      border-top-right-radius: var(--radius-md);
-    }
-    [data-role='model'] & {
-      border-top-left-radius: var(--radius-md);
-    }
+    border-top-left-radius: var(--radius-md);
+    border-bottom-left-radius: var(--radius-md);
   }
 
   &:has(+ &) {
-    [data-role='user'] & {
-      border-bottom-right-radius: var(--radius-md);
-    }
-    [data-role='model'] & {
-      border-bottom-left-radius: var(--radius-md);
-    }
+    border-top-right-radius: var(--radius-md);
+    border-bottom-right-radius: var(--radius-md);
   }
 }
