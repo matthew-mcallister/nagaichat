@@ -38,7 +38,19 @@ function ImageThumbnail({ content, onRemove }: ImageThumbnailProps) {
 }
 
 interface ChatBarProps {
-  onSend: (text: string, images: InlineContent[]) => void | Promise<void>
+  /**
+   * Callback handler for chat bar input.
+   *
+   * @param text Text content.
+   * @param images Attached images.
+   * @param reset Callback to reset the chat bar input. When not called (if an
+   * if an error occurs, for example), the chat bar input will not be cleared.
+   */
+  onSend: (
+    text: string,
+    images: InlineContent[],
+    reset: () => void,
+  ) => void | Promise<void>
   onStop?: () => void
   onRefresh?: () => void
   action: ChatBarAction
@@ -63,16 +75,16 @@ export default function ChatBar({
     if (!message.trim()) {
       return
     }
-    try {
-      await onSend(message.trim(), images)
-    } catch (e) {
-      return
+
+    function reset() {
+      setMessage('')
+      setImages([])
+      if (textareaRef.current) {
+        textareaRef.current.style.height = 'auto'
+      }
     }
-    setMessage('')
-    setImages([])
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto'
-    }
+
+    await onSend(message.trim(), images, reset)
   }
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {

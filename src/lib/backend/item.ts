@@ -18,7 +18,6 @@ export class Item extends Model {
   declare id: number
   declare sessionId: number
   declare parentId: number | null
-  declare readonly getParent: () => Promise<Item | undefined>
   declare content: Content[]
   declare role: Role
   declare createdAt: Date

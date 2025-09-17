@@ -77,7 +77,7 @@ export class ApiConnector {
     const items = [parent]
     let it = parent
     while (it.parentId) {
-      it = await it.getParent() as Item
+      it = await Item.getById(it.parentId, transaction)
       items.push(it)
     }
     items.reverse()

@@ -44,7 +44,11 @@ export function ChatInner({ session, items }: ChatInnerProps) {
     setOptions(session.options)
   }, [])
 
-  async function handleSend(message: string, images: InlineContent[]) {
+  async function handleSend(
+    message: string,
+    images: InlineContent[],
+    reset: () => void,
+  ) {
     if (!options) return
     setLoadingState('processing')
     const parent = latestItem
@@ -69,6 +73,7 @@ export function ChatInner({ session, items }: ChatInnerProps) {
         },
         controller.current.signal,
       )
+      reset()
       setLatestItemId(userMessage.id)
       setLoadingState('awaitingResponse')
       const modelResponse = await api.createItem(
@@ -84,7 +89,6 @@ export function ChatInner({ session, items }: ChatInnerProps) {
       setLatestItemId(modelResponse.id)
     } catch (e) {
       reportError(e)
-      throw e
     } finally {
       setLoadingState(null)
     }

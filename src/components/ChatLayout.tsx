@@ -41,7 +41,6 @@ export default function ChatLayout({ children }: Props) {
     imageGenerationEnabled: false,
     renderMarkdown: true,
   })
-  console.log(options.imageGenerationEnabled)
   const [preset, setPreset] = useState<Preset | undefined>(undefined)
 
   const api = new Api()

@@ -14,7 +14,11 @@ export default function NewChat() {
 
   const [processing, setProcessing] = useState<boolean>(false)
 
-  async function handleSend(message: string, images: InlineContent[]) {
+  async function handleSend(
+    message: string,
+    images: InlineContent[],
+    reset: () => void,
+  ) {
     if (!message.trim()) return
     if (!options) return
 
@@ -35,7 +39,6 @@ export default function NewChat() {
       router.push(`/session/${session.id}`)
     } catch (error) {
       reportError(error)
-      throw error
     } finally {
       setProcessing(false)
     }
