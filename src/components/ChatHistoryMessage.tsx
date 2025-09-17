@@ -1,3 +1,4 @@
+import ImagePreview from '@/components/ImagePreview'
 import Markdown from '@/components/Markdown'
 import { Item } from '@/lib/frontend/api'
 import {
@@ -72,6 +73,7 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
     onReroll,
   } = props
   const [editText, setEditText] = useState<string | null>(null)
+  const [previewImageUri, setPreviewImageUri] = useState<string | null>(null)
   const editing = editText !== null
   const rawText = itemText(item)
   const imageUris = itemImageUris(item)
@@ -107,6 +109,14 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
     }
   }
 
+  const handleImageClick = (imageUri: string) => {
+    setPreviewImageUri(imageUri)
+  }
+
+  const handleClosePreview = () => {
+    setPreviewImageUri(null)
+  }
+
   function adjustTextAreaHeight() {
     const textarea = textareaRef.current
     if (textarea) {
@@ -137,6 +147,8 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
               src={uri}
               alt={`Image ${index + 1}`}
               className={styles.messageImage}
+              onClick={() => handleImageClick(uri)}
+              style={{ cursor: 'pointer' }}
             />
           ))}
         </div>
@@ -246,6 +258,10 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
           )}
         </div>
       </div>
+
+      {previewImageUri && (
+        <ImagePreview imageUri={previewImageUri} onClose={handleClosePreview} />
+      )}
     </div>
   )
 }

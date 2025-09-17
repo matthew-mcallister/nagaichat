@@ -15,16 +15,14 @@
 
 .imagePreviewContainer {
     position: relative;
-    max-width: 90vw;
-    max-height: 90vh;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .imagePreviewImage {
-    max-width: 100%;
-    max-height: 100%;
+    max-width: 90vw;
+    max-height: 90vh;
     object-fit: contain;
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-2xl);
