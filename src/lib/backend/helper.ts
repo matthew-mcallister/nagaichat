@@ -7,7 +7,7 @@ import { CreateItemRequest } from '@/lib/frontend/api'
 import { Transaction } from 'sequelize'
 
 export async function createItem(body: CreateItemRequest, transaction: Transaction, signal?: AbortSignal): Promise<Item> {
-  const session = await Session.getById(body.sessionId)
+  const session = await Session.getById(body.sessionId, transaction)
 
   const parent = body.parentId ? await Item.getById(body.parentId, transaction) : null
 
@@ -20,14 +20,14 @@ export async function createItem(body: CreateItemRequest, transaction: Transacti
     }
 
     // Create the item
-    item = await Item.create({
+    item = await Item.doCreate({
       sessionId: session.id,
       parentId: parent?.id,
       content: body.content,
       role: 'user',
-    }, { transaction })
-  } else {
-    // body.role === 'model'
+      transaction,
+    })
+  } else { // body.role === 'model'
     if (!parent || parent.role === 'model') {
       throw new ValidationError('Role must be "user"')
     }

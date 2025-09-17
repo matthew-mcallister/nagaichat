@@ -4,6 +4,7 @@ import { DataTypes, Model, Transaction } from 'sequelize'
 import { Session as ApiSession, Content, ContentObject, CreateSessionRequest, SessionOptions } from '@/lib/frontend/api'
 import { Item } from '@/lib/backend/item'
 import { Preset } from '@/lib/backend/preset'
+import { createItem } from '@/lib/backend/helper'
 
 function convertContents(content: Content | Content[]): ContentObject[] {
   if (!Array.isArray(content)) {
@@ -46,7 +47,7 @@ export class Session extends Model {
   // XXX: Touch updatedAt when posting a message to chat?
   declare updatedAt: Date
 
-  public static async doCreate(body: CreateSessionRequest): Promise<Session> {
+  public static async doCreate(body: CreateSessionRequest, transaction: Transaction): Promise<Session> {
     const contents = convertContents(body.initialContent)
 
     // Extract name from first content item
@@ -59,23 +60,22 @@ export class Session extends Model {
       }
     }
 
-    const db = await getDb()
-    const transaction = await db.transaction()
-
     const session = await this.create({
       name,
       presetId: body.presetId,
       options: body.options,
     }, { transaction })
-    const item = await Item.create({
+    // FIXME: Add abort signal handler
+    const item = await createItem({
       sessionId: session.id,
+      parentId: null,
       content: contents,
-      role: 'user'
-    }, { transaction })
+      role: 'user',
+      presetId: body.presetId || null,
+      options: body.options,
+    }, transaction)
     session.latestItemId = item.id
     await session.save({ transaction })
-
-    await transaction.commit()
 
     return session
   }

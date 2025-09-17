@@ -117,13 +117,9 @@
   margin: 0 var(--space-1);
 }
 
-.imageContainer {
+.imageContainerOuter {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
-  margin-bottom: var(--space-3);
   width: 100%;
-  max-width: 22rem;
 
   [data-role='user'] & {
     justify-content: flex-end;
@@ -134,20 +130,46 @@
   }
 }
 
+.imageContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 22rem;
+
+  [data-role='user'] & {
+    // User images are smaller
+    max-width: 14rem;
+    margin-bottom: var(--space-1);
+  }
+
+  [data-role='model'] & {
+    margin-bottom: var(--space-3);
+  }
+}
+
 .messageImage {
   max-width: 100%;
   max-height: 22rem;
-  border-radius: var(--radius-3xl);
+  border-radius: var(--radius-2xl);
   object-fit: cover;
 
   // Square off corners when images are adjacent
   & + & {
-    border-top-left-radius: 0;
-    border-bottom-left-radius: 0;
+    [data-role='user'] & {
+      border-top-right-radius: 0;
+    }
+    [data-role='model'] & {
+      border-top-left-radius: 0;
+    }
   }
 
   &:has(+ &) {
-    border-top-right-radius: 0;
-    border-bottom-right-radius: 0;
+    [data-role='user'] & {
+      border-bottom-right-radius: 0;
+    }
+    [data-role='model'] & {
+      border-bottom-left-radius: 0;
+    }
   }
 }

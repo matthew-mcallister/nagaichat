@@ -88,17 +88,12 @@ export class ApiConnector {
 
     const response = await this.api.generate(history, session.options.modelOptions, signal)
 
-    const item = await Item.create({
+    return Item.doCreate({
       sessionId: parent.sessionId,
       parentId: parent.id,
       role: 'model',
-    }, { transaction })
-    for (const content of response.content) {
-      await Content.createFromApiJson(item, content, transaction)
-    }
-    // Reload contents
-    await item.doReload(transaction)
-
-    return item
+      content: response.content,
+      transaction,
+    })
   }
 }

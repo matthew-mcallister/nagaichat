@@ -4,7 +4,7 @@ import ChatBar from '@/components/ChatBar'
 import ChatHistory, { ChatHistoryPlaceholder } from '@/components/ChatHistory'
 import { useChatContext } from '@/components/context/ChatContext'
 import { reportError } from '@/lib/error'
-import Api, { Item, Session } from '@/lib/frontend/api'
+import Api, { InlineContent, Item, Session } from '@/lib/frontend/api'
 import ChatTree from '@/lib/frontend/chat-tree'
 import { ChatBarAction } from '@/lib/frontend/common'
 import { useParams, useRouter } from 'next/navigation'
@@ -44,7 +44,7 @@ export function ChatInner({ session, items }: ChatInnerProps) {
     setOptions(session.options)
   }, [])
 
-  async function handleSend(message: string) {
+  async function handleSend(message: string, images: InlineContent[]) {
     if (!options) return
     setLoadingState('processing')
     const parent = latestItem
@@ -61,6 +61,7 @@ export function ChatInner({ session, items }: ChatInnerProps) {
               type: 'text',
               text: message,
             },
+            ...images,
           ],
           parentId: parent?.id || null,
           presetId: preset?.id || null,

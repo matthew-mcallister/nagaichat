@@ -1,6 +1,10 @@
 import { InlineContent } from '@/lib/frontend/api'
 import { ChatBarAction } from '@/lib/frontend/common'
-import { ArrowPathIcon, PhotoIcon } from '@heroicons/react/24/outline'
+import {
+  ArrowPathIcon,
+  PhotoIcon,
+  XMarkIcon,
+} from '@heroicons/react/24/outline'
 import { PaperAirplaneIcon, StopIcon } from '@heroicons/react/24/solid'
 import { KeyboardEvent, useRef, useState } from 'react'
 import styles from './ChatBar.module.scss'
@@ -11,11 +15,26 @@ interface ImageThumbnailProps {
 }
 
 function ImageThumbnail({ content, onRemove }: ImageThumbnailProps) {
-  // - Thumbnail is 4rem x 4rem max
-  // - Border radius is --radius-md
-  // - An "X" icon in the upper right corner calls onRemove
-  //   - The icon should be relatively positioned partially outside the icon
-  return <></>
+  const imageUrl = `data:${content.mimeType};base64,${content.data}`
+
+  return (
+    <div className={styles.imageThumbnail}>
+      <img
+        src={imageUrl}
+        alt='Uploaded image'
+        className={styles.thumbnailImage}
+      />
+      <button
+        onClick={onRemove}
+        className={styles.removeButton}
+        type='button'
+        aria-label='Remove image'
+        title='Remove image'
+      >
+        <XMarkIcon className={styles.removeIcon} />
+      </button>
+    </div>
+  )
 }
 
 interface ChatBarProps {
@@ -37,7 +56,6 @@ export default function ChatBar({
 }: ChatBarProps) {
   const [message, setMessage] = useState('')
   const [images, setImages] = useState<InlineContent[]>([])
-  console.log(images)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -118,6 +136,10 @@ export default function ChatBar({
     fileInputRef.current?.click()
   }
 
+  const handleRemoveImage = (index: number) => {
+    setImages(prev => prev.filter((_, i) => i !== index))
+  }
+
   const handlePaste = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
     const clipboardData = e.clipboardData
     if (!clipboardData) return
@@ -157,20 +179,31 @@ export default function ChatBar({
       <div
         className={`${styles.inputContainer} ${disabled || action !== 'send' ? styles.disabled : ''}`}
       >
-        {/* Pasting an image from the clipboard should add it to the list. */}
-        <textarea
-          ref={textareaRef}
-          value={message}
-          onChange={handleTextareaChange}
-          onKeyDown={handleKeyDown}
-          onPaste={handlePaste}
-          placeholder={placeholder}
-          disabled={disabled || action !== 'send'}
-          className={styles.textarea}
-          rows={1}
-        />
+        <div className={styles.textAndThumbnailsContainer}>
+          <textarea
+            ref={textareaRef}
+            value={message}
+            onChange={handleTextareaChange}
+            onKeyDown={handleKeyDown}
+            onPaste={handlePaste}
+            placeholder={placeholder}
+            disabled={disabled || action !== 'send'}
+            className={styles.textarea}
+            rows={1}
+          />
 
-        {/* Row of ImageThumbnails goes here, below the text area. */}
+          {images.length > 0 && (
+            <div className={styles.thumbnailsContainer}>
+              {images.map((image, index) => (
+                <ImageThumbnail
+                  key={index}
+                  content={image}
+                  onRemove={() => handleRemoveImage(index)}
+                />
+              ))}
+            </div>
+          )}
+        </div>
 
         <input
           ref={fileInputRef}

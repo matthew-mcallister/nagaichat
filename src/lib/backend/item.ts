@@ -2,9 +2,17 @@ import { NoSuchResource } from '@/lib/error'
 import getDb from '@/lib/backend/database'
 import { DataTypes, Model, Transaction } from 'sequelize'
 import { Item as ApiItem, Role } from '@/lib/frontend/api'
-import type { Session } from '@/lib/backend/session'
 import { Content } from '@/lib/backend/content'
+import { Content as ApiContent } from '@/lib/frontend/api'
 import { StaticContent } from '@/lib/backend/static'
+
+interface ItemCreateInfo {
+  sessionId: number
+  parentId?: number | null
+  role: Role
+  transaction: Transaction
+  content: ApiContent[]
+}
 
 export class Item extends Model {
   declare id: number
@@ -16,17 +24,42 @@ export class Item extends Model {
   declare createdAt: Date
   declare updatedAt: Date
 
+  private static INCLUDE_CLAUSE: any = [{
+    model: Content,
+    as: 'content',
+    include: [{
+      model: StaticContent,
+      as: 'staticContent',
+    }],
+    order: [[{ model: Content, as: 'content' }, 'id', 'ASC']],
+  }]
+
+  public static async doCreate({
+    sessionId,
+    parentId,
+    role,
+    transaction,
+    content,
+  }: ItemCreateInfo): Promise<Item> {
+    const item = await Item.create({
+      sessionId,
+      parentId,
+      role,
+    }, { transaction })
+    for (const c of content) {
+      await Content.createFromApiJson(item, c, transaction)
+    }
+    await item.reload({
+      transaction,
+      include: this.INCLUDE_CLAUSE,
+    })
+    return item
+  }
+
   public static async getBySession(sessionId: number): Promise<Item[]> {
     return await Item.findAll({
       where: { sessionId },
-      include: [{
-        model: Content,
-        as: 'content',
-        include: [{
-          model: StaticContent,
-          as: 'staticContent',
-        }],
-      }],
+      include: this.INCLUDE_CLAUSE,
     })
   }
 
@@ -34,14 +67,7 @@ export class Item extends Model {
     const session = await this.findByPk(
       id,
       {
-        include: [{
-          model: Content,
-          as: 'content',
-          include: [{
-            model: StaticContent,
-            as: 'staticContent',
-          }],
-        }],
+        include: this.INCLUDE_CLAUSE,
         transaction,
       },
     )

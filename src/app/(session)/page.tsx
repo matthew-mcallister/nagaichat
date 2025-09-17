@@ -2,7 +2,7 @@
 
 import ChatBar from '@/components/ChatBar'
 import { useChatContext } from '@/components/context/ChatContext'
-import Api from '@/lib/frontend/api'
+import Api, { InlineContent } from '@/lib/frontend/api'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import styles from './page.module.scss'
@@ -14,14 +14,20 @@ export default function NewChat() {
 
   const [processing, setProcessing] = useState<boolean>(false)
 
-  const handleSend = async (message: string) => {
+  async function handleSend(message: string, images: InlineContent[]) {
     if (!message.trim()) return
     if (!options) return
 
     setProcessing(true)
     try {
       const session = await api.createSession({
-        initialContent: message,
+        initialContent: [
+          {
+            type: 'text',
+            text: message,
+          },
+          ...images,
+        ],
         options,
         presetId: preset?.id,
       })
@@ -29,6 +35,7 @@ export default function NewChat() {
       router.push(`/session/${session.id}`)
     } catch (error) {
       reportError(error)
+      throw error
     } finally {
       setProcessing(false)
     }
