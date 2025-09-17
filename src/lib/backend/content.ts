@@ -5,7 +5,7 @@ import type { Item } from '@/lib/backend/item'
 import getDb from '@/lib/backend/database'
 
 export class TextContent {
-  text: string
+  public text: string
 
   constructor(text: string) {
     this.text = text

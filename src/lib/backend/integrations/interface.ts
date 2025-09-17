@@ -6,6 +6,7 @@ import { Transaction } from "sequelize"
 import { Item } from '@/lib/backend/item'
 import { Content } from '@/lib/backend/content'
 import { Session } from '@/lib/backend/session'
+import OpenAiApi from '@/lib/backend/integrations/openai'
 
 export interface HistoryEntry {
   role: Role
@@ -43,7 +44,8 @@ export class ApiConnector {
 
     switch (integration.interface) {
     case 'openai':
-      throw new BaseError('Not yet implemented')
+      this.api = new OpenAiApi(integration.apiKey, integration.baseUrl)
+      break
     case 'gemini':
       this.api = new GeminiApi(integration.apiKey, integration.baseUrl || undefined)
       break
