@@ -4,12 +4,7 @@ import ChatBar from '@/components/ChatBar'
 import ChatHistory, { ChatHistoryPlaceholder } from '@/components/ChatHistory'
 import { useChatContext } from '@/components/context/ChatContext'
 import { reportError } from '@/lib/error'
-import Api, {
-  ImageContent,
-  InlineContent,
-  Item,
-  Session,
-} from '@/lib/frontend/api'
+import Api, { ImageContent, Item, Session } from '@/lib/frontend/api'
 import ChatTree from '@/lib/frontend/chat-tree'
 import { ChatBarAction } from '@/lib/frontend/common'
 import { useParams, useRouter } from 'next/navigation'
@@ -51,7 +46,7 @@ export function ChatInner({ session, items }: ChatInnerProps) {
 
   async function handleSend(
     message: string,
-    images: InlineContent[],
+    images: ImageContent[],
     reset: () => void,
   ) {
     if (!options) return

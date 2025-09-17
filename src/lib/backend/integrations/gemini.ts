@@ -11,7 +11,7 @@ import {
   Modality,
 } from "@google/genai"
 import { ChatHistory, IntegrationApi, ModelResponse } from '@/lib/backend/integrations/interface'
-import { ModelInfo, ModelOptions, Content as ApiContent, InlineContent } from '@/lib/frontend/api'
+import { ModelInfo, ModelOptions, Content as ApiContent } from '@/lib/frontend/api'
 import { ApiResponseError } from '@/lib/error'
 import { Content, TextContent } from "@/lib/backend/content"
 import { StaticContent } from "@/lib/backend/static"

@@ -2,7 +2,7 @@
 
 import ChatBar from '@/components/ChatBar'
 import { useChatContext } from '@/components/context/ChatContext'
-import Api, { InlineContent } from '@/lib/frontend/api'
+import Api, { ImageContent } from '@/lib/frontend/api'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import styles from './page.module.scss'
@@ -14,11 +14,7 @@ export default function NewChat() {
 
   const [processing, setProcessing] = useState<boolean>(false)
 
-  async function handleSend(
-    message: string,
-    images: InlineContent[],
-    reset: () => void,
-  ) {
+  async function handleSend(message: string, images: ImageContent[]) {
     if (!message.trim()) return
     if (!options) return
 
