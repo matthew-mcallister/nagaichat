@@ -38,7 +38,6 @@ export default function ChatLayout({ children }: Props) {
     systemPrompt: '',
     temperature: 1,
     thinkingEnabled: true,
-    imageGenerationEnabled: false,
     renderMarkdown: true,
   })
   const [preset, setPreset] = useState<Preset | undefined>(undefined)

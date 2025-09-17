@@ -15,7 +15,7 @@ import { ModelInfo, ModelOptions, Content as ApiContent } from '@/lib/frontend/a
 import { ApiResponseError } from '@/lib/error'
 import { Content, TextContent } from "@/lib/backend/content"
 import { StaticContent } from "@/lib/backend/static"
-import { retry } from "@/lib/util"
+import { downloadContent } from "@/lib/util"
 
 async function contentToGoogle(content: Content): Promise<GooglePart> {
   const inner = content.inner()
@@ -31,12 +31,6 @@ async function contentToGoogle(content: Content): Promise<GooglePart> {
     throw new Error('unreachable')
   }
 }
-
-const downloadContent = retry({ retries: 2 })(async (uri: string): Promise<string> => {
-  const res = await fetch(uri)
-  const buffer = Buffer.from(await res.arrayBuffer())
-  return buffer.toString('base64')
-})
 
 async function googleToContent(content: GooglePart): Promise<ApiContent> {
   if (content.text) {
@@ -78,7 +72,6 @@ export default class GeminiApi implements IntegrationApi {
   }
 
   async listModels(): Promise<ModelInfo[]> {
-    // XXX: Not sure that all of these models can be used to generate text...?
     const response = await this.client.models.list()
     const models: ModelInfo[] = []
 
@@ -95,10 +88,6 @@ export default class GeminiApi implements IntegrationApi {
 
   async generate(history: ChatHistory, options: ModelOptions, signal?: AbortSignal): Promise<ModelResponse> {
     const contents = await mapHistory(history)
-    const responseModalities = [Modality.TEXT]
-    if (options.imageGenerationEnabled) {
-      responseModalities.push(Modality.IMAGE)
-    }
     const config: GenerateContentConfig = {
       safetySettings: [
         { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.OFF },
@@ -107,7 +96,6 @@ export default class GeminiApi implements IntegrationApi {
         { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.OFF },
       ],
       systemInstruction: options.systemPrompt || undefined,
-      responseModalities,
       temperature: options.temperature,
     }
     if (!options.thinkingEnabled) {

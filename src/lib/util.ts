@@ -53,6 +53,12 @@ export function retry<F extends (...args: any[]) => Promise<any>>(
   return decorator
 }
 
+export const downloadContent = retry({ retries: 2 })(async (uri: string): Promise<string> => {
+  const res = await fetch(uri)
+  const buffer = Buffer.from(await res.arrayBuffer())
+  return buffer.toString('base64')
+})
+
 export async function withTransaction<T>(fn: (transaction: Transaction) => Promise<T>): Promise<T> {
   const db = await getDb()
   const transaction = await db.transaction()
