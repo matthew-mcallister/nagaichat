@@ -1,0 +1,86 @@
+// Image preview modal/lightbox styles
+.imagePreviewOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.9);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2000;
+    padding: var(--space-4);
+}
+
+.imagePreviewContainer {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.imagePreviewImage {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-2xl);
+}
+
+.imagePreviewCloseButton {
+    position: absolute;
+    top: -12px;
+    right: -12px;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 2px solid var(--color-border);
+    box-shadow: var(--shadow-lg);
+
+    &:hover {
+        background-color: var(--color-secondary);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--color-primary);
+        outline-offset: 2px;
+    }
+}
+
+.imagePreviewCloseIcon {
+    width: 20px;
+    height: 20px;
+}
+
+// Responsive adjustments for image preview
+@media (max-width: 768px) {
+    .imagePreviewOverlay {
+        padding: var(--space-2);
+    }
+
+    .imagePreviewContainer {
+        max-width: 95vw;
+        max-height: 95vh;
+    }
+
+    .imagePreviewCloseButton {
+        width: 36px;
+        height: 36px;
+        top: -8px;
+        right: -8px;
+    }
+
+    .imagePreviewCloseIcon {
+        width: 18px;
+        height: 18px;
+    }
+}
