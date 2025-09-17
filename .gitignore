@@ -43,6 +43,6 @@ next-env.d.ts
 # databases
 *.sqlite*
 
-/public/static/content
+/content
 *instructions.md
 .vscode
