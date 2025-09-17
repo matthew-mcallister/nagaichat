@@ -6,6 +6,7 @@ import Navbar from '@/components/Navbar'
 import OptionSidebar from '@/components/OptionSidebar'
 import Sidebar from '@/components/Sidebar'
 import SidebarNav from '@/components/SidebarNav'
+import { TreeView } from '@/components/TreeView'
 import Api, {
   fromPreset,
   Preset,
@@ -16,7 +17,9 @@ import Api, {
 import {
   AdjustmentsHorizontalIcon,
   Bars3Icon,
+  RectangleGroupIcon,
 } from '@heroicons/react/24/outline'
+import { useParams } from 'next/navigation'
 import { ReactNode, useEffect, useState } from 'react'
 import styles from './Layout.module.scss'
 
@@ -31,6 +34,10 @@ export default function ChatLayout({ children }: Props) {
   const [rightSidebarOpen, setRightSidebarOpen] = useState<boolean | undefined>(
     undefined,
   )
+  const [showTreeView, setShowTreeView] = useState<boolean>(false)
+
+  // TODO: Should rename id to sessionId to disambiguate
+  const { id: sessionId } = useParams<{ id?: string }>()
 
   const [options, setOptions] = useState<SessionOptionsFields>({
     integration: undefined,
@@ -60,6 +67,13 @@ export default function ChatLayout({ children }: Props) {
       rawOptions={options}
     >
       <div className={styles.layoutContainer}>
+        {sessionId && showTreeView && (
+          <TreeView
+            sessionId={Number(sessionId)}
+            onClose={() => setShowTreeView(false)}
+          />
+        )}
+
         <Sidebar open={leftSidebarOpen} setOpen={setLeftSidebarOpen}>
           <SidebarNav open={leftSidebarOpen} setOpen={setLeftSidebarOpen} />
         </Sidebar>
@@ -71,11 +85,22 @@ export default function ChatLayout({ children }: Props) {
               label='Toggle navigation sidebar'
               Icon={Bars3Icon}
             />
-            <ExpandButton
-              onClick={() => setRightSidebarOpen(!rightSidebarOpen)}
-              label='Toggle preset sidebar'
-              Icon={AdjustmentsHorizontalIcon}
-            />
+            <div className='hRow'>
+              {sessionId && (
+                <ExpandButton
+                  onClick={() => setShowTreeView(true)}
+                  label='Toggle tree view'
+                  // TODO: This icon is not ideal, need an icon set with a
+                  // branch icon
+                  Icon={RectangleGroupIcon}
+                />
+              )}
+              <ExpandButton
+                onClick={() => setRightSidebarOpen(!rightSidebarOpen)}
+                label='Toggle preset sidebar'
+                Icon={AdjustmentsHorizontalIcon}
+              />
+            </div>
           </Navbar>
 
           <main className={styles.mainContent}>{children}</main>

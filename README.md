@@ -19,3 +19,4 @@ cases, such as conversation, fiction, coding, and image editing.
 - Code highlighting (easy)
 - Image gallery (easy)
 - Response streaming (harder)
+- Multi-user auth and settings (hard)
