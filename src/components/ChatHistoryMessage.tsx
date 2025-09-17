@@ -2,6 +2,7 @@ import { AttachedImages } from '@/components/AttachedImages'
 import ImagePreview from '@/components/ImagePreview'
 import Markdown from '@/components/Markdown'
 import { ImageContent, Item } from '@/lib/frontend/api'
+import { handleImagePaste } from '@/lib/frontend/util'
 import {
   ArrowPathIcon,
   ArrowUturnRightIcon,
@@ -85,6 +86,21 @@ function EditUi({
     }
   }
 
+  const handlePaste = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    let hasImages
+    try {
+      hasImages = await handleImagePaste(e.clipboardData, image => {
+        setEditImages(prev => [...prev, image])
+      })
+    } catch (e) {
+      reportError(e)
+    }
+
+    if (hasImages) {
+      e.preventDefault() // Prevent default paste behavior for images
+    }
+  }
+
   useEffect(() => adjustTextAreaHeight(), [editText])
 
   return (
@@ -95,6 +111,7 @@ function EditUi({
           className={styles.editTextarea}
           value={editText}
           onChange={handleTextEdit}
+          onPaste={handlePaste}
           disabled={disabled}
           ref={textareaRef}
         />

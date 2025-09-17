@@ -1,5 +1,6 @@
-import { ImageContent, InlineContent } from '@/lib/frontend/api'
+import { ImageContent } from '@/lib/frontend/api'
 import { ChatBarAction } from '@/lib/frontend/common'
+import { handleImagePaste, handleImageSelection } from '@/lib/frontend/util'
 import { ArrowPathIcon, PhotoIcon } from '@heroicons/react/24/outline'
 import { PaperAirplaneIcon, StopIcon } from '@heroicons/react/24/solid'
 import { KeyboardEvent, useRef, useState } from 'react'
@@ -74,23 +75,12 @@ export default function ChatBar({
   }
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
-    if (!files) return
-
-    for (const file of Array.from(files)) {
-      if (file.type === 'image/png' || file.type === 'image/jpeg') {
-        try {
-          const base64 = await fileToBase64(file)
-          const inlineContent: InlineContent = {
-            type: 'inline',
-            mimeType: file.type,
-            data: base64,
-          }
-          setImages(prev => [...prev, inlineContent])
-        } catch (e) {
-          reportError(e)
-        }
-      }
+    try {
+      await handleImageSelection(e.target.files, image => {
+        setImages(prev => [...prev, image])
+      })
+    } catch (e) {
+      reportError(e)
     }
 
     // Reset file input
@@ -99,58 +89,28 @@ export default function ChatBar({
     }
   }
 
-  const fileToBase64 = (file: File): Promise<string> => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.onload = () => {
-        const result = reader.result as string
-        // Remove data URL prefix to get just the base64 data
-        const base64 = result.split(',')[1]
-        resolve(base64)
-      }
-      reader.onerror = reject
-      reader.readAsDataURL(file)
-    })
-  }
-
   const handleUploadClick = () => {
     fileInputRef.current?.click()
   }
 
   const handlePaste = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
-    const clipboardData = e.clipboardData
-    if (!clipboardData) return
+    let hasImages
+    try {
+      hasImages = await handleImagePaste(e.clipboardData, image => {
+        setImages(prev => [...prev, image])
+      })
+    } catch (e) {
+      reportError(e)
+    }
 
-    const items = Array.from(clipboardData.items)
-    const imageItems = items.filter(item => item.type.startsWith('image/'))
-
-    if (imageItems.length > 0) {
+    if (hasImages) {
       e.preventDefault() // Prevent default paste behavior for images
-
-      for (const item of imageItems) {
-        if (item.type === 'image/png' || item.type === 'image/jpeg') {
-          const file = item.getAsFile()
-          if (file) {
-            try {
-              const base64 = await fileToBase64(file)
-              const inlineContent: InlineContent = {
-                type: 'inline',
-                mimeType: file.type,
-                data: base64,
-              }
-              setImages(prev => [...prev, inlineContent])
-            } catch (e) {
-              reportError(e)
-            }
-          }
-        }
-      }
     }
   }
 
   const canSend = message.trim().length > 0
 
-  // TODO: Fix style when input is disabled but button is enabled
+  // TODO: Improve style when input is disabled but button is enabled
   return (
     <>
       <div className={styles.chatBar}>
