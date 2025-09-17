@@ -8,7 +8,6 @@ import {
   GenerateContentParameters,
   GenerateContentConfig,
   Candidate as GoogleCandidate,
-  Modality,
 } from "@google/genai"
 import { ChatHistory, IntegrationApi, ModelResponse } from '@/lib/backend/integrations/interface'
 import { ModelInfo, ModelOptions, Content as ApiContent } from '@/lib/frontend/api'

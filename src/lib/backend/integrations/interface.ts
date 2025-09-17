@@ -1,5 +1,4 @@
 import { Integration } from '@/lib/backend/integration'
-import { BaseError } from '@/lib/error'
 import GeminiApi from '@/lib/backend/integrations/gemini'
 import { ModelInfo, ModelOptions, Role, Content as ApiContent } from '@/lib/frontend/api'
 import { Transaction } from "sequelize"
