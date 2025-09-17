@@ -10,10 +10,13 @@
 }
 
 .messagesContainer {
-  gap: var(--space-6);
   width: 100%;
   max-width: 48rem;
   padding: var(--space-4);
+
+  & > * {
+    margin-bottom: var(--space-6);
+  }
 }
 
 .loadingMessage {
