@@ -132,8 +132,8 @@
 
 .imageContainer {
   display: flex;
-  flex-wrap: wrap;
-  gap: var(--space-2);
+  flex-direction: column;
+  gap: var(--space-1);
   width: 100%;
   max-width: 22rem;
 
@@ -141,10 +141,12 @@
     // User images are smaller
     max-width: 14rem;
     margin-bottom: var(--space-1);
+    align-items: flex-end;
   }
 
   [data-role='model'] & {
     margin-bottom: var(--space-3);
+    align-items: flex-start;
   }
 }
 
