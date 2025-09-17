@@ -2,7 +2,7 @@ import { AttachedImages } from '@/components/AttachedImages'
 import ImagePreview from '@/components/ImagePreview'
 import Markdown from '@/components/Markdown'
 import { ImageContent, Item } from '@/lib/frontend/api'
-import { handleImagePaste } from '@/lib/frontend/util'
+import { handleImagePaste, handleImageSelection } from '@/lib/frontend/util'
 import {
   ArrowPathIcon,
   ArrowUturnRightIcon,
@@ -11,6 +11,7 @@ import {
   ChevronRightIcon,
   ClipboardDocumentIcon,
   PencilIcon,
+  PhotoIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
@@ -72,6 +73,7 @@ function EditUi({
   const [editImages, setEditImages] = useState<ImageContent[]>(initialImages)
 
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   function handleTextEdit(e: ChangeEvent<HTMLTextAreaElement>): void {
     setEditText(e.target.value)
@@ -101,6 +103,25 @@ function EditUi({
     }
   }
 
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    try {
+      await handleImageSelection(e.target.files, image => {
+        setEditImages(prev => [...prev, image])
+      })
+    } catch (e) {
+      reportError(e)
+    }
+
+    // Reset file input
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ''
+    }
+  }
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click()
+  }
+
   useEffect(() => adjustTextAreaHeight(), [editText])
 
   return (
@@ -116,8 +137,26 @@ function EditUi({
           ref={textareaRef}
         />
       </div>
+      <input
+        ref={fileInputRef}
+        type='file'
+        accept='image/png,image/jpeg'
+        multiple
+        onChange={handleFileSelect}
+        style={{ display: 'none' }}
+      />
       <div className={styles.controlsContainer}>
         <div className={styles.controls}>
+          <button
+            onClick={handleUploadClick}
+            className={styles.controlButton}
+            type='button'
+            aria-label='Upload image'
+            title='Upload image'
+            disabled={disabled}
+          >
+            <PhotoIcon className={styles.icon} />
+          </button>
           <button
             className={styles.controlButton}
             onClick={onCancel}
