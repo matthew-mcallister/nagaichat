@@ -1,11 +1,10 @@
-import { InlineContent } from '@/lib/frontend/api'
+import { ImageContent, InlineContent } from '@/lib/frontend/api'
 import { ChatBarAction } from '@/lib/frontend/common'
 import { ArrowPathIcon, PhotoIcon } from '@heroicons/react/24/outline'
 import { PaperAirplaneIcon, StopIcon } from '@heroicons/react/24/solid'
 import { KeyboardEvent, useRef, useState } from 'react'
 import { AttachedImages } from './AttachedImages'
 import styles from './ChatBar.module.scss'
-import ImagePreview from './ImagePreview'
 
 interface ChatBarProps {
   /**
@@ -13,12 +12,12 @@ interface ChatBarProps {
    *
    * @param text Text content.
    * @param images Attached images.
-   * @param reset Callback to reset the chat bar input. When not called (if an
-   * if an error occurs, for example), the chat bar input will not be cleared.
+   * @param reset Callback to reset the chat bar input. If not called (when an
+   * error occurs, for example), the chat bar input will not be cleared.
    */
   onSend: (
     text: string,
-    images: InlineContent[],
+    images: ImageContent[],
     reset: () => void,
   ) => void | Promise<void>
   onStop?: () => void
@@ -37,10 +36,7 @@ export default function ChatBar({
   placeholder = 'Type a message...',
 }: ChatBarProps) {
   const [message, setMessage] = useState('')
-  const [images, setImages] = useState<InlineContent[]>([])
-  const [previewImageIndex, setPreviewImageIndex] = useState<number | null>(
-    null,
-  )
+  const [images, setImages] = useState<ImageContent[]>([])
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -121,25 +117,6 @@ export default function ChatBar({
     fileInputRef.current?.click()
   }
 
-  const handleRemoveImage = (index: number) => {
-    setImages(prev => prev.filter((_, i) => i !== index))
-    // Close preview if the removed image was being previewed
-    if (previewImageIndex === index) {
-      setPreviewImageIndex(null)
-    } else if (previewImageIndex !== null && previewImageIndex > index) {
-      // Adjust preview index if a previous image was removed
-      setPreviewImageIndex(previewImageIndex - 1)
-    }
-  }
-
-  const handlePreviewImage = (index: number) => {
-    setPreviewImageIndex(index)
-  }
-
-  const handleClosePreview = () => {
-    setPreviewImageIndex(null)
-  }
-
   const handlePaste = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
     const clipboardData = e.clipboardData
     if (!clipboardData) return
@@ -176,22 +153,12 @@ export default function ChatBar({
   // TODO: Fix style when input is disabled but button is enabled
   return (
     <>
-      {previewImageIndex !== null && (
-        <ImagePreview
-          imageUri={`data:${images[previewImageIndex].mimeType};base64,${images[previewImageIndex].data}`}
-          onClose={handleClosePreview}
-        />
-      )}
       <div className={styles.chatBar}>
         <div
           className={`${styles.inputContainer} ${disabled || action !== 'send' ? styles.disabled : ''}`}
         >
           <div className={styles.textAndThumbnailsContainer}>
-            <AttachedImages
-              images={images}
-              onRemoveImage={handleRemoveImage}
-              onPreviewImage={handlePreviewImage}
-            />
+            <AttachedImages images={images} setImages={setImages} />
 
             <textarea
               ref={textareaRef}

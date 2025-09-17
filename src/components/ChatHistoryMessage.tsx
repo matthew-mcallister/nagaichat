@@ -69,7 +69,6 @@ function EditUi({
 }: EditUiProps) {
   const [editText, setEditText] = useState(initialText)
   const [editImages, setEditImages] = useState<ImageContent[]>(initialImages)
-  const [previewImageUri, setPreviewImageUri] = useState<string | null>(null)
 
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
 
@@ -88,35 +87,9 @@ function EditUi({
 
   useEffect(() => adjustTextAreaHeight(), [editText])
 
-  function handleRemoveImage(index: number) {
-    setEditImages(prev => prev.filter((_, i) => i !== index))
-  }
-
-  function handlePreviewImage(index: number) {
-    const image = editImages[index]
-    let imageUri: string
-    switch (image.type) {
-      case 'inline':
-        imageUri = `data:${image.mimeType};base64,${image.data}`
-        break
-      case 'static':
-        imageUri = image.url
-        break
-    }
-    setPreviewImageUri(imageUri)
-  }
-
-  function handleClosePreview() {
-    setPreviewImageUri(null)
-  }
-
   return (
     <>
-      <AttachedImages
-        images={editImages}
-        onRemoveImage={handleRemoveImage}
-        onPreviewImage={handlePreviewImage}
-      />
+      <AttachedImages images={editImages} setImages={setEditImages} />
       <div className={styles.messageBubble}>
         <textarea
           className={styles.editTextarea}
@@ -155,10 +128,6 @@ function EditUi({
           </button>
         </div>
       </div>
-
-      {previewImageUri && (
-        <ImagePreview imageUri={previewImageUri} onClose={handleClosePreview} />
-      )}
     </>
   )
 }
