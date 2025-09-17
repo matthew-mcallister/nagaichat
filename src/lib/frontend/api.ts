@@ -104,6 +104,8 @@ export type StaticContent = {
 export type ContentObject = TextContent | InlineContent | StaticContent
 export type Content = ContentObject
 
+export type ImageContent = InlineContent | StaticContent
+
 export type Role = 'user' | 'model'
 
 export interface Session {

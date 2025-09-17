@@ -1,7 +1,7 @@
 'use client'
 
 import ChatHistoryMessage from '@/components/ChatHistoryMessage'
-import { Item } from '@/lib/frontend/api'
+import { ImageContent, Item } from '@/lib/frontend/api'
 import ChatTree from '@/lib/frontend/chat-tree'
 import styles from './ChatHistory.module.scss'
 
@@ -13,8 +13,16 @@ interface ChatHistoryProps {
   renderMarkdown?: boolean
   latestItemId: number | null
   setLatestItemId(id: number): void
-  onOverwrite(item: Item, newText: string): void | Promise<void>
-  onFork(item: Item, newText: string): void | Promise<void>
+  onOverwrite(
+    item: Item,
+    newText: string,
+    images: ImageContent[],
+  ): void | Promise<void>
+  onFork(
+    item: Item,
+    newText: string,
+    images: ImageContent[],
+  ): void | Promise<void>
   onReroll(item: Item): void | Promise<void>
 }
 
@@ -72,8 +80,12 @@ export default function ChatHistory({
                   setLatestItemId(latest.id)
                 }
               }}
-              onOverwrite={(newText: string) => onOverwrite(item, newText)}
-              onFork={(newText: string) => onFork(item, newText)}
+              onOverwrite={(newText: string, images: ImageContent[]) =>
+                onOverwrite(item, newText, images)
+              }
+              onFork={(newText: string, images: ImageContent[]) =>
+                onFork(item, newText, images)
+              }
               onReroll={() => onReroll(item)}
             />
           )

@@ -1,6 +1,7 @@
+import { AttachedImages } from '@/components/AttachedImages'
 import ImagePreview from '@/components/ImagePreview'
 import Markdown from '@/components/Markdown'
-import { InlineContent, Item, StaticContent } from '@/lib/frontend/api'
+import { ImageContent, Item } from '@/lib/frontend/api'
 import {
   ArrowPathIcon,
   ArrowUturnRightIcon,
@@ -14,25 +15,6 @@ import {
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 import styles from './ChatHistoryMessage.module.scss'
-
-export interface ChatHistoryMessageProps {
-  item: Item
-  disabled?: boolean
-  forkDisabled?: boolean
-  siblingCount: number
-  index: number
-  left?: Item | null
-  right?: Item | null
-  renderMarkdown?: boolean
-  onMoveLeft(): void
-  onMoveRight(): void
-  /** Overwrites the text of this item. */
-  onOverwrite(newText: string): void | Promise<void>
-  /** Creates a new sibling item with the updated text. */
-  onFork(newText: string): void | Promise<void>
-  /** Generates a new sibling item with the same parent. */
-  onReroll(): void | Promise<void>
-}
 
 function itemText(item: Item): string | undefined {
   for (const content of item.content) {
@@ -56,14 +38,23 @@ function itemImageUris(item: Item): string[] {
   return uris
 }
 
-type ImageData = InlineContent | StaticContent
+function itemImageContent(item: Item): ImageContent[] {
+  const images: ImageContent[] = []
+  for (const content of item.content) {
+    if (content.type === 'static' || content.type === 'inline') {
+      images.push(content)
+    }
+  }
+  return images
+}
 
 interface EditUiProps {
   disabled?: boolean
   forkDisabled?: boolean
   initialText: string
-  onSave(text: string, images: ImageData[]): void | Promise<void>
-  onFork(text: string, images: ImageData[]): void | Promise<void>
+  initialImages: ImageContent[]
+  onSave(text: string, images: ImageContent[]): void | Promise<void>
+  onFork(text: string, images: ImageContent[]): void | Promise<void>
   onCancel(): void
 }
 
@@ -71,11 +62,14 @@ function EditUi({
   disabled,
   forkDisabled,
   initialText,
+  initialImages,
   onSave,
   onFork,
   onCancel,
 }: EditUiProps) {
   const [editText, setEditText] = useState(initialText)
+  const [editImages, setEditImages] = useState<ImageContent[]>(initialImages)
+  const [previewImageUri, setPreviewImageUri] = useState<string | null>(null)
 
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
 
@@ -94,8 +88,35 @@ function EditUi({
 
   useEffect(() => adjustTextAreaHeight(), [editText])
 
+  function handleRemoveImage(index: number) {
+    setEditImages(prev => prev.filter((_, i) => i !== index))
+  }
+
+  function handlePreviewImage(index: number) {
+    const image = editImages[index]
+    let imageUri: string
+    switch (image.type) {
+      case 'inline':
+        imageUri = `data:${image.mimeType};base64,${image.data}`
+        break
+      case 'static':
+        imageUri = image.url
+        break
+    }
+    setPreviewImageUri(imageUri)
+  }
+
+  function handleClosePreview() {
+    setPreviewImageUri(null)
+  }
+
   return (
     <>
+      <AttachedImages
+        images={editImages}
+        onRemoveImage={handleRemoveImage}
+        onPreviewImage={handlePreviewImage}
+      />
       <div className={styles.messageBubble}>
         <textarea
           className={styles.editTextarea}
@@ -117,7 +138,7 @@ function EditUi({
           </button>
           <button
             className={styles.controlButton}
-            onClick={() => onSave(editText, [])}
+            onClick={() => onSave(editText, editImages)}
             disabled={disabled}
             title='Save'
           >
@@ -125,7 +146,7 @@ function EditUi({
           </button>
           <button
             className={styles.controlButton}
-            onClick={() => onFork(editText, [])}
+            onClick={() => onFork(editText, editImages)}
             disabled={disabled || forkDisabled}
             title='Fork'
           >
@@ -134,8 +155,31 @@ function EditUi({
           </button>
         </div>
       </div>
+
+      {previewImageUri && (
+        <ImagePreview imageUri={previewImageUri} onClose={handleClosePreview} />
+      )}
     </>
   )
+}
+
+export interface ChatHistoryMessageProps {
+  item: Item
+  disabled?: boolean
+  forkDisabled?: boolean
+  siblingCount: number
+  index: number
+  left?: Item | null
+  right?: Item | null
+  renderMarkdown?: boolean
+  onMoveLeft(): void
+  onMoveRight(): void
+  /** Overwrites the text of this item. */
+  onOverwrite(newText: string, images: ImageContent[]): void | Promise<void>
+  /** Creates a new sibling item with the updated text. */
+  onFork(newText: string, images: ImageContent[]): void | Promise<void>
+  /** Generates a new sibling item with the same parent. */
+  onReroll(): void | Promise<void>
 }
 
 export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
@@ -158,16 +202,17 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
   const [previewImageUri, setPreviewImageUri] = useState<string | null>(null)
   const rawText = itemText(item)
   const imageUris = itemImageUris(item)
+  const ImageContent = itemImageContent(item)
 
-  async function handleSave(message: string, images: ImageData[]) {
+  async function handleSave(message: string, images: ImageContent[]) {
     if (!message) return
-    await onOverwrite(message)
+    await onOverwrite(message, images)
     setEditing(false)
   }
 
-  async function handleFork(message: string, images: ImageData[]) {
+  async function handleFork(message: string, images: ImageContent[]) {
     if (!message) return
-    await onFork(message)
+    await onFork(message, images)
     setEditing(false)
   }
 
@@ -196,7 +241,7 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
       data-role={item.role}
       data-editing={editing}
     >
-      {imageUris.length > 0 && (
+      {!editing && imageUris.length > 0 && (
         <div className={styles.imageContainer}>
           {imageUris.map((uri, index) => (
             <img
@@ -226,6 +271,7 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
           disabled={disabled}
           forkDisabled={forkDisabled}
           initialText={rawText || ''}
+          initialImages={ImageContent}
           onSave={handleSave}
           onFork={handleFork}
           onCancel={() => setEditing(false)}

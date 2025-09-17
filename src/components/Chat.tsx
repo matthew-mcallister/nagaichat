@@ -4,7 +4,12 @@ import ChatBar from '@/components/ChatBar'
 import ChatHistory, { ChatHistoryPlaceholder } from '@/components/ChatHistory'
 import { useChatContext } from '@/components/context/ChatContext'
 import { reportError } from '@/lib/error'
-import Api, { InlineContent, Item, Session } from '@/lib/frontend/api'
+import Api, {
+  ImageContent,
+  InlineContent,
+  Item,
+  Session,
+} from '@/lib/frontend/api'
 import ChatTree from '@/lib/frontend/chat-tree'
 import { ChatBarAction } from '@/lib/frontend/common'
 import { useParams, useRouter } from 'next/navigation'
@@ -122,11 +127,15 @@ export function ChatInner({ session, items }: ChatInnerProps) {
     }
   }
 
-  async function handleOverwrite(item: Item, newText: string): Promise<void> {
+  async function handleOverwrite(
+    item: Item,
+    newText: string,
+    images: ImageContent[],
+  ): Promise<void> {
     setLoadingState('processing')
     try {
       await api.updateItem(item.id, {
-        content: [{ type: 'text', text: newText }],
+        content: [{ type: 'text', text: newText }, ...images],
       })
     } catch (e) {
       reportError(e)
@@ -135,7 +144,11 @@ export function ChatInner({ session, items }: ChatInnerProps) {
     }
   }
 
-  async function handleFork(item: Item, newText: string): Promise<void> {
+  async function handleFork(
+    item: Item,
+    newText: string,
+    images: ImageContent[],
+  ): Promise<void> {
     if (!options) return
     setLoadingState('processing')
     try {
@@ -148,6 +161,7 @@ export function ChatInner({ session, items }: ChatInnerProps) {
               type: 'text',
               text: newText,
             },
+            ...images,
           ],
           parentId: item.parentId,
           presetId: preset?.id || null,

@@ -187,6 +187,12 @@ export default function ChatBar({
           className={`${styles.inputContainer} ${disabled || action !== 'send' ? styles.disabled : ''}`}
         >
           <div className={styles.textAndThumbnailsContainer}>
+            <AttachedImages
+              images={images}
+              onRemoveImage={handleRemoveImage}
+              onPreviewImage={handlePreviewImage}
+            />
+
             <textarea
               ref={textareaRef}
               value={message}
@@ -197,12 +203,6 @@ export default function ChatBar({
               disabled={disabled || action !== 'send'}
               className={styles.textarea}
               rows={1}
-            />
-
-            <AttachedImages
-              images={images}
-              onRemoveImage={handleRemoveImage}
-              onPreviewImage={handlePreviewImage}
             />
           </div>
 
