@@ -1,52 +1,11 @@
 import { InlineContent } from '@/lib/frontend/api'
 import { ChatBarAction } from '@/lib/frontend/common'
-import {
-  ArrowPathIcon,
-  PhotoIcon,
-  XMarkIcon,
-} from '@heroicons/react/24/outline'
+import { ArrowPathIcon, PhotoIcon } from '@heroicons/react/24/outline'
 import { PaperAirplaneIcon, StopIcon } from '@heroicons/react/24/solid'
 import { KeyboardEvent, useRef, useState } from 'react'
+import { AttachedImages } from './AttachedImages'
 import styles from './ChatBar.module.scss'
 import ImagePreview from './ImagePreview'
-
-interface ImageThumbnailProps {
-  content: InlineContent
-  onRemove(): void | Promise<void>
-  onClick(): void | Promise<void>
-}
-
-function ImageThumbnail({ content, onRemove, onClick }: ImageThumbnailProps) {
-  const imageUrl = `data:${content.mimeType};base64,${content.data}`
-
-  return (
-    <div className={styles.imageThumbnail}>
-      <img
-        src={imageUrl}
-        alt='Uploaded image'
-        className={styles.thumbnailImage}
-        onClick={onClick}
-        role='button'
-        tabIndex={0}
-        onKeyDown={e => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault()
-            onClick()
-          }
-        }}
-      />
-      <button
-        onClick={onRemove}
-        className={styles.removeButton}
-        type='button'
-        aria-label='Remove image'
-        title='Remove image'
-      >
-        <XMarkIcon className={styles.removeIcon} />
-      </button>
-    </div>
-  )
-}
 
 interface ChatBarProps {
   /**
@@ -240,18 +199,11 @@ export default function ChatBar({
               rows={1}
             />
 
-            {images.length > 0 && (
-              <div className={styles.thumbnailsContainer}>
-                {images.map((image, index) => (
-                  <ImageThumbnail
-                    key={index}
-                    content={image}
-                    onRemove={() => handleRemoveImage(index)}
-                    onClick={() => handlePreviewImage(index)}
-                  />
-                ))}
-              </div>
-            )}
+            <AttachedImages
+              images={images}
+              onRemoveImage={handleRemoveImage}
+              onPreviewImage={handlePreviewImage}
+            />
           </div>
 
           <input

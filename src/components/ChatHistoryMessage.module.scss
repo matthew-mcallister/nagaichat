@@ -159,19 +159,19 @@
   // Square off corners when images are adjacent
   & + & {
     [data-role='user'] & {
-      border-top-right-radius: 0;
+      border-top-right-radius: var(--radius-md);
     }
     [data-role='model'] & {
-      border-top-left-radius: 0;
+      border-top-left-radius: var(--radius-md);
     }
   }
 
   &:has(+ &) {
     [data-role='user'] & {
-      border-bottom-right-radius: 0;
+      border-bottom-right-radius: var(--radius-md);
     }
     [data-role='model'] & {
-      border-bottom-left-radius: 0;
+      border-bottom-left-radius: var(--radius-md);
     }
   }
 }
