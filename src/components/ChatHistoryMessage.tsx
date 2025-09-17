@@ -10,10 +10,12 @@ import {
   ChevronLeftIcon,
   ChevronRightIcon,
   ClipboardDocumentIcon,
+  LinkIcon,
   PencilIcon,
   PhotoIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline'
+import { useRouter } from 'next/navigation'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 import styles from './ChatHistoryMessage.module.scss'
@@ -228,6 +230,7 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
   const rawText = itemText(item)
   const imageUris = itemImageUris(item)
   const ImageContent = itemImageContent(item)
+  const router = useRouter()
 
   async function handleSave(message: string, images: ImageContent[]) {
     if (!message) return
@@ -244,7 +247,7 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
   async function handleCopy() {
     if (!rawText) return
     try {
-      await navigator.clipboard.writeText(rawText)
+      await window.navigator.clipboard.writeText(rawText)
       toast.success('Copied to clipboard')
     } catch (err) {
       reportError(err)
@@ -262,6 +265,7 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
   return (
     <div
       key={item.id}
+      id={`item-${item.id}`}
       className={styles.message}
       data-role={item.role}
       data-editing={editing}
@@ -335,6 +339,13 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
             >
               <ClipboardDocumentIcon className={styles.icon} />
             </button>
+            <a
+              className={styles.controlButton}
+              href={`#item-${item.id}`}
+              title='Link to this message'
+            >
+              <LinkIcon className={styles.icon} />
+            </a>
             <button
               className={styles.controlButton}
               onClick={() => setEditing(true)}
