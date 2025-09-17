@@ -6,15 +6,70 @@ import {
   XMarkIcon,
 } from '@heroicons/react/24/outline'
 import { PaperAirplaneIcon, StopIcon } from '@heroicons/react/24/solid'
-import { KeyboardEvent, useRef, useState } from 'react'
+import { KeyboardEvent, useEffect, useRef, useState } from 'react'
 import styles from './ChatBar.module.scss'
+
+interface ImagePreviewProps {
+  imageUri: string
+  onClose: () => void
+}
+
+function ImagePreview({ imageUri, onClose }: ImagePreviewProps) {
+  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (e.target === e.currentTarget) {
+      onClose()
+    }
+  }
+
+  const handleKeyDown = (e: globalThis.KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      onClose()
+    }
+  }
+
+  // Add escape key listener
+  useEffect(() => {
+    document.addEventListener('keydown', handleKeyDown)
+    return () => document.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
+  // Prevent body scroll when modal is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [])
+
+  return (
+    <div className={styles.imagePreviewOverlay} onClick={handleOverlayClick}>
+      <div className={styles.imagePreviewContainer}>
+        <button
+          onClick={onClose}
+          className={styles.imagePreviewCloseButton}
+          type='button'
+          aria-label='Close image preview'
+          title='Close image preview'
+        >
+          <XMarkIcon className={styles.imagePreviewCloseIcon} />
+        </button>
+        <img
+          src={imageUri}
+          alt='Image preview'
+          className={styles.imagePreviewImage}
+        />
+      </div>
+    </div>
+  )
+}
 
 interface ImageThumbnailProps {
   content: InlineContent
   onRemove(): void | Promise<void>
+  onClick(): void | Promise<void>
 }
 
-function ImageThumbnail({ content, onRemove }: ImageThumbnailProps) {
+function ImageThumbnail({ content, onRemove, onClick }: ImageThumbnailProps) {
   const imageUrl = `data:${content.mimeType};base64,${content.data}`
 
   return (
@@ -23,6 +78,15 @@ function ImageThumbnail({ content, onRemove }: ImageThumbnailProps) {
         src={imageUrl}
         alt='Uploaded image'
         className={styles.thumbnailImage}
+        onClick={onClick}
+        role='button'
+        tabIndex={0}
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            onClick()
+          }
+        }}
       />
       <button
         onClick={onRemove}
@@ -68,6 +132,9 @@ export default function ChatBar({
 }: ChatBarProps) {
   const [message, setMessage] = useState('')
   const [images, setImages] = useState<InlineContent[]>([])
+  const [previewImageIndex, setPreviewImageIndex] = useState<number | null>(
+    null,
+  )
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -150,6 +217,21 @@ export default function ChatBar({
 
   const handleRemoveImage = (index: number) => {
     setImages(prev => prev.filter((_, i) => i !== index))
+    // Close preview if the removed image was being previewed
+    if (previewImageIndex === index) {
+      setPreviewImageIndex(null)
+    } else if (previewImageIndex !== null && previewImageIndex > index) {
+      // Adjust preview index if a previous image was removed
+      setPreviewImageIndex(previewImageIndex - 1)
+    }
+  }
+
+  const handlePreviewImage = (index: number) => {
+    setPreviewImageIndex(index)
+  }
+
+  const handleClosePreview = () => {
+    setPreviewImageIndex(null)
   }
 
   const handlePaste = async (e: React.ClipboardEvent<HTMLTextAreaElement>) => {
@@ -187,91 +269,100 @@ export default function ChatBar({
 
   // TODO: Fix style when input is disabled but button is enabled
   return (
-    <div className={styles.chatBar}>
-      <div
-        className={`${styles.inputContainer} ${disabled || action !== 'send' ? styles.disabled : ''}`}
-      >
-        <div className={styles.textAndThumbnailsContainer}>
-          <textarea
-            ref={textareaRef}
-            value={message}
-            onChange={handleTextareaChange}
-            onKeyDown={handleKeyDown}
-            onPaste={handlePaste}
-            placeholder={placeholder}
-            disabled={disabled || action !== 'send'}
-            className={styles.textarea}
-            rows={1}
+    <>
+      {previewImageIndex !== null && (
+        <ImagePreview
+          imageUri={`data:${images[previewImageIndex].mimeType};base64,${images[previewImageIndex].data}`}
+          onClose={handleClosePreview}
+        />
+      )}
+      <div className={styles.chatBar}>
+        <div
+          className={`${styles.inputContainer} ${disabled || action !== 'send' ? styles.disabled : ''}`}
+        >
+          <div className={styles.textAndThumbnailsContainer}>
+            <textarea
+              ref={textareaRef}
+              value={message}
+              onChange={handleTextareaChange}
+              onKeyDown={handleKeyDown}
+              onPaste={handlePaste}
+              placeholder={placeholder}
+              disabled={disabled || action !== 'send'}
+              className={styles.textarea}
+              rows={1}
+            />
+
+            {images.length > 0 && (
+              <div className={styles.thumbnailsContainer}>
+                {images.map((image, index) => (
+                  <ImageThumbnail
+                    key={index}
+                    content={image}
+                    onRemove={() => handleRemoveImage(index)}
+                    onClick={() => handlePreviewImage(index)}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+
+          <input
+            ref={fileInputRef}
+            type='file'
+            accept='image/png,image/jpeg'
+            multiple
+            onChange={handleFileSelect}
+            style={{ display: 'none' }}
           />
 
-          {images.length > 0 && (
-            <div className={styles.thumbnailsContainer}>
-              {images.map((image, index) => (
-                <ImageThumbnail
-                  key={index}
-                  content={image}
-                  onRemove={() => handleRemoveImage(index)}
-                />
-              ))}
-            </div>
+          <button
+            onClick={handleUploadClick}
+            className={`${styles.button} ${styles.uploadButton}`}
+            type='button'
+            aria-label='Upload image'
+            title='Upload image'
+            disabled={disabled || action !== 'send'}
+          >
+            <PhotoIcon className={styles.icon} />
+          </button>
+
+          {action === 'stop' ? (
+            <button
+              onClick={onStop}
+              className={`${styles.button} ${styles.stopButton}`}
+              type='button'
+              aria-label='Stop generation'
+              title='Stop generation'
+              disabled={disabled}
+            >
+              <StopIcon className={styles.icon} />
+            </button>
+          ) : action === 'refresh' ? (
+            <button
+              onClick={onRefresh}
+              className={`${styles.button} ${styles.sendButton}`}
+              type='button'
+              aria-label='Generate response'
+              title='Generate response'
+              disabled={disabled}
+            >
+              <ArrowPathIcon className={styles.icon} />
+            </button>
+          ) : (
+            <button
+              onClick={handleSend}
+              className={`${styles.button} ${styles.sendButton} ${canSend ? styles.active : ''}`}
+              type='button'
+              aria-label='Send message'
+              title='Send message'
+              disabled={disabled || !canSend}
+            >
+              <PaperAirplaneIcon className={styles.icon} />
+            </button>
           )}
         </div>
-
-        <input
-          ref={fileInputRef}
-          type='file'
-          accept='image/png,image/jpeg'
-          multiple
-          onChange={handleFileSelect}
-          style={{ display: 'none' }}
-        />
-
-        <button
-          onClick={handleUploadClick}
-          className={`${styles.button} ${styles.uploadButton}`}
-          type='button'
-          aria-label='Upload image'
-          title='Upload image'
-          disabled={disabled || action !== 'send'}
-        >
-          <PhotoIcon className={styles.icon} />
-        </button>
-
-        {action === 'stop' ? (
-          <button
-            onClick={onStop}
-            className={`${styles.button} ${styles.stopButton}`}
-            type='button'
-            aria-label='Stop generation'
-            title='Stop generation'
-            disabled={disabled}
-          >
-            <StopIcon className={styles.icon} />
-          </button>
-        ) : action === 'refresh' ? (
-          <button
-            onClick={onRefresh}
-            className={`${styles.button} ${styles.sendButton}`}
-            type='button'
-            aria-label='Generate response'
-            title='Generate response'
-            disabled={disabled}
-          >
-            <ArrowPathIcon className={styles.icon} />
-          </button>
-        ) : (
-          <button
-            onClick={handleSend}
-            className={`${styles.button} ${styles.sendButton} ${canSend ? styles.active : ''}`}
-            type='button'
-            aria-label='Send message'
-            title='Send message'
-            disabled={disabled || !canSend}
-          >
-            <PaperAirplaneIcon className={styles.icon} />
-          </button>
-        )}
       </div>
-    </div>
+    </>
   )
 }

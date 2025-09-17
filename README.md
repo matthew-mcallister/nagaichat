@@ -11,11 +11,12 @@ cases, such as conversation, fiction, coding, and image editing.
   APIs).
 - Presets for quickly switching between use cases or personalities
 - Conversation editing and branching
-- Markdown formatting and code highlighting
+- Markdown formatting
 - Image input and output (WIP)
 
 ### Desired future features
 
+- Image gallery
 - Code highlighting
 - Model context protocol
 - Fine-tuning
