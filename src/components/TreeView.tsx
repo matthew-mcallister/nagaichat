@@ -24,18 +24,20 @@ class Vec2 {
 interface Colors {
   background: string
   grid: string
+  gridAlt: string
 }
 
 // TODO: fill in correct colors; also dark mode
 const LIGHT_COLORS: Colors = {
-  background: 'white',
-  grid: 'grey',
+  background: '#f3f4f6',
+  grid: '#0f172a',
+  gridAlt: '#64748b',
 }
 
 class ViewController {
   private canvas: HTMLCanvasElement
   private viewportCenter: Vec2
-  private viewportYExtent: number
+  private zoomLevel: number
   private mousePos: Vec2 | null = null
   private isMouseDown: boolean = false
   private isDragging: boolean = false
@@ -44,10 +46,14 @@ class ViewController {
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
     this.viewportCenter = new Vec2(0, 0)
-    this.viewportYExtent = 10
+    this.zoomLevel = 10
     this.updateCanvasSize()
     this.setupEventListeners()
     this.render()
+  }
+
+  private get viewportYExtent(): number {
+    return Math.pow(10, 0.1 * this.zoomLevel)
   }
 
   public updateCanvasSize() {
@@ -81,11 +87,13 @@ class ViewController {
 
   private drawGrid(ctx: CanvasRenderingContext2D) {
     const extent = this.viewportExtent()
-    const gridSize = 1
+    const gridSize =
+      (1.0 / 3.0) * Math.pow(2, Math.floor(Math.log2(extent.y) - 0.5))
 
-    ctx.strokeStyle = LIGHT_COLORS.grid
-    ctx.lineWidth = 0.4
-    ctx.setLineDash([2, 8])
+    // Define line properties (in canvas pixels) relative to grid size
+    const s = (gridSize / extent.y) * this.canvas.height
+    ctx.lineWidth = 0.5
+    ctx.setLineDash([s / 128, s / 32 - s / 128])
 
     const left = this.viewportCenter.x - extent.x / 2
     const right = this.viewportCenter.x + extent.x / 2
@@ -97,22 +105,41 @@ class ViewController {
     const endX = Math.ceil(right / gridSize) * gridSize
     const endY = Math.ceil(top / gridSize) * gridSize
 
-    for (let x = startX; x <= endX; x += gridSize) {
-      const start = this.worldToScreen(new Vec2(x, startY))
-      const end = this.worldToScreen(new Vec2(x, endY))
+    const view = this
+    function drawVertical(x: number, color: string) {
+      const start = view.worldToScreen(new Vec2(x, startY))
+      const end = view.worldToScreen(new Vec2(x, endY))
+      ctx.strokeStyle = color
       ctx.beginPath()
       ctx.moveTo(start.x, start.y)
       ctx.lineTo(end.x, end.y)
       ctx.stroke()
     }
 
-    for (let y = startY; y <= endY; y += gridSize) {
-      const start = this.worldToScreen(new Vec2(startX, y))
-      const end = this.worldToScreen(new Vec2(endX, y))
+    function drawHorizontal(y: number, color: string) {
+      const start = view.worldToScreen(new Vec2(startX, y))
+      const end = view.worldToScreen(new Vec2(endX, y))
+      ctx.strokeStyle = color
       ctx.beginPath()
       ctx.moveTo(start.x, start.y)
       ctx.lineTo(end.x, end.y)
       ctx.stroke()
+    }
+
+    for (let i = 0; startX + i * gridSize <= endX; i++) {
+      const x = startX + i * gridSize
+      drawVertical(x, LIGHT_COLORS.grid)
+      drawVertical(x + gridSize / 4, LIGHT_COLORS.gridAlt)
+      drawVertical(x + gridSize / 2, LIGHT_COLORS.gridAlt)
+      drawVertical(x + (3 * gridSize) / 4, LIGHT_COLORS.gridAlt)
+    }
+
+    for (let i = 0; startY + i * gridSize <= endY; i++) {
+      const y = startY + i * gridSize
+      drawHorizontal(y, LIGHT_COLORS.grid)
+      drawHorizontal(y + gridSize / 4, LIGHT_COLORS.gridAlt)
+      drawHorizontal(y + gridSize / 2, LIGHT_COLORS.gridAlt)
+      drawHorizontal(y + (3 * gridSize) / 4, LIGHT_COLORS.gridAlt)
     }
 
     ctx.setLineDash([])
@@ -156,6 +183,7 @@ class ViewController {
     this.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this))
     this.canvas.addEventListener('mouseup', this.handleMouseUp.bind(this))
     this.canvas.addEventListener('mouseleave', this.handleMouseUp.bind(this))
+    this.canvas.addEventListener('wheel', this.handleWheel.bind(this))
   }
 
   private handleMouseDown(event: MouseEvent) {
@@ -197,6 +225,15 @@ class ViewController {
     this.canvas.style.cursor = 'grab'
   }
 
+  private handleWheel(event: WheelEvent) {
+    event.preventDefault()
+
+    const zoomDelta = Math.sign(event.deltaY)
+    this.zoomLevel += zoomDelta
+
+    this.render()
+  }
+
   public destroy() {
     this.canvas.removeEventListener(
       'mousedown',
@@ -208,6 +245,7 @@ class ViewController {
     )
     this.canvas.removeEventListener('mouseup', this.handleMouseUp.bind(this))
     this.canvas.removeEventListener('mouseleave', this.handleMouseUp.bind(this))
+    this.canvas.removeEventListener('wheel', this.handleWheel.bind(this))
   }
 }
 
