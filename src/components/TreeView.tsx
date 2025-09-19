@@ -32,34 +32,31 @@ const LIGHT_COLORS = {
   gridAlt: '#64748b',
 }
 
-/**
- * Prerenders the tree SVG. The ViewController only updates style and
- * transforms after the SVG is initially rendered.
- */
-function renderSvg(parent: HTMLDivElement): void {
-  parent.innerHTML = ''
+interface TreeSvgProps {
+  items: Item[]
+}
 
-  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-  svg.setAttribute('id', 'treeSvg')
-  svg.setAttribute('width', '100%')
-  svg.setAttribute('height', '100%')
-
-  // Create a group element with viewport transform
-  const group = document.createElementNS('http://www.w3.org/2000/svg', 'g')
-  group.setAttribute('id', 'viewport')
-  group.setAttribute('transform', 'translate(0, 0) scale(1)')
-
-  const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
-  rect.setAttribute('x', '0')
-  rect.setAttribute('y', '0')
-  rect.setAttribute('width', '3')
-  rect.setAttribute('height', '2')
-  rect.setAttribute('rx', '0.1')
-  rect.setAttribute('class', styles.treeNode)
-  group.appendChild(rect)
-
-  svg.appendChild(group)
-  parent.appendChild(svg)
+function TreeSvg({ items }: TreeSvgProps) {
+  return (
+    <svg id='treeSvg' width='100%' height='100%' className={styles.treeSvg}>
+      <g id='viewport' transform='translate(0, 0) scale(1)'>
+        {items.map((item, index) => {
+          const currentOffset = 3.5 * index
+          return (
+            <rect
+              key={item.id || index}
+              x={currentOffset}
+              y={0}
+              width={3}
+              height={2}
+              rx={0.1}
+              className={styles.treeNode}
+            />
+          )
+        })}
+      </g>
+    </svg>
+  )
 }
 
 class ViewController {
@@ -340,7 +337,6 @@ interface TreeViewInnerProps {
 
 function TreeViewInner({ items, onSelect }: TreeViewInnerProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const svgDivRef = useRef<HTMLDivElement>(null)
   const viewControllerRef = useRef<ViewController | null>(null)
 
   useEffect(() => {
@@ -370,14 +366,9 @@ function TreeViewInner({ items, onSelect }: TreeViewInnerProps) {
     }
   }, [])
 
-  useEffect(() => {
-    if (!svgDivRef.current) return
-    renderSvg(svgDivRef.current)
-  }, [])
-
   return (
     <>
-      <div className={styles.treeSvg} ref={svgDivRef} />
+      <TreeSvg items={items} />
       <canvas className={styles.canvas} ref={canvasRef} />
     </>
   )
