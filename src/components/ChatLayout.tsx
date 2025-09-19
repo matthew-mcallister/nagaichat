@@ -94,8 +94,6 @@ export default function ChatLayout({ children }: Props) {
                 <ExpandButton
                   onClick={() => setShowTreeView(true)}
                   label='Toggle tree view'
-                  // TODO: This icon is not ideal, need an icon set with a
-                  // branch icon
                   Icon={RectangleGroupIcon}
                 />
               )}

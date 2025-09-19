@@ -1,4 +1,4 @@
-import Api, { Item, getItemText } from '@/lib/frontend/api'
+import Api, { Item, getItemImageUris, getItemText } from '@/lib/frontend/api'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { useEffect, useRef } from 'react'
 import styles from './TreeView.module.scss'
@@ -40,6 +40,8 @@ interface TreeItemProps {
 
 function TreeItem({ x, y, item }: TreeItemProps) {
   const text = getItemText(item) || ''
+  const imageUris = getItemImageUris(item).slice(0, 3)
+  const hasImages = imageUris.length > 0
 
   return (
     <g>
@@ -58,6 +60,35 @@ function TreeItem({ x, y, item }: TreeItemProps) {
       <foreignObject x={x + 16} y={y + 16} width={300 - 32} height={125 - 32}>
         <p className={styles.treeNodeText}>{text}</p>
       </foreignObject>
+      {hasImages && (
+        <g>
+          {imageUris.reverse().map((imageUri, i) => {
+            const index = imageUris.length - i - 1
+            const offsetX = x + 300 + 10 + index * 15
+            return (
+              <g key={index}>
+                <defs>
+                  <clipPath id={`clip-${item.id}-${index}`}>
+                    <rect x={offsetX} y={y} width={125} height={125} rx={10} />
+                  </clipPath>
+                </defs>
+                <g className={styles.imageOuter}>
+                  <image
+                    x={offsetX}
+                    y={y}
+                    width={125}
+                    height={125}
+                    href={imageUri}
+                    clipPath={`url(#clip-${item.id}-${index})`}
+                    className={styles.treeNodeImage}
+                    preserveAspectRatio='xMidYMid slice'
+                  />
+                </g>
+              </g>
+            )
+          })}
+        </g>
+      )}
     </g>
   )
 }
@@ -72,7 +103,7 @@ function TreeSvg({ items }: TreeSvgProps) {
     <svg id='treeSvg' width='100%' height='100%' className={styles.treeSvg}>
       <g id='viewport' transform='translate(0, 0) scale(1)'>
         {items.map((item, index) => {
-          const offset = 350 * index
+          const offset = 500 * index
           return (
             <TreeItem
               key={item.id || index}
@@ -336,6 +367,7 @@ class ViewController {
   private handleWheel(event: WheelEvent) {
     event.preventDefault()
 
+    // XXX: Should zoom in on cursor position instead of center of screen
     const zoomDelta = Math.sign(event.deltaY)
     this.zoomLevel += zoomDelta
 

@@ -142,6 +142,20 @@ export function getItemText(item: Item): string | undefined {
   }
 }
 
+export function getItemImageUris(item: Item): string[] {
+  const uris = []
+  for (const content of item.content) {
+    switch (content.type) {
+      case 'static':
+        uris.push(content.url)
+        break
+      case 'inline':
+        uris.push(`data:${content.mimeType};base64,${content.data}`)
+    }
+  }
+  return uris
+}
+
 export interface CreateModelItemRequest {
   role: 'model'
   sessionId: number

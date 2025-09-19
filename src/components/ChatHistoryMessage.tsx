@@ -1,7 +1,12 @@
 import { AttachedImages } from '@/components/AttachedImages'
 import ImagePreview from '@/components/ImagePreview'
 import Markdown from '@/components/Markdown'
-import { getItemText, ImageContent, Item } from '@/lib/frontend/api'
+import {
+  getItemImageUris,
+  getItemText,
+  ImageContent,
+  Item,
+} from '@/lib/frontend/api'
 import { handleImagePaste, handleImageSelection } from '@/lib/frontend/util'
 import {
   ArrowPathIcon,
@@ -15,24 +20,9 @@ import {
   PhotoIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline'
-import { useRouter } from 'next/navigation'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 import styles from './ChatHistoryMessage.module.scss'
-
-function itemImageUris(item: Item): string[] {
-  const uris = []
-  for (const content of item.content) {
-    switch (content.type) {
-      case 'static':
-        uris.push(content.url)
-        break
-      case 'inline':
-        uris.push(`data:${content.mimeType};base64,${content.data}`)
-    }
-  }
-  return uris
-}
 
 function itemImageContent(item: Item): ImageContent[] {
   const images: ImageContent[] = []
@@ -220,9 +210,8 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
   const [editing, setEditing] = useState<boolean>(false)
   const [previewImageUri, setPreviewImageUri] = useState<string | null>(null)
   const rawText = getItemText(item)
-  const imageUris = itemImageUris(item)
+  const imageUris = getItemImageUris(item)
   const ImageContent = itemImageContent(item)
-  const router = useRouter()
 
   async function handleSave(message: string, images: ImageContent[]) {
     if (!message) return
