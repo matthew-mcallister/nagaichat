@@ -134,6 +134,14 @@ export interface Item {
   updatedAt: string
 }
 
+export function getItemText(item: Item): string | undefined {
+  for (const content of item.content) {
+    if (content.type === 'text') {
+      return content.text
+    }
+  }
+}
+
 export interface CreateModelItemRequest {
   role: 'model'
   sessionId: number

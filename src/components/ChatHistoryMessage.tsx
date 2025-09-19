@@ -1,7 +1,7 @@
 import { AttachedImages } from '@/components/AttachedImages'
 import ImagePreview from '@/components/ImagePreview'
 import Markdown from '@/components/Markdown'
-import { ImageContent, Item } from '@/lib/frontend/api'
+import { getItemText, ImageContent, Item } from '@/lib/frontend/api'
 import { handleImagePaste, handleImageSelection } from '@/lib/frontend/util'
 import {
   ArrowPathIcon,
@@ -19,14 +19,6 @@ import { useRouter } from 'next/navigation'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 import styles from './ChatHistoryMessage.module.scss'
-
-function itemText(item: Item): string | undefined {
-  for (const content of item.content) {
-    if (content.type === 'text') {
-      return content.text
-    }
-  }
-}
 
 function itemImageUris(item: Item): string[] {
   const uris = []
@@ -227,7 +219,7 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
   } = props
   const [editing, setEditing] = useState<boolean>(false)
   const [previewImageUri, setPreviewImageUri] = useState<string | null>(null)
-  const rawText = itemText(item)
+  const rawText = getItemText(item)
   const imageUris = itemImageUris(item)
   const ImageContent = itemImageContent(item)
   const router = useRouter()

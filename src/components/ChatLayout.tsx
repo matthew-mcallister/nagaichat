@@ -71,6 +71,10 @@ export default function ChatLayout({ children }: Props) {
           <TreeView
             sessionId={Number(sessionId)}
             onClose={() => setShowTreeView(false)}
+            onSelect={item => {
+              // TODO
+              console.log('Selected item:', item)
+            }}
           />
         )}
 

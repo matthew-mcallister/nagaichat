@@ -87,8 +87,7 @@ class ViewController {
 
   private drawGrid(ctx: CanvasRenderingContext2D) {
     const extent = this.viewportExtent()
-    const gridSize =
-      (1.0 / 3.0) * Math.pow(2, Math.floor(Math.log2(extent.y) - 0.5))
+    const gridSize = Math.pow(2, Math.floor(Math.log2(extent.y) - 2.5))
 
     // Define line properties (in canvas pixels) relative to grid size
     const s = (gridSize / extent.y) * this.canvas.height
@@ -301,6 +300,19 @@ interface TreeViewProps {
 export function TreeView({ sessionId, onClose, onSelect }: TreeViewProps) {
   const api = new Api()
   const items = api.useSessionItems(sessionId)
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        onClose()
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [onClose])
 
   return (
     <div>
