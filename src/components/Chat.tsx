@@ -3,6 +3,7 @@
 import ChatBar from '@/components/ChatBar'
 import ChatHistory, { ChatHistoryPlaceholder } from '@/components/ChatHistory'
 import { useChatContext } from '@/components/context/ChatContext'
+import TreeView from '@/components/TreeView'
 import { reportError } from '@/lib/error'
 import Api, { ImageContent, Item, Session } from '@/lib/frontend/api'
 import ChatTree from '@/lib/frontend/chat-tree'
@@ -22,11 +23,20 @@ export function ChatInner({ session, items }: ChatInnerProps) {
   const api = new Api()
   const sessionId = session.id
 
+  const router = useRouter()
   const [loadingState, setLoadingState] = useState<LoadingState>(null)
   const processing = loadingState !== null
   const awaitingResponse = loadingState === 'awaitingResponse'
-  const { preset, setPreset, presets, options, setOptions, rawOptions } =
-    useChatContext()
+  const {
+    preset,
+    setPreset,
+    presets,
+    options,
+    setOptions,
+    rawOptions,
+    showTreeView,
+    setShowTreeView,
+  } = useChatContext()
   const controller = useRef(new AbortController())
 
   const tree = new ChatTree(items)
@@ -236,6 +246,17 @@ export function ChatInner({ session, items }: ChatInnerProps) {
 
   return (
     <div className={styles.chatPage}>
+      {showTreeView && (
+        <TreeView
+          tree={tree}
+          onClose={() => setShowTreeView(false)}
+          onSelect={(item: Item) => {
+            setLatestItemId(tree.getLatestLeaf(item)?.id)
+            router.push(`#item-${item.id}`)
+            setShowTreeView(false)
+          }}
+        />
+      )}
       <ChatHistory
         disabled={processing}
         forkDisabled={!options}

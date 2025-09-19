@@ -44,6 +44,17 @@
   pointer-events: none;
   z-index: 10001;
 
+  .treeNodeOuter {
+    pointer-events: fill;
+    cursor: pointer;
+  }
+
+  .treeNodeHovered .treeNode {
+    stroke: var(--color-primary);
+    stroke-width: 3;
+    fill: var(--color-primary-background, var(--color-background));
+  }
+
   .treeNode {
     color: var(--color-foreground);
     fill: var(--color-background);

@@ -1,6 +1,7 @@
-import Api, { Item, getItemImageUris, getItemText } from '@/lib/frontend/api'
+import { Item, getItemImageUris, getItemText } from '@/lib/frontend/api'
+import ChatTree from '@/lib/frontend/chat-tree'
 import { XMarkIcon } from '@heroicons/react/24/outline'
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import styles from './TreeView.module.scss'
 
 class Vec2 {
@@ -36,15 +37,35 @@ interface TreeItemProps {
   x: number
   y: number
   item: Item
+  isHovered?: boolean
+  onMouseEnter?: () => void
+  onMouseLeave?: () => void
+  onClick?: () => void
+  onWheel?: (event: React.WheelEvent) => void
 }
 
-function TreeItem({ x, y, item }: TreeItemProps) {
+function TreeItem({
+  x,
+  y,
+  item,
+  isHovered,
+  onMouseEnter,
+  onMouseLeave,
+  onClick,
+  onWheel,
+}: TreeItemProps) {
   const text = getItemText(item) || ''
   const imageUris = getItemImageUris(item).slice(0, 3)
   const hasImages = imageUris.length > 0
 
   return (
-    <g>
+    <g
+      className={`${styles.treeNodeOuter} ${isHovered ? styles.treeNodeHovered : ''}`}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onClick={onClick}
+      onWheel={onWheel}
+    >
       <rect
         x={x}
         y={y}
@@ -94,22 +115,51 @@ function TreeItem({ x, y, item }: TreeItemProps) {
 }
 
 interface TreeSvgProps {
-  items: Item[]
+  tree: ChatTree
+  onSelect: (item: Item) => void | Promise<void>
+  canvasRef: React.RefObject<HTMLCanvasElement | null>
 }
 
 /** The actual item tree itself. */
-function TreeSvg({ items }: TreeSvgProps) {
+function TreeSvg({ tree, onSelect, canvasRef }: TreeSvgProps) {
+  const [hoveredItemId, setHoveredItemId] = useState<string | number | null>(
+    null,
+  )
+
+  const handleWheel = (event: React.WheelEvent) => {
+    // Forward wheel events to the canvas element
+    if (canvasRef.current) {
+      const wheelEvent = new WheelEvent('wheel', {
+        deltaY: event.deltaY,
+        deltaX: event.deltaX,
+        deltaZ: event.deltaZ,
+        deltaMode: event.deltaMode,
+        clientX: event.clientX,
+        clientY: event.clientY,
+        bubbles: true,
+        cancelable: true,
+      })
+      canvasRef.current.dispatchEvent(wheelEvent)
+    }
+  }
+
   return (
     <svg id='treeSvg' width='100%' height='100%' className={styles.treeSvg}>
       <g id='viewport' transform='translate(0, 0) scale(1)'>
-        {items.map((item, index) => {
+        {[...tree.items.values()].map((item, index) => {
           const offset = 500 * index
+          const itemId = item.id || index
           return (
             <TreeItem
-              key={item.id || index}
+              key={itemId}
               x={offset}
               y={-125 / 2}
               item={item}
+              isHovered={hoveredItemId === itemId}
+              onMouseEnter={() => setHoveredItemId(itemId)}
+              onMouseLeave={() => setHoveredItemId(null)}
+              onClick={() => onSelect(item)}
+              onWheel={handleWheel}
             />
           )
         })}
@@ -124,7 +174,6 @@ class ViewController {
   private dirty: boolean
   private zoomLevel: number
   private mousePos: Vec2 | null = null
-  private isMouseDown: boolean = false
   private isDragging: boolean = false
   private dragStartPos: Vec2 | null = null
   private animationFrameId: number | null = null
@@ -390,14 +439,28 @@ class ViewController {
   }
 }
 
-interface TreeViewInnerProps {
-  items: Item[]
+interface TreeViewProps {
+  tree: ChatTree
+  onClose: () => void
   onSelect: (item: Item) => void | Promise<void>
 }
 
-function TreeViewInner({ items, onSelect }: TreeViewInnerProps) {
+export default function TreeView({ tree, onClose, onSelect }: TreeViewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const viewControllerRef = useRef<ViewController | null>(null)
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        onClose()
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [onClose])
 
   useEffect(() => {
     if (!canvasRef.current) {
@@ -427,43 +490,12 @@ function TreeViewInner({ items, onSelect }: TreeViewInnerProps) {
   }, [])
 
   return (
-    <>
-      <TreeSvg items={items} />
-      <canvas className={styles.canvas} ref={canvasRef} />
-    </>
-  )
-}
-
-interface TreeViewProps {
-  sessionId: number
-  onClose: () => void
-  onSelect: (item: Item) => void | Promise<void>
-}
-
-export function TreeView({ sessionId, onClose, onSelect }: TreeViewProps) {
-  const api = new Api()
-  const items = api.useSessionItems(sessionId)
-
-  useEffect(() => {
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        onClose()
-      }
-    }
-
-    document.addEventListener('keydown', handleKeyDown)
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [onClose])
-
-  return (
     <div>
       <button className={styles.closeButton} onClick={onClose}>
         <XMarkIcon className={styles.icon} />
       </button>
-
-      {items && <TreeViewInner items={items} onSelect={onSelect} />}
+      <TreeSvg tree={tree} onSelect={onSelect} canvasRef={canvasRef} />
+      <canvas className={styles.canvas} ref={canvasRef} />
     </div>
   )
 }

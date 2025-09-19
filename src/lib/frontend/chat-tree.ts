@@ -2,7 +2,7 @@ import { Item } from '@/lib/frontend/api'
 
 export default class ChatTree {
   /** Items by ID. */
-  private items: Map<number, Item>
+  public readonly items: Map<number, Item>
   /** Item's children. Children of `null` are root items. */
   private children: Map<number | null, Item[]>
 

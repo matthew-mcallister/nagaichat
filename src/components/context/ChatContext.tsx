@@ -17,6 +17,8 @@ interface ChatContextType {
   presets: Preset[] | null
   preset: Preset | null
   setPreset: (preset: Preset) => void
+  showTreeView: boolean
+  setShowTreeView: (show: boolean) => void
 }
 
 const ChatContext = createContext<ChatContextType | undefined>(undefined)
@@ -41,9 +43,22 @@ export function ChatContextProvider({
   preset,
   presets,
   setPreset,
+  showTreeView,
+  setShowTreeView,
 }: ChatContextProviderProps) {
   return (
-    <ChatContext.Provider value={{ options, setOptions, preset, presets, setPreset, rawOptions }}>
+    <ChatContext.Provider
+      value={{
+        options,
+        setOptions,
+        preset,
+        presets,
+        setPreset,
+        rawOptions,
+        showTreeView,
+        setShowTreeView,
+      }}
+    >
       {children}
     </ChatContext.Provider>
   )

@@ -6,7 +6,6 @@ import Navbar from '@/components/Navbar'
 import OptionSidebar from '@/components/OptionSidebar'
 import Sidebar from '@/components/Sidebar'
 import SidebarNav from '@/components/SidebarNav'
-import { TreeView } from '@/components/TreeView'
 import Api, {
   fromPreset,
   Preset,
@@ -38,7 +37,6 @@ export default function ChatLayout({ children }: Props) {
 
   // TODO: Should rename id to sessionId to disambiguate
   const { id: sessionId } = useParams<{ id?: string }>()
-
   const [options, setOptions] = useState<SessionOptionsFields>({
     integration: undefined,
     model: undefined,
@@ -65,19 +63,10 @@ export default function ChatLayout({ children }: Props) {
       preset={preset || null}
       setPreset={setPreset}
       rawOptions={options}
+      showTreeView={showTreeView}
+      setShowTreeView={setShowTreeView}
     >
       <div className={styles.layoutContainer}>
-        {sessionId && showTreeView && (
-          <TreeView
-            sessionId={Number(sessionId)}
-            onClose={() => setShowTreeView(false)}
-            onSelect={item => {
-              // TODO
-              console.log('Selected item:', item)
-            }}
-          />
-        )}
-
         <Sidebar open={leftSidebarOpen} setOpen={setLeftSidebarOpen}>
           <SidebarNav open={leftSidebarOpen} setOpen={setLeftSidebarOpen} />
         </Sidebar>
