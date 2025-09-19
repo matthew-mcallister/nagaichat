@@ -25,15 +25,9 @@ class Vec2 {
   }
 }
 
-interface Colors {
-  background: string
-  grid: string
-  gridAlt: string
-}
-
-// TODO: fill in correct colors; also dark mode
-const LIGHT_COLORS: Colors = {
-  background: '#f3f4f6',
+// TODO: look up color variables with getComputedStyle
+const LIGHT_COLORS = {
+  background: '#e5e7eb',
   grid: '#0f172a',
   gridAlt: '#64748b',
 }
@@ -60,10 +54,8 @@ function renderSvg(parent: HTMLDivElement): void {
   rect.setAttribute('y', '0')
   rect.setAttribute('width', '3')
   rect.setAttribute('height', '2')
-  rect.setAttribute('fill', '#3b82f6')
-  rect.setAttribute('stroke', '#1e40af')
-  rect.setAttribute('stroke-width', '0.1')
   rect.setAttribute('rx', '0.1')
+  rect.setAttribute('class', styles.treeNode)
   group.appendChild(rect)
 
   svg.appendChild(group)

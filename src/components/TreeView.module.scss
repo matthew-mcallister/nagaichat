@@ -44,4 +44,13 @@
   height: 100%;
   pointer-events: none;
   z-index: 10001;
+
+  .treeNode {
+    color: var(--color-foreground);
+    fill: var(--color-background);
+    stroke: var(--color-border);
+    stroke-width: 0.02;
+    filter: drop-shadow(0 0.05px 0.1px rgba(0, 0, 0, 0.3));
+    transition: all 0.2s ease;
+  }
 }
