@@ -37,19 +37,22 @@ const LIGHT_COLORS: Colors = {
 class ViewController {
   private canvas: HTMLCanvasElement
   private viewportCenter: Vec2
+  private dirty: boolean
   private zoomLevel: number
   private mousePos: Vec2 | null = null
   private isMouseDown: boolean = false
   private isDragging: boolean = false
   private dragStartPos: Vec2 | null = null
+  private animationFrameId: number | null = null
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
     this.viewportCenter = new Vec2(0, 0)
+    this.dirty = true
     this.zoomLevel = 10
     this.updateCanvasSize()
     this.setupEventListeners()
-    this.render()
+    this.startRenderLoop()
   }
 
   private get viewportYExtent(): number {
@@ -73,7 +76,28 @@ class ViewController {
     )
   }
 
-  public render() {
+  public markDirty(): void {
+    this.dirty = true
+  }
+
+  private startRenderLoop(): void {
+    const renderFrame = () => {
+      this.render()
+      this.animationFrameId = requestAnimationFrame(renderFrame)
+    }
+    this.animationFrameId = requestAnimationFrame(renderFrame)
+  }
+
+  private stopRenderLoop(): void {
+    if (this.animationFrameId !== null) {
+      cancelAnimationFrame(this.animationFrameId)
+      this.animationFrameId = null
+    }
+  }
+
+  public render(): void {
+    if (!this.dirty) return
+
     const ctx = this.canvas.getContext('2d')
     if (!ctx) return
 
@@ -83,9 +107,12 @@ class ViewController {
 
     // Draw grid
     this.drawGrid(ctx)
+
+    // Mark as clean after rendering
+    this.dirty = false
   }
 
-  private drawGrid(ctx: CanvasRenderingContext2D) {
+  private drawGrid(ctx: CanvasRenderingContext2D): void {
     const extent = this.viewportExtent()
     const gridSize = Math.pow(2, Math.floor(Math.log2(extent.y) - 2.5))
 
@@ -214,7 +241,7 @@ class ViewController {
     const worldDelta = lastWorldPos.minus(currentWorldPos)
     this.viewportCenter = this.viewportCenter.plus(worldDelta)
 
-    this.render()
+    this.markDirty()
   }
 
   private handleMouseUp() {
@@ -230,10 +257,11 @@ class ViewController {
     const zoomDelta = Math.sign(event.deltaY)
     this.zoomLevel += zoomDelta
 
-    this.render()
+    this.markDirty()
   }
 
   public destroy() {
+    this.stopRenderLoop()
     this.canvas.removeEventListener(
       'mousedown',
       this.handleMouseDown.bind(this),
@@ -272,7 +300,7 @@ function TreeViewInner({ items, onSelect }: TreeViewInnerProps) {
     const resizeObserver = new ResizeObserver(() => {
       if (viewController) {
         viewController.updateCanvasSize()
-        viewController.render()
+        viewController.markDirty()
       }
     })
 
