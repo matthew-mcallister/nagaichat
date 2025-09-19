@@ -22,7 +22,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.1s ease;
   border: none;
 
   &:hover {
@@ -49,8 +48,20 @@
     color: var(--color-foreground);
     fill: var(--color-background);
     stroke: var(--color-border);
-    stroke-width: 0.02;
-    filter: drop-shadow(0 0.05px 0.1px rgba(0, 0, 0, 0.3));
-    transition: all 0.2s ease;
+    stroke-width: 2;
+    filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.3));
+  }
+
+  .treeNodeText {
+    display: -webkit-box;
+    line-clamp: 4;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    margin: 0;
+    font-size: 1rem;
+    line-height: 1.5rem;
+    color: var(--color-foreground);
+    overflow: hidden;
+    text-overflow: wrap;
   }
 }

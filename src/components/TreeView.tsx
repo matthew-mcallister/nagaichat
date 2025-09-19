@@ -1,4 +1,4 @@
-import Api, { Item } from '@/lib/frontend/api'
+import Api, { Item, getItemText } from '@/lib/frontend/api'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { useEffect, useRef } from 'react'
 import styles from './TreeView.module.scss'
@@ -32,25 +32,53 @@ const LIGHT_COLORS = {
   gridAlt: '#64748b',
 }
 
+interface TreeItemProps {
+  x: number
+  y: number
+  item: Item
+}
+
+function TreeItem({ x, y, item }: TreeItemProps) {
+  const text = getItemText(item) || ''
+
+  return (
+    <g>
+      <rect
+        x={x}
+        y={y}
+        width={300}
+        height={125}
+        rx={10}
+        className={styles.treeNode}
+      />
+      {
+        // It looks weird, but we have to implement padding manually due to
+        // -webkit-line-clamp interacting with padding incorrectly.
+      }
+      <foreignObject x={x + 16} y={y + 16} width={300 - 32} height={125 - 32}>
+        <p className={styles.treeNodeText}>{text}</p>
+      </foreignObject>
+    </g>
+  )
+}
+
 interface TreeSvgProps {
   items: Item[]
 }
 
+/** The actual item tree itself. */
 function TreeSvg({ items }: TreeSvgProps) {
   return (
     <svg id='treeSvg' width='100%' height='100%' className={styles.treeSvg}>
       <g id='viewport' transform='translate(0, 0) scale(1)'>
         {items.map((item, index) => {
-          const currentOffset = 3.5 * index
+          const offset = 350 * index
           return (
-            <rect
+            <TreeItem
               key={item.id || index}
-              x={currentOffset}
-              y={0}
-              width={3}
-              height={2}
-              rx={0.1}
-              className={styles.treeNode}
+              x={offset}
+              y={-125 / 2}
+              item={item}
             />
           )
         })}
@@ -240,7 +268,7 @@ class ViewController {
     const viewport = document.getElementById('viewport')
     if (!viewport) return
 
-    const scale = this.worldScreenScale()
+    const scale = this.worldScreenScale() / 100
 
     const screenCenter = this.worldToScreen(new Vec2(0, 0))
     const translateX = screenCenter.x
