@@ -1,6 +1,6 @@
 import Api, { Item } from '@/lib/frontend/api'
 import { XMarkIcon } from '@heroicons/react/24/outline'
-import React, { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import styles from './TreeView.module.scss'
 
 class Vec2 {
@@ -19,6 +19,10 @@ class Vec2 {
   public minus(other: Vec2): Vec2 {
     return new Vec2(this.x - other.x, this.y - other.y)
   }
+
+  public times(other: number): Vec2 {
+    return new Vec2(this.x * other, this.y * other)
+  }
 }
 
 interface Colors {
@@ -32,6 +36,38 @@ const LIGHT_COLORS: Colors = {
   background: '#f3f4f6',
   grid: '#0f172a',
   gridAlt: '#64748b',
+}
+
+/**
+ * Prerenders the tree SVG. The ViewController only updates style and
+ * transforms after the SVG is initially rendered.
+ */
+function renderSvg(parent: HTMLDivElement): void {
+  parent.innerHTML = ''
+
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+  svg.setAttribute('id', 'treeSvg')
+  svg.setAttribute('width', '100%')
+  svg.setAttribute('height', '100%')
+
+  // Create a group element with viewport transform
+  const group = document.createElementNS('http://www.w3.org/2000/svg', 'g')
+  group.setAttribute('id', 'viewport')
+  group.setAttribute('transform', 'translate(0, 0) scale(1)')
+
+  const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect')
+  rect.setAttribute('x', '0')
+  rect.setAttribute('y', '0')
+  rect.setAttribute('width', '3')
+  rect.setAttribute('height', '2')
+  rect.setAttribute('fill', '#3b82f6')
+  rect.setAttribute('stroke', '#1e40af')
+  rect.setAttribute('stroke-width', '0.1')
+  rect.setAttribute('rx', '0.1')
+  group.appendChild(rect)
+
+  svg.appendChild(group)
+  parent.appendChild(svg)
 }
 
 class ViewController {
@@ -55,7 +91,12 @@ class ViewController {
     this.startRenderLoop()
   }
 
+  /**
+   * Height of the viewport rectangle in world space. The width of the viewport
+   * is `viewportYExtent * viewportAspectRatio`.
+   */
   private get viewportYExtent(): number {
+    // Zoom is logarithmic: 10 scrolls zooms in or out by a factor of 10.
     return Math.pow(10, 0.1 * this.zoomLevel)
   }
 
@@ -69,6 +110,7 @@ class ViewController {
     return this.canvas.width / this.canvas.height
   }
 
+  /** Dimensions of the viewport in world coordinates. */
   private viewportExtent(): Vec2 {
     return new Vec2(
       this.aspectRatio() * this.viewportYExtent,
@@ -76,10 +118,41 @@ class ViewController {
     )
   }
 
+  private worldScreenScale(): number {
+    return this.canvas.height / this.viewportYExtent
+  }
+
+  /** Converts from world coords to screen coords (pixels). */
+  private worldToScreen(worldPos: Vec2): Vec2 {
+    const extent = this.viewportExtent()
+    const relativePos = worldPos.minus(this.viewportCenter)
+
+    const normalizedX = relativePos.x / extent.x + 0.5
+    const normalizedY = relativePos.y / extent.y + 0.5
+    const screenX = normalizedX * this.canvas.width
+    const screenY = (1 - normalizedY) * this.canvas.height // Canvas Y is inverted
+
+    return new Vec2(screenX, screenY)
+  }
+
+  /** Converts from screen coords (pixels) to world coords. */
+  private screenToWorld(screenPos: Vec2): Vec2 {
+    const extent = this.viewportExtent()
+
+    const normalizedX = screenPos.x / this.canvas.width
+    const normalizedY = 1 - screenPos.y / this.canvas.height
+    const worldX = this.viewportCenter.x + (normalizedX - 0.5) * extent.x
+    const worldY = this.viewportCenter.y + (normalizedY - 0.5) * extent.y
+
+    return new Vec2(worldX, worldY)
+  }
+
+  /** Marks the controller state as dirty and needing a rerender. */
   public markDirty(): void {
     this.dirty = true
   }
 
+  /** Starts a loop to request a render frame and rerender if dirty. */
   private startRenderLoop(): void {
     const renderFrame = () => {
       this.render()
@@ -105,18 +178,20 @@ class ViewController {
     ctx.fillStyle = LIGHT_COLORS.background
     ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
 
-    // Draw grid
     this.drawGrid(ctx)
+    this.updateSvg()
 
-    // Mark as clean after rendering
     this.dirty = false
   }
 
+  /** Draws the background grid. This is the only thing we use the canvas for. */
   private drawGrid(ctx: CanvasRenderingContext2D): void {
     const extent = this.viewportExtent()
+    // Grid size automatically scales to the nearest power of 2 that fits
+    // 2^(-3) grid cells
     const gridSize = Math.pow(2, Math.floor(Math.log2(extent.y) - 2.5))
 
-    // Define line properties (in canvas pixels) relative to grid size
+    // Define line properties (in screen pixels) relative to grid size
     const s = (gridSize / extent.y) * this.canvas.height
     ctx.lineWidth = 0.5
     ctx.setLineDash([s / 128, s / 32 - s / 128])
@@ -171,27 +246,19 @@ class ViewController {
     ctx.setLineDash([])
   }
 
-  private worldToScreen(worldPos: Vec2): Vec2 {
-    const extent = this.viewportExtent()
-    const relativePos = worldPos.minus(this.viewportCenter)
+  /** Updates the SVG viewport transform to match the canvas viewport. */
+  private updateSvg(): void {
+    const viewport = document.getElementById('viewport')
+    if (!viewport) return
 
-    const normalizedX = (relativePos.x + extent.x / 2) / extent.x
-    const normalizedY = (relativePos.y + extent.y / 2) / extent.y
-    const screenX = normalizedX * this.canvas.width
-    const screenY = (1 - normalizedY) * this.canvas.height
+    const scale = this.worldScreenScale()
 
-    return new Vec2(screenX, screenY)
-  }
+    const screenCenter = this.worldToScreen(new Vec2(0, 0))
+    const translateX = screenCenter.x
+    const translateY = screenCenter.y
 
-  private screenToWorld(screenPos: Vec2): Vec2 {
-    const extent = this.viewportExtent()
-
-    const normalizedX = screenPos.x / this.canvas.width
-    const normalizedY = 1 - screenPos.y / this.canvas.height
-    const worldX = this.viewportCenter.x + (normalizedX - 0.5) * extent.x
-    const worldY = this.viewportCenter.y + (normalizedY - 0.5) * extent.y
-
-    return new Vec2(worldX, worldY)
+    const transform = `translate(${translateX}, ${translateY}) scale(${scale})`
+    viewport.setAttribute('transform', transform)
   }
 
   private startDragging(): boolean {
@@ -213,7 +280,6 @@ class ViewController {
   }
 
   private handleMouseDown(event: MouseEvent) {
-    this.isMouseDown = true
     const rect = this.canvas.getBoundingClientRect()
     const pos = new Vec2(event.clientX - rect.left, event.clientY - rect.top)
     this.dragStartPos = pos
@@ -245,7 +311,6 @@ class ViewController {
   }
 
   private handleMouseUp() {
-    this.isMouseDown = false
     this.isDragging = false
     this.dragStartPos = null
     this.canvas.style.cursor = 'grab'
@@ -282,8 +347,9 @@ interface TreeViewInnerProps {
 }
 
 function TreeViewInner({ items, onSelect }: TreeViewInnerProps) {
-  const canvasRef = React.useRef<HTMLCanvasElement>(null)
-  const viewControllerRef = React.useRef<ViewController | null>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const svgDivRef = useRef<HTMLDivElement>(null)
+  const viewControllerRef = useRef<ViewController | null>(null)
 
   useEffect(() => {
     if (!canvasRef.current) {
@@ -312,8 +378,14 @@ function TreeViewInner({ items, onSelect }: TreeViewInnerProps) {
     }
   }, [])
 
+  useEffect(() => {
+    if (!svgDivRef.current) return
+    renderSvg(svgDivRef.current)
+  }, [])
+
   return (
     <>
+      <div className={styles.treeSvg} ref={svgDivRef} />
       <canvas className={styles.canvas} ref={canvasRef} />
     </>
   )
