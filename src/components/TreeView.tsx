@@ -60,7 +60,8 @@ function TreeItem({
 
   return (
     <g
-      className={`${styles.treeNodeOuter} ${isHovered ? styles.treeNodeHovered : ''}`}
+      className={styles.treeNodeOuter}
+      data-hovered={isHovered}
       onMouseEnter={onMouseEnter}
       onMouseLeave={onMouseLeave}
       onClick={onClick}
@@ -90,7 +91,14 @@ function TreeItem({
               <g key={index}>
                 <defs>
                   <clipPath id={`clip-${item.id}-${index}`}>
-                    <rect x={offsetX} y={y} width={125} height={125} rx={10} />
+                    <rect
+                      x={offsetX}
+                      y={y}
+                      width={125}
+                      height={125}
+                      rx={10}
+                      className={styles.treeNodeImageClipPath}
+                    />
                   </clipPath>
                 </defs>
                 <g className={styles.imageOuter}>
@@ -103,6 +111,17 @@ function TreeItem({
                     clipPath={`url(#clip-${item.id}-${index})`}
                     className={styles.treeNodeImage}
                     preserveAspectRatio='xMidYMid slice'
+                  />
+                  <rect
+                    // TODO: It would be better if there was one rectangular
+                    // stroke surrounding all of the images instead of one
+                    // around every individual image.
+                    x={offsetX}
+                    y={y}
+                    width={125}
+                    height={125}
+                    rx={10}
+                    className={styles.treeNodeImageClipPath}
                   />
                 </g>
               </g>
@@ -117,31 +136,13 @@ function TreeItem({
 interface TreeSvgProps {
   tree: ChatTree
   onSelect: (item: Item) => void | Promise<void>
-  canvasRef: React.RefObject<HTMLCanvasElement | null>
 }
 
 /** The actual item tree itself. */
-function TreeSvg({ tree, onSelect, canvasRef }: TreeSvgProps) {
+function TreeSvg({ tree, onSelect }: TreeSvgProps) {
   const [hoveredItemId, setHoveredItemId] = useState<string | number | null>(
     null,
   )
-
-  const handleWheel = (event: React.WheelEvent) => {
-    // Forward wheel events to the canvas element
-    if (canvasRef.current) {
-      const wheelEvent = new WheelEvent('wheel', {
-        deltaY: event.deltaY,
-        deltaX: event.deltaX,
-        deltaZ: event.deltaZ,
-        deltaMode: event.deltaMode,
-        clientX: event.clientX,
-        clientY: event.clientY,
-        bubbles: true,
-        cancelable: true,
-      })
-      canvasRef.current.dispatchEvent(wheelEvent)
-    }
-  }
 
   return (
     <svg id='treeSvg' width='100%' height='100%' className={styles.treeSvg}>
@@ -159,7 +160,6 @@ function TreeSvg({ tree, onSelect, canvasRef }: TreeSvgProps) {
               onMouseEnter={() => setHoveredItemId(itemId)}
               onMouseLeave={() => setHoveredItemId(null)}
               onClick={() => onSelect(item)}
-              onWheel={handleWheel}
             />
           )
         })}
@@ -170,16 +170,18 @@ function TreeSvg({ tree, onSelect, canvasRef }: TreeSvgProps) {
 
 class ViewController {
   private canvas: HTMLCanvasElement
+  private div: HTMLDivElement
   private viewportCenter: Vec2
   private dirty: boolean
   private zoomLevel: number
   private mousePos: Vec2 | null = null
-  private isDragging: boolean = false
+  private _isDragging: boolean = false
   private dragStartPos: Vec2 | null = null
   private animationFrameId: number | null = null
 
-  constructor(canvas: HTMLCanvasElement) {
+  constructor(canvas: HTMLCanvasElement, div: HTMLDivElement) {
     this.canvas = canvas
+    this.div = div
     this.viewportCenter = new Vec2(0, 0)
     this.dirty = true
     this.zoomLevel = 10
@@ -201,6 +203,19 @@ class ViewController {
     const rect = this.canvas.getBoundingClientRect()
     this.canvas.width = rect.width
     this.canvas.height = rect.height
+  }
+
+  /** Marks the controller state as dirty and needing a rerender. */
+  public markDirty(): void {
+    this.dirty = true
+  }
+
+  public get isDragging() {
+    return this._isDragging
+  }
+
+  private set isDragging(value: boolean) {
+    this._isDragging = value
   }
 
   private aspectRatio(): number {
@@ -242,11 +257,6 @@ class ViewController {
     const worldY = this.viewportCenter.y + (normalizedY - 0.5) * extent.y
 
     return new Vec2(worldX, worldY)
-  }
-
-  /** Marks the controller state as dirty and needing a rerender. */
-  public markDirty(): void {
-    this.dirty = true
   }
 
   /** Starts a loop to request a render frame and rerender if dirty. */
@@ -358,7 +368,7 @@ class ViewController {
     viewport.setAttribute('transform', transform)
   }
 
-  private startDragging(): boolean {
+  private shouldStartDragging(): boolean {
     if (!this.mousePos || !this.dragStartPos) return false
     const distance = this.mousePos.minus(this.dragStartPos)
     const dragThreshold = 3 // pixels
@@ -369,11 +379,11 @@ class ViewController {
   }
 
   private setupEventListeners() {
-    this.canvas.addEventListener('mousedown', this.handleMouseDown.bind(this))
-    this.canvas.addEventListener('mousemove', this.handleMouseMove.bind(this))
-    this.canvas.addEventListener('mouseup', this.handleMouseUp.bind(this))
-    this.canvas.addEventListener('mouseleave', this.handleMouseUp.bind(this))
-    this.canvas.addEventListener('wheel', this.handleWheel.bind(this))
+    this.div.addEventListener('mousedown', this.handleMouseDown.bind(this))
+    this.div.addEventListener('mousemove', this.handleMouseMove.bind(this))
+    this.div.addEventListener('mouseup', this.handleMouseUp.bind(this))
+    this.div.addEventListener('mouseleave', this.handleMouseUp.bind(this))
+    this.div.addEventListener('wheel', this.handleWheel.bind(this))
   }
 
   private handleMouseDown(event: MouseEvent) {
@@ -393,7 +403,7 @@ class ViewController {
     const previousMousePos = this.mousePos
     this.mousePos = currentMousePos
 
-    this.isDragging ||= this.startDragging()
+    this.isDragging ||= this.shouldStartDragging()
     if (!this.isDragging || !previousMousePos) return
 
     // Handle dragging
@@ -408,9 +418,14 @@ class ViewController {
   }
 
   private handleMouseUp() {
-    this.isDragging = false
-    this.dragStartPos = null
-    this.canvas.style.cursor = 'grab'
+    // We want to block onclick handlers from running at the end of a drag
+    // event. However, click events fire *after* mouseup events, so we use a
+    // timeout to delay ending the drag until after click handlers have run.
+    setTimeout(() => {
+      this.dragStartPos = null
+      this.canvas.style.cursor = 'grab'
+      this.isDragging = false
+    }, 0)
   }
 
   private handleWheel(event: WheelEvent) {
@@ -425,17 +440,11 @@ class ViewController {
 
   public destroy() {
     this.stopRenderLoop()
-    this.canvas.removeEventListener(
-      'mousedown',
-      this.handleMouseDown.bind(this),
-    )
-    this.canvas.removeEventListener(
-      'mousemove',
-      this.handleMouseMove.bind(this),
-    )
-    this.canvas.removeEventListener('mouseup', this.handleMouseUp.bind(this))
-    this.canvas.removeEventListener('mouseleave', this.handleMouseUp.bind(this))
-    this.canvas.removeEventListener('wheel', this.handleWheel.bind(this))
+    this.div.removeEventListener('mousedown', this.handleMouseDown.bind(this))
+    this.div.removeEventListener('mousemove', this.handleMouseMove.bind(this))
+    this.div.removeEventListener('mouseup', this.handleMouseUp.bind(this))
+    this.div.removeEventListener('mouseleave', this.handleMouseUp.bind(this))
+    this.div.removeEventListener('wheel', this.handleWheel.bind(this))
   }
 }
 
@@ -447,7 +456,14 @@ interface TreeViewProps {
 
 export default function TreeView({ tree, onClose, onSelect }: TreeViewProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
+  const divRef = useRef<HTMLDivElement>(null)
   const viewControllerRef = useRef<ViewController | null>(null)
+
+  const handleSelect = (item: Item) => {
+    if (!viewControllerRef.current || viewControllerRef.current.isDragging)
+      return
+    onSelect(item)
+  }
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -463,15 +479,15 @@ export default function TreeView({ tree, onClose, onSelect }: TreeViewProps) {
   }, [onClose])
 
   useEffect(() => {
-    if (!canvasRef.current) {
+    if (!canvasRef.current || !divRef.current) {
       return
     }
 
-    const viewController = new ViewController(canvasRef.current)
+    const viewController = new ViewController(canvasRef.current, divRef.current)
     viewControllerRef.current = viewController
 
     // Set initial cursor style
-    canvasRef.current.style.cursor = 'grab'
+    divRef.current.style.cursor = 'grab'
 
     // Set up ResizeObserver to handle canvas resizing
     const resizeObserver = new ResizeObserver(() => {
@@ -490,11 +506,11 @@ export default function TreeView({ tree, onClose, onSelect }: TreeViewProps) {
   }, [])
 
   return (
-    <div>
+    <div className={styles.viewContainer} ref={divRef}>
       <button className={styles.closeButton} onClick={onClose}>
         <XMarkIcon className={styles.icon} />
       </button>
-      <TreeSvg tree={tree} onSelect={onSelect} canvasRef={canvasRef} />
+      <TreeSvg tree={tree} onSelect={handleSelect} />
       <canvas className={styles.canvas} ref={canvasRef} />
     </div>
   )
