@@ -2,6 +2,7 @@ import { AttachedImages } from '@/components/AttachedImages'
 import ImagePreview from '@/components/ImagePreview'
 import Markdown from '@/components/Markdown'
 import {
+  getItemImageContent,
   getItemImageUris,
   getItemText,
   getItemThoughts,
@@ -24,16 +25,6 @@ import {
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 import styles from './ChatHistoryMessage.module.scss'
-
-function itemImageContent(item: Item): ImageContent[] {
-  const images: ImageContent[] = []
-  for (const content of item.content) {
-    if (content.type === 'static' || content.type === 'inline') {
-      images.push(content)
-    }
-  }
-  return images
-}
 
 interface ItemThoughtProps {
   text: string
@@ -242,7 +233,7 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
   const rawText = getItemText(item)
   const rawThoughts = getItemThoughts(item)
   const imageUris = getItemImageUris(item)
-  const ImageContent = itemImageContent(item)
+  const imageContent = getItemImageContent(item)
 
   async function handleSave(message: string, images: ImageContent[]) {
     if (!message) return
@@ -321,7 +312,7 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
           disabled={disabled}
           forkDisabled={forkDisabled}
           initialText={rawText || ''}
-          initialImages={ImageContent}
+          initialImages={imageContent}
           onSave={handleSave}
           onFork={handleFork}
           onCancel={() => setEditing(false)}

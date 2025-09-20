@@ -1,12 +1,13 @@
-export interface TreeInput<T> {
+export interface TreeNode<T> {
   value: T
-  children: TreeInput<T>[]
+  width: number
+  children: TreeNode<T>[]
 }
 
 export class DrawTree<T> {
   x: number = -1
   y: number
-  tree: TreeInput<T>
+  tree: TreeNode<T>
   children: DrawTree<T>[]
   parent: DrawTree<T> | null
   thread: DrawTree<T> | null = null
@@ -19,7 +20,7 @@ export class DrawTree<T> {
   // this is the number of the node in its group of siblings 1..n
   number: number
 
-  constructor(tree: TreeInput<T>, parent: DrawTree<T> | null = null, depth: number = 0, number: number = 1) {
+  constructor(tree: TreeNode<T>, parent: DrawTree<T> | null = null, depth: number = 0, number: number = 1) {
     this.y = depth
     this.tree = tree
     this.children = tree.children.map((c, i) =>
@@ -189,8 +190,13 @@ function third_walk<T>(tree: DrawTree<T>, n: number): void {
   }
 }
 
-export function buchheim<T>(tree: TreeInput<T>): DrawTree<T> {
-  const dt = firstwalk(new DrawTree<T>(tree))
+interface TreeInput<T> {
+  root: TreeNode<T>,
+  gap: number,
+}
+
+export function drawTree<T>({ root, gap }: TreeInput<T>): DrawTree<T> {
+  const dt = firstwalk(new DrawTree<T>(root))
   const min = second_walk(dt)
   if (min < 0) {
     third_walk(dt, -min)

@@ -1,6 +1,11 @@
-import { getItemImageUris, getItemText, Item } from '@/lib/frontend/api'
+import {
+  getItemImageContent,
+  getItemImageUris,
+  getItemText,
+  Item,
+} from '@/lib/frontend/api'
 import ChatTree from '@/lib/frontend/chat-tree'
-import { buchheim, DrawTree, TreeInput } from '@/lib/frontend/draw-tree'
+import { drawTree, DrawTree, TreeNode } from '@/lib/frontend/draw-tree'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { useEffect, useRef, useState } from 'react'
 import styles from './TreeView.module.scss'
@@ -27,6 +32,35 @@ class Vec2 {
   }
 }
 
+const ITEM_LAYOUT = {
+  textWidth: 300,
+  textPadding: 16,
+  height: 125,
+  imageGap: 5,
+  imageWidth: 125,
+  imageStride: 20,
+}
+
+interface ItemLayout {
+  textWidth: number
+  imageWidth: number
+  totalWidth: number
+}
+
+function getItemLayout(item: Item): ItemLayout {
+  const textWidth = ITEM_LAYOUT.textWidth
+  const numImages = getItemImageContent(item).length
+  const imageWidth =
+    numImages > 0
+      ? ITEM_LAYOUT.imageWidth + ITEM_LAYOUT.imageStride * (numImages - 1)
+      : 0
+  return {
+    textWidth,
+    imageWidth,
+    totalWidth: textWidth + imageWidth,
+  }
+}
+
 interface ItemPlacement {
   pos: Vec2
   parentPos?: Vec2
@@ -34,11 +68,13 @@ interface ItemPlacement {
 }
 
 function computeLayout(tree: ChatTree): ItemPlacement[] {
-  function traverse(node: TreeInput<Item | null>): void {
+  function traverse(node: TreeNode<Item | null>): void {
     const children = tree.getChildren(node.value?.id || null)
     for (const child of children) {
+      const { totalWidth } = getItemLayout(child)
       const childNode = {
         value: child,
+        width: totalWidth,
         children: [],
       }
       node.children.push(childNode)
@@ -48,11 +84,13 @@ function computeLayout(tree: ChatTree): ItemPlacement[] {
 
   const root = {
     value: null,
+    width: ITEM_LAYOUT.height,
     children: [],
   }
   traverse(root)
 
-  const drawTree = buchheim(root)
+  const gap = 25
+  const dt = drawTree({ root, gap })
 
   const placements: ItemPlacement[] = []
   function collectPlacements(dt: DrawTree<Item | null>) {
@@ -66,7 +104,7 @@ function computeLayout(tree: ChatTree): ItemPlacement[] {
     }
   }
 
-  collectPlacements(drawTree)
+  collectPlacements(dt)
   return placements
 }
 
@@ -84,12 +122,10 @@ interface EmptyTreeNodeProps {
 
 function EmptyTreeNode({ x, y }: EmptyTreeNodeProps) {
   return (
-    <rect
+    <circle
       x={x}
       y={y}
-      width={125}
-      height={125}
-      rx={125 / 2}
+      radius={ITEM_LAYOUT.height / 2}
       className={styles.treeNode}
     />
   )
@@ -120,8 +156,7 @@ function TreeItem({
   const imageUris = getItemImageUris(item).slice(0, 3)
   const hasImages = imageUris.length > 0
 
-  const imageStride = 20
-  const imagesWidth = hasImages ? 125 + imageStride * (imageUris.length - 1) : 0
+  const { imageWidth } = getItemLayout(item)
 
   return (
     <g
@@ -135,8 +170,8 @@ function TreeItem({
       <rect
         x={x}
         y={y}
-        width={300}
-        height={125}
+        width={ITEM_LAYOUT.textWidth}
+        height={ITEM_LAYOUT.height}
         rx={10}
         className={styles.treeNode}
       />
@@ -144,27 +179,42 @@ function TreeItem({
         // It looks weird, but we have to implement padding manually due to
         // -webkit-line-clamp interacting with padding incorrectly.
       }
-      <foreignObject x={x + 16} y={y + 16} width={300 - 32} height={125 - 32}>
+      <foreignObject
+        x={x + ITEM_LAYOUT.textPadding}
+        y={y + ITEM_LAYOUT.textPadding}
+        width={ITEM_LAYOUT.textWidth - ITEM_LAYOUT.textPadding}
+        height={ITEM_LAYOUT.height - ITEM_LAYOUT.textPadding}
+      >
         <p className={styles.treeNodeText}>{text}</p>
       </foreignObject>
       {hasImages && (
         <g>
           {imageUris.reverse().map((imageUri, i) => {
             const index = imageUris.length - i - 1
-            const offsetX = x + 300 + 5 + index * imageStride
+            const offsetX =
+              x +
+              ITEM_LAYOUT.textWidth +
+              ITEM_LAYOUT.imageGap +
+              index * ITEM_LAYOUT.imageStride
             return (
               <g key={index}>
                 <defs>
                   <clipPath id={`clip-${item.id}-${index}`}>
-                    <rect x={offsetX} y={y} width={125} height={125} rx={10} />
+                    <rect
+                      x={offsetX}
+                      y={y}
+                      width={ITEM_LAYOUT.imageWidth}
+                      height={ITEM_LAYOUT.height}
+                      rx={10}
+                    />
                   </clipPath>
                 </defs>
                 <g className={styles.imageOuter}>
                   <image
                     x={offsetX}
                     y={y}
-                    width={125}
-                    height={125}
+                    width={ITEM_LAYOUT.imageWidth}
+                    height={ITEM_LAYOUT.height}
                     href={imageUri}
                     clipPath={`url(#clip-${item.id}-${index})`}
                     preserveAspectRatio='xMidYMid slice'
@@ -178,18 +228,18 @@ function TreeItem({
       <rect
         x={x}
         y={y}
-        width={300}
-        height={125}
+        width={ITEM_LAYOUT.textWidth}
+        height={ITEM_LAYOUT.height}
         rx={10}
         fill='none'
         className={styles.treeNodeRing}
       />
       {hasImages ? (
         <rect
-          x={x + 305}
+          x={x + ITEM_LAYOUT.textWidth + ITEM_LAYOUT.imageGap}
           y={y}
-          width={imagesWidth}
-          height={125}
+          width={imageWidth}
+          height={ITEM_LAYOUT.height}
           rx={10}
           fill='none'
           className={styles.treeNodeRing}
@@ -211,8 +261,8 @@ function TreeSvg({ tree, onSelect }: TreeSvgProps) {
   )
 
   const placements = computeLayout(tree)
-  const xScale = 500
   const yScale = 400
+  const xScale = 500
 
   return (
     <svg id='treeSvg' width='100%' height='100%' className={styles.treeSvg}>
@@ -226,7 +276,7 @@ function TreeSvg({ tree, onSelect }: TreeSvgProps) {
           return (
             <TreeItem
               key={item?.id}
-              x={(pos.x - 0.3) * xScale}
+              x={pos.x * xScale}
               y={pos.y * yScale}
               item={item}
               isHovered={hoveredItemId === item?.id}

@@ -147,6 +147,16 @@ export function getItemText(item: Item): string | undefined {
   }
 }
 
+export function getItemImageContent(item: Item): ImageContent[] {
+  const images: ImageContent[] = []
+  for (const content of item.content) {
+    if (content.type === 'static' || content.type === 'inline') {
+      images.push(content)
+    }
+  }
+  return images
+}
+
 export function getItemImageUris(item: Item): string[] {
   const uris = []
   for (const content of item.content) {
