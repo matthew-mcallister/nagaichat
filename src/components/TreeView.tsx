@@ -58,6 +58,9 @@ function TreeItem({
   const imageUris = getItemImageUris(item).slice(0, 3)
   const hasImages = imageUris.length > 0
 
+  const imageStride = 20
+  const imagesWidth = hasImages ? 125 + imageStride * (imageUris.length - 1) : 0
+
   return (
     <g
       className={styles.treeNodeOuter}
@@ -86,19 +89,12 @@ function TreeItem({
         <g>
           {imageUris.reverse().map((imageUri, i) => {
             const index = imageUris.length - i - 1
-            const offsetX = x + 300 + 10 + index * 15
+            const offsetX = x + 300 + 5 + index * imageStride
             return (
               <g key={index}>
                 <defs>
                   <clipPath id={`clip-${item.id}-${index}`}>
-                    <rect
-                      x={offsetX}
-                      y={y}
-                      width={125}
-                      height={125}
-                      rx={10}
-                      className={styles.treeNodeImageClipPath}
-                    />
+                    <rect x={offsetX} y={y} width={125} height={125} rx={10} />
                   </clipPath>
                 </defs>
                 <g className={styles.imageOuter}>
@@ -109,19 +105,7 @@ function TreeItem({
                     height={125}
                     href={imageUri}
                     clipPath={`url(#clip-${item.id}-${index})`}
-                    className={styles.treeNodeImage}
                     preserveAspectRatio='xMidYMid slice'
-                  />
-                  <rect
-                    // TODO: It would be better if there was one rectangular
-                    // stroke surrounding all of the images instead of one
-                    // around every individual image.
-                    x={offsetX}
-                    y={y}
-                    width={125}
-                    height={125}
-                    rx={10}
-                    className={styles.treeNodeImageClipPath}
                   />
                 </g>
               </g>
@@ -129,6 +113,26 @@ function TreeItem({
           })}
         </g>
       )}
+      <rect
+        x={x}
+        y={y}
+        width={300}
+        height={125}
+        rx={10}
+        fill='none'
+        className={styles.treeNodeRing}
+      />
+      {hasImages ? (
+        <rect
+          x={x + 305}
+          y={y}
+          width={imagesWidth}
+          height={125}
+          rx={10}
+          fill='none'
+          className={styles.treeNodeRing}
+        />
+      ) : null}
     </g>
   )
 }

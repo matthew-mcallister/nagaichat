@@ -55,12 +55,8 @@
     cursor: pointer;
   }
 
-  .treeNodeImageClipPath {
-    fill: none;
-  }
-
   [data-hovered=true] {
-    .treeNode, .treeNodeImageClipPath {
+    .treeNodeRing {
       stroke: var(--color-primary);
       stroke-width: 3;
     }
