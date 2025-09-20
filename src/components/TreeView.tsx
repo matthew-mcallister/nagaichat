@@ -1,5 +1,6 @@
-import { Item, getItemImageUris, getItemText } from '@/lib/frontend/api'
+import { getItemImageUris, getItemText, Item } from '@/lib/frontend/api'
 import ChatTree from '@/lib/frontend/chat-tree'
+import { buchheim, DrawTree, TreeInput } from '@/lib/frontend/draw-tree'
 import { XMarkIcon } from '@heroicons/react/24/outline'
 import { useEffect, useRef, useState } from 'react'
 import styles from './TreeView.module.scss'
@@ -26,11 +27,72 @@ class Vec2 {
   }
 }
 
+interface ItemPlacement {
+  pos: Vec2
+  parentPos?: Vec2
+  item: Item | null
+}
+
+function computeLayout(tree: ChatTree): ItemPlacement[] {
+  function traverse(node: TreeInput<Item | null>): void {
+    const children = tree.getChildren(node.value?.id || null)
+    for (const child of children) {
+      const childNode = {
+        value: child,
+        children: [],
+      }
+      node.children.push(childNode)
+      traverse(childNode)
+    }
+  }
+
+  const root = {
+    value: null,
+    children: [],
+  }
+  traverse(root)
+
+  const drawTree = buchheim(root)
+
+  const placements: ItemPlacement[] = []
+  function collectPlacements(dt: DrawTree<Item | null>) {
+    placements.push({
+      pos: new Vec2(dt.x, dt.y),
+      parentPos: dt.parent ? new Vec2(dt.parent.x, dt.parent.y) : undefined,
+      item: dt.tree.value,
+    })
+    for (const child of dt.children) {
+      collectPlacements(child)
+    }
+  }
+
+  collectPlacements(drawTree)
+  return placements
+}
+
 // TODO: look up color variables with getComputedStyle
 const LIGHT_COLORS = {
   background: '#e5e7eb',
   grid: '#0f172a',
   gridAlt: '#64748b',
+}
+
+interface EmptyTreeNodeProps {
+  x: number
+  y: number
+}
+
+function EmptyTreeNode({ x, y }: EmptyTreeNodeProps) {
+  return (
+    <rect
+      x={x}
+      y={y}
+      width={125}
+      height={125}
+      rx={125 / 2}
+      className={styles.treeNode}
+    />
+  )
 }
 
 interface TreeItemProps {
@@ -148,20 +210,27 @@ function TreeSvg({ tree, onSelect }: TreeSvgProps) {
     null,
   )
 
+  const placements = computeLayout(tree)
+  const xScale = 500
+  const yScale = 400
+
   return (
     <svg id='treeSvg' width='100%' height='100%' className={styles.treeSvg}>
       <g id='viewport' transform='translate(0, 0) scale(1)'>
-        {[...tree.items.values()].map((item, index) => {
-          const offset = 500 * index
-          const itemId = item.id || index
+        {placements.map(({ pos, parentPos, item }, index) => {
+          if (!item) {
+            return (
+              <EmptyTreeNode key={null} x={pos.x * xScale} y={pos.y * yScale} />
+            )
+          }
           return (
             <TreeItem
-              key={itemId}
-              x={offset}
-              y={-125 / 2}
+              key={item?.id}
+              x={(pos.x - 0.3) * xScale}
+              y={pos.y * yScale}
               item={item}
-              isHovered={hoveredItemId === itemId}
-              onMouseEnter={() => setHoveredItemId(itemId)}
+              isHovered={hoveredItemId === item?.id}
+              onMouseEnter={() => setHoveredItemId(item?.id)}
               onMouseLeave={() => setHoveredItemId(null)}
               onClick={() => onSelect(item)}
             />
