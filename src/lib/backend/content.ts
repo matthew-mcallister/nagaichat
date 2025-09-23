@@ -6,18 +6,24 @@ import getDb from '@/lib/backend/database'
 
 export class TextContent {
   public text: string
+  public isThought: boolean
 
-  constructor(text: string) {
+  constructor(text: string, isThought?: boolean) {
     this.text = text
+    this.isThought = isThought || false
   }
 
   public toApiJson(): ApiContent {
-    return { type: 'text', text: this.text } as ApiContent
+    if (this.isThought) {
+      return { type: 'thought', text: this.text } as ApiContent
+    } else {
+      return { type: 'text', text: this.text } as ApiContent
+    }
   }
 }
 
 type ContentInner = TextContent | StaticContent
-type ContentType = 'text' | 'static'
+type ContentType = 'text' | 'thought' | 'static'
 
 export class Content extends Model {
   declare id: number
@@ -34,6 +40,7 @@ export class Content extends Model {
   public inner(): ContentInner {
     switch (this.type) {
       case 'text': return new TextContent(this.text || '')
+      case 'thought': return new TextContent(this.text || '', true)
       case 'static': return this.staticContent
     }
   }
@@ -52,6 +59,12 @@ export class Content extends Model {
         return Content.create({
           itemId: item.id,
           type: 'text',
+          text: content.text,
+        }, { transaction })
+      case 'thought':
+        return Content.create({
+          itemId: item.id,
+          type: 'thought',
           text: content.text,
         }, { transaction })
       case 'inline': {

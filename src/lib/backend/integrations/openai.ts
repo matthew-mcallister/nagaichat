@@ -89,26 +89,54 @@ export default class OpenAiApi implements IntegrationApi {
       })
     }
 
-    const requestConfig: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming = {
+    const requestConfig: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming = {
       model: options.model,
       messages,
       temperature: options.temperature,
-      stream: false,
+      stream: true,
+    }
+
+    if (options.thinkingEnabled) {
+      // @ts-expect-error Nonstandard extension
+      requestConfig.enable_thinking = true
+    } else {
+      requestConfig.reasoning_effort = 'minimal'
     }
 
     const response = await this.client.chat.completions.create(requestConfig, { signal })
 
-    const choice = response.choices[0]
-    if (!choice?.message?.content) {
-      throw new ApiResponseError()
+    let thoughts = ''
+    let text = ''
+
+    // Iterate over the response stream to collect text and reasoning parts
+    for await (const chunk of response) {
+      const delta = chunk.choices[0]?.delta
+      if (!delta) continue
+
+      if (delta.content) {
+        text += delta.content
+      }
+
+      // @ts-expect-error Nonstandard extension
+      if (delta.reasoning_content) {
+        // @ts-expect-error Nonstandard extension
+        thoughts += delta.reasoning_content
+      }
     }
 
     // OpenAI's stateless API does not support image outputs - perhaps a
     // deliberate choice to encourage vendor lock-in.
     const content: ApiContent[] = [{
       type: 'text',
-      text: choice.message.content
+      text,
     }]
+    if (thoughts) {
+      content.push({
+        type: 'thought',
+        text: thoughts,
+      })
+    }
+    console.dir(content, { depth: null })
 
     return { content }
   }

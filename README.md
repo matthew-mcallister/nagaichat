@@ -18,5 +18,7 @@ cases, such as conversation, fiction, coding, and image editing.
 
 - Code highlighting (easy)
 - Image gallery (easy)
+- Audio output (easy)
+- Audio input (medium)
 - Response streaming (harder)
-- Multi-user auth and settings (hard)
+- Multitenancy (hard)

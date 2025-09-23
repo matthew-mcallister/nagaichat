@@ -4,6 +4,7 @@ import Markdown from '@/components/Markdown'
 import {
   getItemImageUris,
   getItemText,
+  getItemThoughts,
   ImageContent,
   Item,
 } from '@/lib/frontend/api'
@@ -32,6 +33,34 @@ function itemImageContent(item: Item): ImageContent[] {
     }
   }
   return images
+}
+
+interface ItemThoughtProps {
+  text: string
+  show: boolean
+  onClick: () => void
+}
+
+function Thoughts({ text, show, onClick }: ItemThoughtProps) {
+  // Requirements:
+  // - Contents contained in a muted text box.
+  // - At the top is the label "Thoughts" and a chevron.
+  // - When shown, thoughts are just below the label.
+  return (
+    <div className={styles.thoughtsContainer}>
+      <div className={styles.thoughtsHeader} onClick={onClick}>
+        <span className={styles.thoughtsLabel}>Thoughts</span>
+        <ChevronRightIcon
+          className={`${styles.thoughtsChevron} ${show ? styles.thoughtsChevronExpanded : ''}`}
+        />
+      </div>
+      {show && (
+        <div className={styles.thoughtsContent}>
+          <Markdown text={text} render={true} />
+        </div>
+      )}
+    </div>
+  )
 }
 
 interface EditUiProps {
@@ -209,7 +238,9 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
   } = props
   const [editing, setEditing] = useState<boolean>(false)
   const [previewImageUri, setPreviewImageUri] = useState<string | null>(null)
+  const [showThoughts, setShowThoughts] = useState<boolean>(false)
   const rawText = getItemText(item)
+  const rawThoughts = getItemThoughts(item)
   const imageUris = getItemImageUris(item)
   const ImageContent = itemImageContent(item)
 
@@ -264,6 +295,15 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
             />
           ))}
         </div>
+      )}
+
+      {!editing && rawThoughts && (
+        // TODO: Is there any reason to ever delete model thoughts?
+        <Thoughts
+          text={rawThoughts}
+          show={showThoughts}
+          onClick={() => setShowThoughts(!showThoughts)}
+        />
       )}
 
       {

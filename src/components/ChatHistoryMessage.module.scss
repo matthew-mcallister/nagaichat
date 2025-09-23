@@ -155,3 +155,47 @@
     opacity: 0.8;
   }
 }
+
+.thoughtsContainer {
+  width: 100%;
+  margin-bottom: var(--space-3);
+  background-color: var(--color-muted);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.thoughtsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: var(--color-focus);
+  }
+}
+
+.thoughtsLabel {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-muted-foreground);
+}
+
+.thoughtsChevron {
+  width: 16px;
+  height: 16px;
+  color: var(--color-muted-foreground);
+  transition: transform 0.15s ease;
+}
+
+.thoughtsChevronExpanded {
+  transform: rotate(90deg);
+}
+
+.thoughtsContent {
+  padding: var(--space-3);
+  border-top: 1px solid var(--color-border);
+  color: var(--color-muted-foreground);
+}

@@ -87,6 +87,11 @@ export type TextContent = {
   text: string
 }
 
+export type ThoughtContent = {
+  type: 'thought'
+  text: string
+}
+
 export type InlineContent = {
   type: 'inline'
   mimeType: string
@@ -100,7 +105,7 @@ export type StaticContent = {
   url: string
 }
 
-export type ContentObject = TextContent | InlineContent | StaticContent
+export type ContentObject = TextContent | ThoughtContent | InlineContent | StaticContent
 export type Content = ContentObject
 
 export type ImageContent = InlineContent | StaticContent
@@ -154,6 +159,16 @@ export function getItemImageUris(item: Item): string[] {
     }
   }
   return uris
+}
+
+export function getItemThoughts(item: Item): string {
+  let thoughts = ''
+  for (const content of item.content) {
+    if (content.type === 'thought') {
+      thoughts += content.text + '\n'
+    }
+  }
+  return thoughts.trim()
 }
 
 export interface CreateModelItemRequest {
