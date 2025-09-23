@@ -84,20 +84,23 @@ function computeLayout(tree: ChatTree): ItemPlacement[] {
 
   const root = {
     value: null,
-    width: ITEM_LAYOUT.height,
+    width: ITEM_LAYOUT.height / 2,
     children: [],
   }
   traverse(root)
 
   const gap = 25
+  const verticalStride = 2 * ITEM_LAYOUT.height
   const dt = drawTree({ root, gap })
 
   const placements: ItemPlacement[] = []
   function collectPlacements(dt: DrawTree<Item | null>) {
     placements.push({
-      pos: new Vec2(dt.x, dt.y),
-      parentPos: dt.parent ? new Vec2(dt.parent.x, dt.parent.y) : undefined,
-      item: dt.tree.value,
+      pos: new Vec2(dt.x, dt.depth * verticalStride),
+      parentPos: dt.parent
+        ? new Vec2(dt.parent.x, dt.parent.depth * verticalStride)
+        : undefined,
+      item: dt.node.value,
     })
     for (const child of dt.children) {
       collectPlacements(child)
@@ -121,14 +124,8 @@ interface EmptyTreeNodeProps {
 }
 
 function EmptyTreeNode({ x, y }: EmptyTreeNodeProps) {
-  return (
-    <circle
-      x={x}
-      y={y}
-      radius={ITEM_LAYOUT.height / 2}
-      className={styles.treeNode}
-    />
-  )
+  // Could optionally display something here
+  return <></>
 }
 
 interface TreeItemProps {
@@ -166,24 +163,23 @@ function TreeItem({
       onMouseLeave={onMouseLeave}
       onClick={onClick}
       onWheel={onWheel}
+      transform={`translate(${x}, ${y})`}
     >
       <rect
-        x={x}
-        y={y}
+        x={0}
+        y={0}
         width={ITEM_LAYOUT.textWidth}
         height={ITEM_LAYOUT.height}
         rx={10}
         className={styles.treeNode}
       />
-      {
-        // It looks weird, but we have to implement padding manually due to
-        // -webkit-line-clamp interacting with padding incorrectly.
-      }
       <foreignObject
-        x={x + ITEM_LAYOUT.textPadding}
-        y={y + ITEM_LAYOUT.textPadding}
-        width={ITEM_LAYOUT.textWidth - ITEM_LAYOUT.textPadding}
-        height={ITEM_LAYOUT.height - ITEM_LAYOUT.textPadding}
+        // We implement padding manually due to -webkit-line-clamp
+        // interacting with padding incorrectly.
+        x={ITEM_LAYOUT.textPadding}
+        y={ITEM_LAYOUT.textPadding}
+        width={ITEM_LAYOUT.textWidth - 2 * ITEM_LAYOUT.textPadding}
+        height={ITEM_LAYOUT.height - 2 * ITEM_LAYOUT.textPadding}
       >
         <p className={styles.treeNodeText}>{text}</p>
       </foreignObject>
@@ -192,7 +188,6 @@ function TreeItem({
           {imageUris.reverse().map((imageUri, i) => {
             const index = imageUris.length - i - 1
             const offsetX =
-              x +
               ITEM_LAYOUT.textWidth +
               ITEM_LAYOUT.imageGap +
               index * ITEM_LAYOUT.imageStride
@@ -202,7 +197,7 @@ function TreeItem({
                   <clipPath id={`clip-${item.id}-${index}`}>
                     <rect
                       x={offsetX}
-                      y={y}
+                      y={0}
                       width={ITEM_LAYOUT.imageWidth}
                       height={ITEM_LAYOUT.height}
                       rx={10}
@@ -212,7 +207,7 @@ function TreeItem({
                 <g className={styles.imageOuter}>
                   <image
                     x={offsetX}
-                    y={y}
+                    y={0}
                     width={ITEM_LAYOUT.imageWidth}
                     height={ITEM_LAYOUT.height}
                     href={imageUri}
@@ -226,8 +221,8 @@ function TreeItem({
         </g>
       )}
       <rect
-        x={x}
-        y={y}
+        x={0}
+        y={0}
         width={ITEM_LAYOUT.textWidth}
         height={ITEM_LAYOUT.height}
         rx={10}
@@ -236,8 +231,8 @@ function TreeItem({
       />
       {hasImages ? (
         <rect
-          x={x + ITEM_LAYOUT.textWidth + ITEM_LAYOUT.imageGap}
-          y={y}
+          x={ITEM_LAYOUT.textWidth + ITEM_LAYOUT.imageGap}
+          y={0}
           width={imageWidth}
           height={ITEM_LAYOUT.height}
           rx={10}
@@ -261,23 +256,19 @@ function TreeSvg({ tree, onSelect }: TreeSvgProps) {
   )
 
   const placements = computeLayout(tree)
-  const yScale = 400
-  const xScale = 500
 
   return (
     <svg id='treeSvg' width='100%' height='100%' className={styles.treeSvg}>
       <g id='viewport' transform='translate(0, 0) scale(1)'>
         {placements.map(({ pos, parentPos, item }, index) => {
           if (!item) {
-            return (
-              <EmptyTreeNode key={null} x={pos.x * xScale} y={pos.y * yScale} />
-            )
+            return <EmptyTreeNode key={null} x={pos.x} y={pos.y} />
           }
           return (
             <TreeItem
               key={item?.id}
-              x={pos.x * xScale}
-              y={pos.y * yScale}
+              x={pos.x}
+              y={pos.y}
               item={item}
               isHovered={hoveredItemId === item?.id}
               onMouseEnter={() => setHoveredItemId(item?.id)}
