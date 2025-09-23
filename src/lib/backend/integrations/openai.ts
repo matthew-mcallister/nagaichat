@@ -1,6 +1,6 @@
 import { ChatHistory, IntegrationApi, ModelResponse } from "@/lib/backend/integrations/interface"
 import { ModelInfo, ModelOptions, Content as ApiContent } from "@/lib/frontend/api"
-import { ApiResponseError, ValidationError } from "@/lib/error"
+import { ValidationError } from "@/lib/error"
 import { Content, TextContent } from "@/lib/backend/content"
 import { StaticContent } from "@/lib/backend/static"
 import OpenAI from "openai"

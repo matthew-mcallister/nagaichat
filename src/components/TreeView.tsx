@@ -313,10 +313,9 @@ class ViewController {
     const endX = Math.ceil(right / gridSize) * gridSize
     const endY = Math.ceil(top / gridSize) * gridSize
 
-    const view = this
-    function drawVertical(x: number, color: string) {
-      const start = view.worldToScreen(new Vec2(x, startY))
-      const end = view.worldToScreen(new Vec2(x, endY))
+    const drawVertical = (x: number, color: string) => {
+      const start = this.worldToScreen(new Vec2(x, startY))
+      const end = this.worldToScreen(new Vec2(x, endY))
       ctx.strokeStyle = color
       ctx.beginPath()
       ctx.moveTo(start.x, start.y)
@@ -324,9 +323,9 @@ class ViewController {
       ctx.stroke()
     }
 
-    function drawHorizontal(y: number, color: string) {
-      const start = view.worldToScreen(new Vec2(startX, y))
-      const end = view.worldToScreen(new Vec2(endX, y))
+    const drawHorizontal = (y: number, color: string) => {
+      const start = this.worldToScreen(new Vec2(startX, y))
+      const end = this.worldToScreen(new Vec2(endX, y))
       ctx.strokeStyle = color
       ctx.beginPath()
       ctx.moveTo(start.x, start.y)
