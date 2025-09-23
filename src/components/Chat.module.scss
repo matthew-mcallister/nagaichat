@@ -15,6 +15,10 @@ $chat-bar-height: 90px; // Approximate height including padding and borders
   width: 100%;
   min-height: $chat-bar-height;
   padding: var(--space-4);
-  background: linear-gradient(to top, var(--color-background) 50%, rgba(255, 255, 255, 0) 100%);
   margin: 0 auto;
+  background: linear-gradient(to top, var(--color-background) 50%, rgba(255, 255, 255, 0) 100%);
+
+  @media (max-width: 768px) {
+    padding: var(--space-4) var(--space-2);
+  }
 }
