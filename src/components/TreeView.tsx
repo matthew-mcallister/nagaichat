@@ -111,13 +111,6 @@ function computeLayout(tree: ChatTree): Map<number | null, ItemPlacement> {
   return placements
 }
 
-// TODO: look up color variables with getComputedStyle
-const LIGHT_COLORS = {
-  background: '#e5e7eb',
-  grid: '#0f172a',
-  gridAlt: '#64748b',
-}
-
 interface EmptyTreeNodeProps {
   x: number
   y: number
@@ -137,6 +130,11 @@ interface TreeEdgeProps {
 }
 
 function TreeEdge({ srcX, srcY, dstX, dstY, cornerRadius }: TreeEdgeProps) {
+  if (srcX === dstX) {
+    const pathData = `M ${srcX} ${srcY} L ${dstX} ${dstY}`
+    return <path d={pathData} className={styles.treeEdge} />
+  }
+
   const midY = (srcY + dstY) / 2
   const pathData = [
     `M ${srcX} ${srcY}`,
@@ -186,6 +184,7 @@ function TreeItem({
       onClick={onClick}
       onWheel={onWheel}
       transform={`translate(${x}, ${y})`}
+      data-role={item.role}
     >
       <rect
         x={0}
@@ -242,26 +241,6 @@ function TreeItem({
           })}
         </g>
       )}
-      <rect
-        x={0}
-        y={0}
-        width={ITEM_LAYOUT.textWidth}
-        height={ITEM_LAYOUT.height}
-        rx={10}
-        fill='none'
-        className={styles.treeNodeRing}
-      />
-      {hasImages ? (
-        <rect
-          x={ITEM_LAYOUT.textWidth + ITEM_LAYOUT.imageGap}
-          y={0}
-          width={imageWidth}
-          height={ITEM_LAYOUT.height}
-          rx={10}
-          fill='none'
-          className={styles.treeNodeRing}
-        />
-      ) : null}
     </g>
   )
 }
@@ -283,7 +262,7 @@ function TreeSvg({ tree, onSelect }: TreeSvgProps) {
     <svg id='treeSvg' width='100%' height='100%' className={styles.treeSvg}>
       <g id='viewport' transform='translate(0, 0) scale(1)'>
         <g>
-          {[...placements.values()].map(({ pos, width, item }) => {
+          {[...placements.values()].map(({ pos, height, item }) => {
             // Render path from item to parent
             const key = `${item?.id}-path`
             const parent = placements.get(item?.parentId || null)
@@ -291,10 +270,10 @@ function TreeSvg({ tree, onSelect }: TreeSvgProps) {
             return (
               <TreeEdge
                 key={key}
-                srcX={parent.pos.x + parent.width / 4}
-                srcY={parent.pos.y + parent.height}
-                dstX={pos.x + width / 2}
-                dstY={pos.y}
+                srcX={parent.pos.x + ITEM_LAYOUT.textWidth / 2}
+                srcY={parent.pos.y}
+                dstX={pos.x + ITEM_LAYOUT.textWidth / 2}
+                dstY={pos.y + height}
                 cornerRadius={10}
               />
             )
@@ -323,6 +302,12 @@ function TreeSvg({ tree, onSelect }: TreeSvgProps) {
       </g>
     </svg>
   )
+}
+
+interface GridColors {
+  background: string
+  majorLine: string
+  minorLine: string
 }
 
 class ViewController {
@@ -416,6 +401,15 @@ class ViewController {
     return new Vec2(worldX, worldY)
   }
 
+  private getColors(): GridColors {
+    const style = getComputedStyle(this.canvas)
+    return {
+      background: style.getPropertyValue('--color-grid-bg') || 'black',
+      majorLine: style.getPropertyValue('--color-grid-line-major') || 'black',
+      minorLine: style.getPropertyValue('--color-grid-line-minor') || 'black',
+    }
+  }
+
   /** Starts a loop to request a render frame and rerender if dirty. */
   private startRenderLoop(): void {
     const renderFrame = () => {
@@ -439,7 +433,7 @@ class ViewController {
     if (!ctx) return
 
     // Clear canvas
-    ctx.fillStyle = LIGHT_COLORS.background
+    ctx.fillStyle = this.getColors().background
     ctx.fillRect(0, 0, this.canvas.width, this.canvas.height)
 
     this.drawGrid(ctx)
@@ -450,6 +444,7 @@ class ViewController {
 
   /** Draws the background grid. This is the only thing we use the canvas for. */
   private drawGrid(ctx: CanvasRenderingContext2D): void {
+    const colors = this.getColors()
     const extent = this.viewportExtent()
     // Grid size automatically scales to the nearest power of 2 that fits
     // 2^(-3) grid cells
@@ -492,18 +487,18 @@ class ViewController {
 
     for (let i = 0; startX + i * gridSize <= endX; i++) {
       const x = startX + i * gridSize
-      drawVertical(x, LIGHT_COLORS.grid)
-      drawVertical(x + gridSize / 4, LIGHT_COLORS.gridAlt)
-      drawVertical(x + gridSize / 2, LIGHT_COLORS.gridAlt)
-      drawVertical(x + (3 * gridSize) / 4, LIGHT_COLORS.gridAlt)
+      drawVertical(x, colors.majorLine)
+      drawVertical(x + gridSize / 4, colors.minorLine)
+      drawVertical(x + gridSize / 2, colors.minorLine)
+      drawVertical(x + (3 * gridSize) / 4, colors.minorLine)
     }
 
     for (let i = 0; startY + i * gridSize <= endY; i++) {
       const y = startY + i * gridSize
-      drawHorizontal(y, LIGHT_COLORS.grid)
-      drawHorizontal(y + gridSize / 4, LIGHT_COLORS.gridAlt)
-      drawHorizontal(y + gridSize / 2, LIGHT_COLORS.gridAlt)
-      drawHorizontal(y + (3 * gridSize) / 4, LIGHT_COLORS.gridAlt)
+      drawHorizontal(y, colors.majorLine)
+      drawHorizontal(y + gridSize / 4, colors.minorLine)
+      drawHorizontal(y + gridSize / 2, colors.minorLine)
+      drawHorizontal(y + (3 * gridSize) / 4, colors.minorLine)
     }
 
     ctx.setLineDash([])

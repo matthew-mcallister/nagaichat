@@ -55,25 +55,32 @@
     cursor: pointer;
   }
 
-  [data-hovered=true] {
-    .treeNodeRing {
-      stroke: var(--color-primary);
-      stroke-width: 3;
-    }
-  }
-
   .treeEdge {
     fill: none;
-    stroke: var(--color-gray-400);
+    stroke: var(--color-tree-edge);
     stroke-width: 2;
   }
 
   .treeNode {
-    color: var(--color-foreground);
-    fill: var(--color-background);
+    fill: var(--color-tree-node);
     stroke: var(--color-border);
     stroke-width: 2;
     filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.3));
+  }
+
+  [data-hovered=true] .treeNode {
+    fill: var(--color-tree-node-hover);
+    stroke: none;
+  }
+
+  [data-role='user'] .treeNode {
+    fill: var(--color-tree-node-user);
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.3));
+  }
+
+  [data-role='user'][data-hovered=true] .treeNode {
+    fill: var(--color-tree-node-user-hover);
+    stroke: none;
   }
 
   .treeNodeText {
@@ -85,7 +92,6 @@
     margin: 0;
     font-size: 1rem;
     line-height: 1.5rem;
-    color: var(--color-foreground);
     overflow: hidden;
     text-overflow: wrap;
   }

@@ -131,6 +131,16 @@
     --font-size-2xl: #{$font-size-2xl};
     --font-size-3xl: #{$font-size-3xl};
     --font-size-4xl: #{$font-size-4xl};
+
+    // Tree view
+    --color-grid-bg: #{$gray-100};
+    --color-grid-line-major: #{$gray-800};
+    --color-grid-line-minor: #{$gray-400};
+    --color-tree-edge: #{$gray-400};
+    --color-tree-node: #{$gray-100};
+    --color-tree-node-user: #{$gray-200};
+    --color-tree-node-hover: #{$gray-200};
+    --color-tree-node-user-hover: #{$gray-300};
 }
 
 // Dark theme
@@ -155,6 +165,16 @@
         --color-border: #{$zinc-800};
         --color-input: #{$zinc-800};
         --color-ring: #{$blue-400};
+
+        // Tree view
+        --color-grid-bg: #{$zinc-900};
+        --color-grid-line-major: #{$zinc-300};
+        --color-grid-line-minor: #{$zinc-600};
+        --color-tree-edge: #{$zinc-600};
+        --color-tree-node: #{$zinc-800};
+        --color-tree-node-user: #{$zinc-700};
+        --color-tree-node-hover: #{$zinc-700};
+        --color-tree-node-user-hover: #{$zinc-600};
     }
 }
 
