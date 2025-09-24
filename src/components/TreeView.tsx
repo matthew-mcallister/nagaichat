@@ -41,16 +41,6 @@ const ITEM_LAYOUT = {
   imageStride: 20,
 }
 
-interface EmptyTreeNodeProps {
-  x: number
-  y: number
-}
-
-function EmptyTreeNode({ x, y }: EmptyTreeNodeProps) {
-  // Could optionally display something here
-  return <></>
-}
-
 interface TreeEdgeProps {
   srcX: number
   srcY: number
@@ -225,9 +215,11 @@ interface ItemPlacement {
 }
 
 interface TreeLayout {
-  placements: Map<number | null, ItemPlacement>
-  width: number
-  height: number
+  placements: Map<number, ItemPlacement>
+  left: number
+  right: number
+  top: number
+  bottom: number
   maxDepth: number
 }
 
@@ -276,20 +268,41 @@ function computeLayout(tree: ChatTree): TreeLayout {
 
   collectPlacements(dt)
 
+  // Delete the null/root node (no longer needed)
+  placements.delete(null)
+
+  if (placements.size === 0) {
+    return {
+      placements: new Map(),
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0,
+      maxDepth: 0,
+    }
+  }
+
   // Compute overall dimensions and depth
-  let width = 0
-  let height = 0
+  let left = Infinity
+  let right = -Infinity
+  let top = Infinity
+  let bottom = -Infinity
   let maxDepth = 0
   placements.forEach(({ pos, width: w, height: h, node }) => {
-    width = Math.max(width, pos.x + w)
-    height = Math.max(height, pos.y + h)
+    left = Math.min(left, pos.x)
+    right = Math.max(right, pos.x + w)
+    top = Math.min(top, pos.y)
+    bottom = Math.max(bottom, pos.y + h)
     maxDepth = Math.max(maxDepth, node.depth)
   })
+  console.log({ left, right, top, bottom, maxDepth })
 
   return {
-    placements,
-    width,
-    height,
+    placements: placements as Map<number, ItemPlacement>,
+    left,
+    right,
+    top,
+    bottom,
     maxDepth,
   }
 }
@@ -361,7 +374,7 @@ function TreeSvg({ tree, placements, onSelect }: TreeSvgProps) {
           {[...placements.values()].map(({ pos, item }) => {
             // Render item
             if (!item) {
-              return <EmptyTreeNode key={null} x={pos.x} y={pos.y} />
+              throw new Error('unreachable')
             }
             return (
               <TreeItem
@@ -393,7 +406,7 @@ class ViewController {
   private canvas: HTMLCanvasElement
   private div: HTMLDivElement
   private viewportCenter: Vec2
-  private viewportYExtent: number
+  public viewportYExtent: number
   private dirty: boolean
   private mousePos: Vec2 | null = null
   private _isDragging: boolean = false
@@ -417,7 +430,7 @@ class ViewController {
     right: number,
     bottom: number,
   ): void {
-    const yExtent = Math.max(bottom - top, this.aspectRatio() * (right - left))
+    const yExtent = Math.max(top - bottom, (right - left) / this.aspectRatio())
     this.viewportCenter = new Vec2((left + right) / 2, (top + bottom) / 2)
     this.viewportYExtent = yExtent
   }
@@ -696,8 +709,7 @@ export default function TreeView({ tree, onClose, onSelect }: TreeViewProps) {
   const divRef = useRef<HTMLDivElement>(null)
   const viewControllerRef = useRef<ViewController | null>(null)
 
-  const { placements, width, height } = computeLayout(tree)
-  console.log(width, height)
+  const { placements, left, right, top, bottom } = computeLayout(tree)
 
   const handleSelect = (item: Item) => {
     if (!viewControllerRef.current || viewControllerRef.current.isDragging)
@@ -724,7 +736,8 @@ export default function TreeView({ tree, onClose, onSelect }: TreeViewProps) {
     }
 
     const viewController = new ViewController(canvasRef.current, divRef.current)
-    viewController.setViewportBounds(0, -height, width, 0)
+    viewController.setViewportBounds(left, -top, right, -bottom)
+    viewController.viewportYExtent *= Math.pow(10, 0.1)
     viewControllerRef.current = viewController
 
     // Set initial cursor style
