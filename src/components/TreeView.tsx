@@ -221,9 +221,18 @@ interface ItemPlacement {
   width: number
   height: number
   item: Item | null
+  node: DrawTree<Item | null>
 }
 
-function computeLayout(tree: ChatTree): Map<number | null, ItemPlacement> {
+interface TreeLayout {
+  placements: Map<number | null, ItemPlacement>
+  width: number
+  height: number
+  maxDepth: number
+}
+
+function computeLayout(tree: ChatTree): TreeLayout {
+  // Construct tree
   function traverse(node: TreeNode<Item | null>): void {
     const children = tree.getChildren(node.value?.id || null)
     for (const child of children) {
@@ -238,6 +247,7 @@ function computeLayout(tree: ChatTree): Map<number | null, ItemPlacement> {
     }
   }
 
+  // Solve layout
   const root = {
     value: null,
     width: ITEM_LAYOUT.height / 2,
@@ -249,6 +259,7 @@ function computeLayout(tree: ChatTree): Map<number | null, ItemPlacement> {
   const verticalStride = 2 * ITEM_LAYOUT.height
   const dt = drawTree({ root, gap })
 
+  // Build placement map
   const placements = new Map<number | null, ItemPlacement>()
   function collectPlacements(dt: DrawTree<Item | null>) {
     placements.set(dt.node?.value?.id || null, {
@@ -256,6 +267,7 @@ function computeLayout(tree: ChatTree): Map<number | null, ItemPlacement> {
       width: dt.node.width,
       height: ITEM_LAYOUT.height,
       item: dt.node.value,
+      node: dt,
     })
     for (const child of dt.children) {
       collectPlacements(child)
@@ -263,7 +275,23 @@ function computeLayout(tree: ChatTree): Map<number | null, ItemPlacement> {
   }
 
   collectPlacements(dt)
-  return placements
+
+  // Compute overall dimensions and depth
+  let width = 0
+  let height = 0
+  let maxDepth = 0
+  placements.forEach(({ pos, width: w, height: h, node }) => {
+    width = Math.max(width, pos.x + w)
+    height = Math.max(height, pos.y + h)
+    maxDepth = Math.max(maxDepth, node.depth)
+  })
+
+  return {
+    placements,
+    width,
+    height,
+    maxDepth,
+  }
 }
 
 function computeHighlighted(
@@ -286,14 +314,14 @@ function computeHighlighted(
 
 interface TreeSvgProps {
   tree: ChatTree
+  placements: Map<number | null, ItemPlacement>
   onSelect: (item: Item) => void | Promise<void>
 }
 
 /** The actual item tree itself. */
-function TreeSvg({ tree, onSelect }: TreeSvgProps) {
+function TreeSvg({ tree, placements, onSelect }: TreeSvgProps) {
   const [hoveredItemId, setHoveredItemId] = useState<number | null>(null)
 
-  const placements = computeLayout(tree)
   let highlighted = computeHighlighted(tree, hoveredItemId)
   let showHighlighted
   if (highlighted === null) {
@@ -392,7 +420,25 @@ class ViewController {
     return Math.pow(10, 0.1 * this.zoomLevel)
   }
 
-  public updateCanvasSize() {
+  public setViewportBounds(
+    left: number,
+    top: number,
+    right: number,
+    bottom: number,
+  ): void {
+    const midX = (left + right) / 2
+    const midY = (bottom + top) / 2
+    const yExtent = bottom - top
+    const xExtent = right - left
+    const yZoomLevel = Math.log10(yExtent) * 10
+    const xZoomLevel = Math.log10(xExtent / this.aspectRatio()) * 10
+
+    this.viewportCenter = new Vec2(midX, -midY)
+    this.zoomLevel = Math.max(yZoomLevel, xZoomLevel) + 1
+    console.log(this.viewportCenter, this.zoomLevel)
+  }
+
+  public updateCanvasSize(): void {
     const rect = this.canvas.getBoundingClientRect()
     this.canvas.width = rect.width
     this.canvas.height = rect.height
@@ -403,7 +449,7 @@ class ViewController {
     this.dirty = true
   }
 
-  public get isDragging() {
+  public get isDragging(): boolean {
     return this._isDragging
   }
 
@@ -560,7 +606,7 @@ class ViewController {
     const viewport = document.getElementById('viewport')
     if (!viewport) return
 
-    const scale = this.worldScreenScale() / 100
+    const scale = this.worldScreenScale()
 
     const screenCenter = this.worldToScreen(new Vec2(0, 0))
     const translateX = screenCenter.x
@@ -661,6 +707,9 @@ export default function TreeView({ tree, onClose, onSelect }: TreeViewProps) {
   const divRef = useRef<HTMLDivElement>(null)
   const viewControllerRef = useRef<ViewController | null>(null)
 
+  const { placements, width, height } = computeLayout(tree)
+  console.log(width, height)
+
   const handleSelect = (item: Item) => {
     if (!viewControllerRef.current || viewControllerRef.current.isDragging)
       return
@@ -686,6 +735,7 @@ export default function TreeView({ tree, onClose, onSelect }: TreeViewProps) {
     }
 
     const viewController = new ViewController(canvasRef.current, divRef.current)
+    viewController.setViewportBounds(0, 0, width, height)
     viewControllerRef.current = viewController
 
     // Set initial cursor style
@@ -712,7 +762,7 @@ export default function TreeView({ tree, onClose, onSelect }: TreeViewProps) {
       <button className={styles.closeButton} onClick={onClose}>
         <XMarkIcon className={styles.icon} />
       </button>
-      <TreeSvg tree={tree} onSelect={handleSelect} />
+      <TreeSvg tree={tree} placements={placements} onSelect={handleSelect} />
       <canvas className={styles.canvas} ref={canvasRef} />
     </div>
   )
