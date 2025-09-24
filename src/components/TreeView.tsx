@@ -7,7 +7,7 @@ import {
 import ChatTree from '@/lib/frontend/chat-tree'
 import { drawTree, DrawTree, TreeNode } from '@/lib/frontend/draw-tree'
 import { XMarkIcon } from '@heroicons/react/24/outline'
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import styles from './TreeView.module.scss'
 
 class Vec2 {
@@ -63,11 +63,12 @@ function getItemLayout(item: Item): ItemLayout {
 
 interface ItemPlacement {
   pos: Vec2
-  parentPos?: Vec2
+  width: number
+  height: number
   item: Item | null
 }
 
-function computeLayout(tree: ChatTree): ItemPlacement[] {
+function computeLayout(tree: ChatTree): Map<number | null, ItemPlacement> {
   function traverse(node: TreeNode<Item | null>): void {
     const children = tree.getChildren(node.value?.id || null)
     for (const child of children) {
@@ -89,17 +90,16 @@ function computeLayout(tree: ChatTree): ItemPlacement[] {
   }
   traverse(root)
 
-  const gap = 25
+  const gap = 35
   const verticalStride = 2 * ITEM_LAYOUT.height
   const dt = drawTree({ root, gap })
 
-  const placements: ItemPlacement[] = []
+  const placements = new Map<number | null, ItemPlacement>()
   function collectPlacements(dt: DrawTree<Item | null>) {
-    placements.push({
+    placements.set(dt.node?.value?.id || null, {
       pos: new Vec2(dt.x, dt.depth * verticalStride),
-      parentPos: dt.parent
-        ? new Vec2(dt.parent.x, dt.parent.depth * verticalStride)
-        : undefined,
+      width: dt.node.width,
+      height: ITEM_LAYOUT.height,
       item: dt.node.value,
     })
     for (const child of dt.children) {
@@ -126,6 +126,28 @@ interface EmptyTreeNodeProps {
 function EmptyTreeNode({ x, y }: EmptyTreeNodeProps) {
   // Could optionally display something here
   return <></>
+}
+
+interface TreeEdgeProps {
+  srcX: number
+  srcY: number
+  dstX: number
+  dstY: number
+  cornerRadius: number
+}
+
+function TreeEdge({ srcX, srcY, dstX, dstY, cornerRadius }: TreeEdgeProps) {
+  const midY = (srcY + dstY) / 2
+  const pathData = [
+    `M ${srcX} ${srcY}`,
+    `L ${srcX} ${midY - cornerRadius}`,
+    `A ${cornerRadius} ${cornerRadius} 0 0 0 ${srcX + cornerRadius} ${midY}`,
+    `L ${srcX + cornerRadius} ${midY}`,
+    `L ${dstX - cornerRadius} ${midY}`,
+    `A ${cornerRadius} ${cornerRadius} 0 0 1 ${dstX} ${midY + cornerRadius}`,
+    `L ${dstX} ${dstY}`,
+  ].join(' ')
+  return <path d={pathData} className={styles.treeEdge} />
 }
 
 interface TreeItemProps {
@@ -260,23 +282,44 @@ function TreeSvg({ tree, onSelect }: TreeSvgProps) {
   return (
     <svg id='treeSvg' width='100%' height='100%' className={styles.treeSvg}>
       <g id='viewport' transform='translate(0, 0) scale(1)'>
-        {placements.map(({ pos, parentPos, item }, index) => {
-          if (!item) {
-            return <EmptyTreeNode key={null} x={pos.x} y={pos.y} />
-          }
-          return (
-            <TreeItem
-              key={item?.id}
-              x={pos.x}
-              y={pos.y}
-              item={item}
-              isHovered={hoveredItemId === item?.id}
-              onMouseEnter={() => setHoveredItemId(item?.id)}
-              onMouseLeave={() => setHoveredItemId(null)}
-              onClick={() => onSelect(item)}
-            />
-          )
-        })}
+        <g>
+          {[...placements.values()].map(({ pos, width, item }) => {
+            // Render path from item to parent
+            const key = `${item?.id}-path`
+            const parent = placements.get(item?.parentId || null)
+            if (!parent || !parent.item) return <React.Fragment key={key} />
+            return (
+              <TreeEdge
+                key={key}
+                srcX={parent.pos.x + parent.width / 4}
+                srcY={parent.pos.y + parent.height}
+                dstX={pos.x + width / 2}
+                dstY={pos.y}
+                cornerRadius={10}
+              />
+            )
+          })}
+        </g>
+        <g>
+          {[...placements.values()].map(({ pos, item }) => {
+            // Render item
+            if (!item) {
+              return <EmptyTreeNode key={null} x={pos.x} y={pos.y} />
+            }
+            return (
+              <TreeItem
+                key={item?.id}
+                x={pos.x}
+                y={pos.y}
+                item={item}
+                isHovered={hoveredItemId === item?.id}
+                onMouseEnter={() => setHoveredItemId(item?.id)}
+                onMouseLeave={() => setHoveredItemId(null)}
+                onClick={() => onSelect(item)}
+              />
+            )
+          })}
+        </g>
       </g>
     </svg>
   )

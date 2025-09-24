@@ -62,6 +62,12 @@
     }
   }
 
+  .treeEdge {
+    fill: none;
+    stroke: var(--color-gray-400);
+    stroke-width: 2;
+  }
+
   .treeNode {
     color: var(--color-foreground);
     fill: var(--color-background);
