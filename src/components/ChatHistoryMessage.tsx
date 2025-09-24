@@ -33,10 +33,6 @@ interface ItemThoughtProps {
 }
 
 function Thoughts({ text, show, onClick }: ItemThoughtProps) {
-  // Requirements:
-  // - Contents contained in a muted text box.
-  // - At the top is the label "Thoughts" and a chevron.
-  // - When shown, thoughts are just below the label.
   return (
     <div className={styles.thoughtsContainer}>
       <div className={styles.thoughtsHeader} onClick={onClick}>

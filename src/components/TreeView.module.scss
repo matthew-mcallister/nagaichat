@@ -49,54 +49,60 @@
   height: 100%;
   pointer-events: none;
   z-index: 10001;
+}
 
-  .treeNodeOuter {
-    pointer-events: fill;
-    cursor: pointer;
-  }
+.treeNodeOuter {
+  pointer-events: fill;
+  cursor: pointer;
+}
 
-  .treeEdge {
-    fill: none;
-    stroke: var(--color-tree-edge);
-    stroke-width: 2;
-  }
+.treeEdge {
+  fill: none;
+  stroke: var(--color-tree-edge);
+  stroke-width: 2;
+}
 
-  .treeNode {
-    fill: var(--color-tree-node);
-    stroke: var(--color-border);
-    stroke-width: 2;
-    filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.3));
-  }
+.treeNode {
+  fill: var(--color-tree-node);
+  stroke: var(--color-border);
+  stroke-width: 2;
+  filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.3));
+}
 
-  [data-hovered=true] .treeNode {
-    fill: var(--color-tree-node-hover);
-    stroke: none;
-  }
+[data-hovered=true] .treeNode {
+  fill: var(--color-tree-node-hover);
+  stroke: none;
+}
 
-  [data-role='user'] .treeNode {
-    fill: var(--color-tree-node-user);
-    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.3));
-  }
+[data-role='user'] .treeNode {
+  fill: var(--color-tree-node-user);
+  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.3));
+}
 
-  [data-role='user'][data-hovered=true] .treeNode {
-    fill: var(--color-tree-node-user-hover);
-    stroke: none;
-  }
+[data-role='user'][data-hovered=true] .treeNode {
+  fill: var(--color-tree-node-user-hover);
+  stroke: none;
+}
 
-  .treeNodeText {
-    display: -webkit-box;
-    line-clamp: 4;
-    -webkit-line-clamp: 4;
-    -webkit-box-orient: vertical;
-    user-select: none;
-    margin: 0;
-    font-size: 1rem;
-    line-height: 1.5rem;
-    overflow: hidden;
-    text-overflow: wrap;
-  }
+[data-dimmed=true] [data-highlighted=false].treeNodeOuter,
+[data-dimmed=true] [data-highlighted=false].treeEdge
+{
+  opacity: 0.3;
+}
 
-  .imageOuter {
-    filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.3));
-  }
+.treeNodeText {
+  display: -webkit-box;
+  line-clamp: 4;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  user-select: none;
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5rem;
+  overflow: hidden;
+  text-overflow: wrap;
+}
+
+.imageOuter {
+  filter: drop-shadow(0 5px 10px rgba(0, 0, 0, 0.3));
 }

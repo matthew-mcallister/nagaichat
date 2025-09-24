@@ -41,6 +41,161 @@ const ITEM_LAYOUT = {
   imageStride: 20,
 }
 
+interface EmptyTreeNodeProps {
+  x: number
+  y: number
+}
+
+function EmptyTreeNode({ x, y }: EmptyTreeNodeProps) {
+  // Could optionally display something here
+  return <></>
+}
+
+interface TreeEdgeProps {
+  srcX: number
+  srcY: number
+  dstX: number
+  dstY: number
+  cornerRadius: number
+  highlighted: boolean
+}
+
+function TreeEdge({
+  srcX,
+  srcY,
+  dstX,
+  dstY,
+  cornerRadius,
+  highlighted,
+}: TreeEdgeProps) {
+  if (srcX === dstX) {
+    const pathData = `M ${srcX} ${srcY} L ${dstX} ${dstY}`
+    return (
+      <path
+        d={pathData}
+        className={styles.treeEdge}
+        data-highlighted={highlighted}
+      />
+    )
+  }
+
+  const midY = (srcY + dstY) / 2
+  const pathData = [
+    `M ${srcX} ${srcY}`,
+    `L ${srcX} ${midY - cornerRadius}`,
+    `A ${cornerRadius} ${cornerRadius} 0 0 0 ${srcX + cornerRadius} ${midY}`,
+    `L ${srcX + cornerRadius} ${midY}`,
+    `L ${dstX - cornerRadius} ${midY}`,
+    `A ${cornerRadius} ${cornerRadius} 0 0 1 ${dstX} ${midY + cornerRadius}`,
+    `L ${dstX} ${dstY}`,
+  ].join(' ')
+  return (
+    <path
+      d={pathData}
+      className={styles.treeEdge}
+      data-highlighted={highlighted}
+    />
+  )
+}
+
+interface TreeItemProps {
+  x: number
+  y: number
+  item: Item
+  hovered?: boolean
+  highlighted?: boolean
+  onMouseEnter?: () => void
+  onMouseLeave?: () => void
+  onClick?: () => void
+  onWheel?: (event: React.WheelEvent) => void
+}
+
+function TreeItem({
+  x,
+  y,
+  item,
+  hovered,
+  onMouseEnter,
+  onMouseLeave,
+  onClick,
+  onWheel,
+  highlighted,
+}: TreeItemProps) {
+  const text = getItemText(item) || ''
+  const imageUris = getItemImageUris(item).slice(0, 3)
+  const hasImages = imageUris.length > 0
+
+  return (
+    <g
+      className={styles.treeNodeOuter}
+      data-hovered={hovered}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onClick={onClick}
+      onWheel={onWheel}
+      transform={`translate(${x}, ${y})`}
+      data-role={item.role}
+      data-highlighted={highlighted}
+    >
+      <rect
+        x={0}
+        y={0}
+        width={ITEM_LAYOUT.textWidth}
+        height={ITEM_LAYOUT.height}
+        rx={10}
+        className={styles.treeNode}
+      />
+      <foreignObject
+        // We implement padding manually due to -webkit-line-clamp
+        // interacting with padding incorrectly.
+        x={ITEM_LAYOUT.textPadding}
+        y={ITEM_LAYOUT.textPadding}
+        width={ITEM_LAYOUT.textWidth - 2 * ITEM_LAYOUT.textPadding}
+        height={ITEM_LAYOUT.height - 2 * ITEM_LAYOUT.textPadding}
+      >
+        <p className={styles.treeNodeText}>{text}</p>
+      </foreignObject>
+      {hasImages && (
+        <g>
+          {imageUris.reverse().map((imageUri, i) => {
+            const index = imageUris.length - i - 1
+            const offsetX =
+              ITEM_LAYOUT.textWidth +
+              ITEM_LAYOUT.imageGap +
+              index * ITEM_LAYOUT.imageStride
+            return (
+              <g key={index}>
+                <defs>
+                  <clipPath id={`clip-${item.id}-${index}`}>
+                    <rect
+                      x={offsetX}
+                      y={0}
+                      width={ITEM_LAYOUT.imageWidth}
+                      height={ITEM_LAYOUT.height}
+                      rx={10}
+                    />
+                  </clipPath>
+                </defs>
+                <g className={styles.imageOuter}>
+                  <image
+                    x={offsetX}
+                    y={0}
+                    width={ITEM_LAYOUT.imageWidth}
+                    height={ITEM_LAYOUT.height}
+                    href={imageUri}
+                    clipPath={`url(#clip-${item.id}-${index})`}
+                    preserveAspectRatio='xMidYMid slice'
+                  />
+                </g>
+              </g>
+            )
+          })}
+        </g>
+      )}
+    </g>
+  )
+}
+
 interface ItemLayout {
   textWidth: number
   imageWidth: number
@@ -111,138 +266,22 @@ function computeLayout(tree: ChatTree): Map<number | null, ItemPlacement> {
   return placements
 }
 
-interface EmptyTreeNodeProps {
-  x: number
-  y: number
-}
+function computeHighlighted(
+  tree: ChatTree,
+  hoveredItemId: number | null,
+): Set<number> | null {
+  if (hoveredItemId === null) return null
+  const highlighted = new Set<number>()
 
-function EmptyTreeNode({ x, y }: EmptyTreeNodeProps) {
-  // Could optionally display something here
-  return <></>
-}
-
-interface TreeEdgeProps {
-  srcX: number
-  srcY: number
-  dstX: number
-  dstY: number
-  cornerRadius: number
-}
-
-function TreeEdge({ srcX, srcY, dstX, dstY, cornerRadius }: TreeEdgeProps) {
-  if (srcX === dstX) {
-    const pathData = `M ${srcX} ${srcY} L ${dstX} ${dstY}`
-    return <path d={pathData} className={styles.treeEdge} />
+  // Highlight the hovered item and its ancestors
+  let cur: Item = tree.getLatestLeaf(tree.get(hoveredItemId))
+  while (cur) {
+    highlighted.add(cur.id)
+    if (cur.parentId === null) break
+    cur = tree.get(cur.parentId)
   }
 
-  const midY = (srcY + dstY) / 2
-  const pathData = [
-    `M ${srcX} ${srcY}`,
-    `L ${srcX} ${midY - cornerRadius}`,
-    `A ${cornerRadius} ${cornerRadius} 0 0 0 ${srcX + cornerRadius} ${midY}`,
-    `L ${srcX + cornerRadius} ${midY}`,
-    `L ${dstX - cornerRadius} ${midY}`,
-    `A ${cornerRadius} ${cornerRadius} 0 0 1 ${dstX} ${midY + cornerRadius}`,
-    `L ${dstX} ${dstY}`,
-  ].join(' ')
-  return <path d={pathData} className={styles.treeEdge} />
-}
-
-interface TreeItemProps {
-  x: number
-  y: number
-  item: Item
-  isHovered?: boolean
-  onMouseEnter?: () => void
-  onMouseLeave?: () => void
-  onClick?: () => void
-  onWheel?: (event: React.WheelEvent) => void
-}
-
-function TreeItem({
-  x,
-  y,
-  item,
-  isHovered,
-  onMouseEnter,
-  onMouseLeave,
-  onClick,
-  onWheel,
-}: TreeItemProps) {
-  const text = getItemText(item) || ''
-  const imageUris = getItemImageUris(item).slice(0, 3)
-  const hasImages = imageUris.length > 0
-
-  const { imageWidth } = getItemLayout(item)
-
-  return (
-    <g
-      className={styles.treeNodeOuter}
-      data-hovered={isHovered}
-      onMouseEnter={onMouseEnter}
-      onMouseLeave={onMouseLeave}
-      onClick={onClick}
-      onWheel={onWheel}
-      transform={`translate(${x}, ${y})`}
-      data-role={item.role}
-    >
-      <rect
-        x={0}
-        y={0}
-        width={ITEM_LAYOUT.textWidth}
-        height={ITEM_LAYOUT.height}
-        rx={10}
-        className={styles.treeNode}
-      />
-      <foreignObject
-        // We implement padding manually due to -webkit-line-clamp
-        // interacting with padding incorrectly.
-        x={ITEM_LAYOUT.textPadding}
-        y={ITEM_LAYOUT.textPadding}
-        width={ITEM_LAYOUT.textWidth - 2 * ITEM_LAYOUT.textPadding}
-        height={ITEM_LAYOUT.height - 2 * ITEM_LAYOUT.textPadding}
-      >
-        <p className={styles.treeNodeText}>{text}</p>
-      </foreignObject>
-      {hasImages && (
-        <g>
-          {imageUris.reverse().map((imageUri, i) => {
-            const index = imageUris.length - i - 1
-            const offsetX =
-              ITEM_LAYOUT.textWidth +
-              ITEM_LAYOUT.imageGap +
-              index * ITEM_LAYOUT.imageStride
-            return (
-              <g key={index}>
-                <defs>
-                  <clipPath id={`clip-${item.id}-${index}`}>
-                    <rect
-                      x={offsetX}
-                      y={0}
-                      width={ITEM_LAYOUT.imageWidth}
-                      height={ITEM_LAYOUT.height}
-                      rx={10}
-                    />
-                  </clipPath>
-                </defs>
-                <g className={styles.imageOuter}>
-                  <image
-                    x={offsetX}
-                    y={0}
-                    width={ITEM_LAYOUT.imageWidth}
-                    height={ITEM_LAYOUT.height}
-                    href={imageUri}
-                    clipPath={`url(#clip-${item.id}-${index})`}
-                    preserveAspectRatio='xMidYMid slice'
-                  />
-                </g>
-              </g>
-            )
-          })}
-        </g>
-      )}
-    </g>
-  )
+  return highlighted
 }
 
 interface TreeSvgProps {
@@ -252,15 +291,25 @@ interface TreeSvgProps {
 
 /** The actual item tree itself. */
 function TreeSvg({ tree, onSelect }: TreeSvgProps) {
-  const [hoveredItemId, setHoveredItemId] = useState<string | number | null>(
-    null,
-  )
+  const [hoveredItemId, setHoveredItemId] = useState<number | null>(null)
 
   const placements = computeLayout(tree)
+  let highlighted = computeHighlighted(tree, hoveredItemId)
+  let showHighlighted
+  if (highlighted === null) {
+    showHighlighted = false
+    highlighted = new Set()
+  } else {
+    showHighlighted = true
+  }
 
   return (
     <svg id='treeSvg' width='100%' height='100%' className={styles.treeSvg}>
-      <g id='viewport' transform='translate(0, 0) scale(1)'>
+      <g
+        id='viewport'
+        transform='translate(0, 0) scale(1)'
+        data-dimmed={showHighlighted}
+      >
         <g>
           {[...placements.values()].map(({ pos, height, item }) => {
             // Render path from item to parent
@@ -271,10 +320,11 @@ function TreeSvg({ tree, onSelect }: TreeSvgProps) {
               <TreeEdge
                 key={key}
                 srcX={parent.pos.x + ITEM_LAYOUT.textWidth / 2}
-                srcY={parent.pos.y}
+                srcY={parent.pos.y + height}
                 dstX={pos.x + ITEM_LAYOUT.textWidth / 2}
-                dstY={pos.y + height}
+                dstY={pos.y}
                 cornerRadius={10}
+                highlighted={!!item && highlighted.has(item.id)}
               />
             )
           })}
@@ -291,10 +341,11 @@ function TreeSvg({ tree, onSelect }: TreeSvgProps) {
                 x={pos.x}
                 y={pos.y}
                 item={item}
-                isHovered={hoveredItemId === item?.id}
+                hovered={hoveredItemId === item?.id}
                 onMouseEnter={() => setHoveredItemId(item?.id)}
                 onMouseLeave={() => setHoveredItemId(null)}
                 onClick={() => onSelect(item)}
+                highlighted={!!item && highlighted.has(item.id)}
               />
             )
           })}

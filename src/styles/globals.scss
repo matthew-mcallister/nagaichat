@@ -13,6 +13,8 @@
 // - Each logical palette reacts to user preference
 // - Palette consists of a few base colors + shades
 :root {
+    color-scheme: light dark;
+
     // Light theme colors
     --color-background: #{$gray-50};
     --color-foreground: #{$gray-950};
