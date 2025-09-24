@@ -393,8 +393,8 @@ class ViewController {
   private canvas: HTMLCanvasElement
   private div: HTMLDivElement
   private viewportCenter: Vec2
+  private viewportYExtent: number
   private dirty: boolean
-  private zoomLevel: number
   private mousePos: Vec2 | null = null
   private _isDragging: boolean = false
   private dragStartPos: Vec2 | null = null
@@ -404,20 +404,11 @@ class ViewController {
     this.canvas = canvas
     this.div = div
     this.viewportCenter = new Vec2(0, 0)
+    this.viewportYExtent = 10
     this.dirty = true
-    this.zoomLevel = 10
     this.updateCanvasSize()
     this.setupEventListeners()
     this.startRenderLoop()
-  }
-
-  /**
-   * Height of the viewport rectangle in world space. The width of the viewport
-   * is `viewportYExtent * viewportAspectRatio`.
-   */
-  private get viewportYExtent(): number {
-    // Zoom is logarithmic: 10 scrolls zooms in or out by a factor of 10.
-    return Math.pow(10, 0.1 * this.zoomLevel)
   }
 
   public setViewportBounds(
@@ -426,16 +417,9 @@ class ViewController {
     right: number,
     bottom: number,
   ): void {
-    const midX = (left + right) / 2
-    const midY = (bottom + top) / 2
-    const yExtent = bottom - top
-    const xExtent = right - left
-    const yZoomLevel = Math.log10(yExtent) * 10
-    const xZoomLevel = Math.log10(xExtent / this.aspectRatio()) * 10
-
-    this.viewportCenter = new Vec2(midX, -midY)
-    this.zoomLevel = Math.max(yZoomLevel, xZoomLevel) + 1
-    console.log(this.viewportCenter, this.zoomLevel)
+    const yExtent = Math.max(bottom - top, this.aspectRatio() * (right - left))
+    this.viewportCenter = new Vec2((left + right) / 2, (top + bottom) / 2)
+    this.viewportYExtent = yExtent
   }
 
   public updateCanvasSize(): void {
@@ -679,9 +663,14 @@ class ViewController {
   private handleWheel(event: WheelEvent) {
     event.preventDefault()
 
-    // XXX: Should zoom in on cursor position instead of center of screen
     const zoomDelta = Math.sign(event.deltaY)
-    this.zoomLevel += zoomDelta
+    const zoomFactor = Math.pow(10, 0.1 * zoomDelta)
+
+    const worldPos = this.screenToWorld(new Vec2(event.clientX, event.clientY))
+    const relPos = this.viewportCenter.minus(worldPos).times(zoomFactor)
+    this.viewportCenter = worldPos.plus(relPos)
+
+    this.viewportYExtent *= zoomFactor
 
     this.markDirty()
   }
@@ -735,7 +724,7 @@ export default function TreeView({ tree, onClose, onSelect }: TreeViewProps) {
     }
 
     const viewController = new ViewController(canvasRef.current, divRef.current)
-    viewController.setViewportBounds(0, 0, width, height)
+    viewController.setViewportBounds(0, -height, width, 0)
     viewControllerRef.current = viewController
 
     // Set initial cursor style
