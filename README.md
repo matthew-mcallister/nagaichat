@@ -1,8 +1,12 @@
+<p align="center">
+  <img src="/nagai.svg" height="200">
+</p>
+
 ## NagaiChat
 
 NagaiChat is a multimodal, multi-model LLM chat UI. It provides a similar user
-experience to Google AI Studio or ChatGPT, but supports a several inference
-APIs powered by your API keys. NagaiChat is designed to support several use
+experience to Google AI Studio or ChatGPT, but it supports a several inference
+APIs powered by your API keys. NagaiChat is designed to support multiple use
 cases, such as conversation, fiction, coding, and image editing.
 
 ### Features
@@ -14,7 +18,23 @@ cases, such as conversation, fiction, coding, and image editing.
 - Markdown formatting
 - Image input and output
 
-### Desired future features
+### Running
+
+#### Production
+
+```bash
+npm i
+npm run build && npm run start
+```
+
+#### Development
+
+```bash
+npm i
+npm run start
+```
+
+### TODO features
 
 - Code highlighting (easy)
 - Image gallery (easy)
@@ -22,3 +42,15 @@ cases, such as conversation, fiction, coding, and image editing.
 - Audio input (medium)
 - Response streaming (harder)
 - Multitenancy (hard)
+
+### Legal disclaimer
+
+By using NagaiChat, you acknowledge that the developers will not be liable for
+any material consequences of your interactions with third parties, in particular
+your interactions with AI software vendors through their APIs. You are
+responsible for any action taken against you as a result of your interactions,
+including but not limited to account termination, lawsuit, or criminal
+investigation.
+
+tl;dr: It is your responsibility to comply with third parties' terms of service
+and local law in your jurisdiction. Please chat responsibly!
