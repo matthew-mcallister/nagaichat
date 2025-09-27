@@ -41,7 +41,9 @@ npm run start
 - Audio output (easy)
 - Audio input (medium)
 - Response streaming (harder)
-- Multitenancy (hard)
+- Postgres support (harder)
+- Multitenancy/security (hard)
+- Finetuning (hard)
 
 ### Legal disclaimer
 
@@ -49,8 +51,8 @@ By using NagaiChat, you acknowledge that the developers will not be liable for
 any material consequences of your interactions with third parties, in particular
 your interactions with AI software vendors through their APIs. You are
 responsible for any action taken against you as a result of your interactions,
-including but not limited to account termination, lawsuit, or criminal
-investigation.
+including but not limited to suspension or termination of accounts, civil suit,
+or criminal liability.
 
 tl;dr: It is your responsibility to comply with third parties' terms of service
 and local law in your jurisdiction. Please chat responsibly!
