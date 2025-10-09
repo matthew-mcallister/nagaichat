@@ -22,6 +22,7 @@ import {
   PhotoIcon,
   XMarkIcon,
 } from '@heroicons/react/24/outline'
+import { useRouter } from 'next/navigation'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 import styles from './ChatHistoryMessage.module.scss'
@@ -103,8 +104,9 @@ function EditUi({
   function adjustTextAreaHeight() {
     const textarea = textareaRef.current
     if (textarea) {
+      const height = Math.min(textarea.scrollHeight, 24 * 16)
       textarea.style.height = 'auto'
-      textarea.style.height = `${textarea.scrollHeight}px`
+      textarea.style.height = `${height}px`
     }
   }
 
@@ -250,6 +252,7 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
   const rawThoughts = getItemThoughts(item)
   const imageUris = getItemImageUris(item)
   const imageContent = getItemImageContent(item)
+  const router = useRouter()
 
   async function handleSave(message: string, images: ImageContent[]) {
     if (!message) return
@@ -271,6 +274,11 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
     } catch (err) {
       reportError(err)
     }
+  }
+
+  function handleEdit() {
+    setEditing(true)
+    router.push(`#item-${item.id}`)
   }
 
   async function handleImageClick(imageUri: string) {
@@ -376,7 +384,7 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
             </a>
             <button
               className={styles.controlButton}
-              onClick={() => setEditing(true)}
+              onClick={handleEdit}
               disabled={disabled}
               title='Edit'
             >
