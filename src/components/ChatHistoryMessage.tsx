@@ -26,6 +26,26 @@ import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 import styles from './ChatHistoryMessage.module.scss'
 
+async function copyToClipboard(text: string): Promise<void> {
+  if (window.isSecureContext && window.navigator.clipboard) {
+    await window.navigator.clipboard.writeText(text)
+  } else {
+    const textArea = window.document.createElement('textarea')
+    textArea.value = text
+    textArea.style.position = 'fixed' // Avoid scrolling to bottom
+    textArea.style.opacity = '0'
+    window.document.body.appendChild(textArea)
+
+    textArea.focus()
+    textArea.select()
+    try {
+      window.document.execCommand('copy')
+    } finally {
+      window.document.body.removeChild(textArea)
+    }
+  }
+}
+
 interface ItemThoughtProps {
   text: string
   show: boolean
@@ -246,7 +266,7 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
   async function handleCopy() {
     if (!rawText) return
     try {
-      await window.navigator.clipboard.writeText(rawText)
+      await copyToClipboard(rawText)
       toast.success('Copied to clipboard')
     } catch (err) {
       reportError(err)
