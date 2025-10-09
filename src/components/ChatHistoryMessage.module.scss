@@ -1,9 +1,12 @@
+@use './Navbar.module.scss';
+
 .message {
   display: flex;
   flex-direction: column;
   width: 100%;
   white-space: pre-wrap;
   align-items: flex-start;
+  scroll-margin-top: Navbar.$navbar-height;
 
   &[data-role='user'] {
     align-items: flex-end;
