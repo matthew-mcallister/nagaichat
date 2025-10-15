@@ -1,7 +1,9 @@
 import { BaseError } from '@/lib/error'
-import useSWR, { mutate } from "swr"
+import useSWR, { mutate } from 'swr'
 
-async function raiseForStatus(response: Response | Promise<Response>): Promise<Response> {
+async function raiseForStatus(
+  response: Response | Promise<Response>,
+): Promise<Response> {
   response = await response
   if (response.status >= 400) {
     let message = undefined
@@ -14,7 +16,9 @@ async function raiseForStatus(response: Response | Promise<Response>): Promise<R
   return response
 }
 
-async function unwrapJson<T>(response: Response | Promise<Response>): Promise<T> {
+async function unwrapJson<T>(
+  response: Response | Promise<Response>,
+): Promise<T> {
   response = await raiseForStatus(response)
   try {
     return response.json()
@@ -23,10 +27,12 @@ async function unwrapJson<T>(response: Response | Promise<Response>): Promise<T>
   }
 }
 
+export type Interface = 'deepseek' | 'gemini' | 'openai'
+
 export interface Integration {
   id: number
   name: string
-  interface: 'openai' | 'gemini'
+  interface: Interface
   baseUrl: string | null
   createdAt: string
   updatedAt: string
@@ -34,14 +40,14 @@ export interface Integration {
 
 export interface CreateIntegrationRequest {
   name: string
-  interface: 'openai' | 'gemini'
+  interface: Interface
   apiKey: string
   baseUrl?: string
 }
 
 export interface UpdateIntegrationRequest {
   name?: string
-  interface?: 'openai' | 'gemini'
+  interface?: Interface
   apiKey?: string
   baseUrl?: string
 }
@@ -62,8 +68,8 @@ export interface ModelOptions {
 
 // FIXME: Handle missing options correctly
 export interface SessionOptions {
-  modelOptions: ModelOptions,
-  renderMarkdown: boolean,
+  modelOptions: ModelOptions
+  renderMarkdown: boolean
 }
 
 export interface Preset {
@@ -105,7 +111,11 @@ export type StaticContent = {
   url: string
 }
 
-export type ContentObject = TextContent | ThoughtContent | InlineContent | StaticContent
+export type ContentObject =
+  | TextContent
+  | ThoughtContent
+  | InlineContent
+  | StaticContent
 export type Content = ContentObject
 
 export type ImageContent = InlineContent | StaticContent
@@ -215,56 +225,72 @@ export class Api {
   }
 
   private async get<T>(endpoint: string): Promise<T> {
-    return unwrapJson(fetch(this.baseUrl + endpoint, {
-      method: 'GET',
-    }))
+    return unwrapJson(
+      fetch(this.baseUrl + endpoint, {
+        method: 'GET',
+      }),
+    )
   }
 
   private async put<S, T>(endpoint: string, json: S): Promise<T> {
-    return unwrapJson(fetch(this.baseUrl + endpoint, {
-      method: 'PUT',
-      headers: {
-      'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(json),
-    }))
+    return unwrapJson(
+      fetch(this.baseUrl + endpoint, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(json),
+      }),
+    )
   }
 
   private async patch<S, T>(endpoint: string, json: S): Promise<T> {
-    return unwrapJson(fetch(this.baseUrl + endpoint, {
-      method: 'PATCH',
-      headers: {
-      'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(json),
-    }))
+    return unwrapJson(
+      fetch(this.baseUrl + endpoint, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(json),
+      }),
+    )
   }
 
-  private async post<S, T>(endpoint: string, json: S, fetchOptions?: any): Promise<T> {
-    return unwrapJson(fetch(this.baseUrl + endpoint, {
-      ...fetchOptions,
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(json),
-    }))
+  private async post<S, T>(
+    endpoint: string,
+    json: S,
+    fetchOptions?: any,
+  ): Promise<T> {
+    return unwrapJson(
+      fetch(this.baseUrl + endpoint, {
+        ...fetchOptions,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(json),
+      }),
+    )
   }
 
   private async update<S, T>(endpoint: string, json: S): Promise<T> {
-    return unwrapJson(fetch(this.baseUrl + endpoint, {
-      method: 'UPDATE',
-      headers: {
-      'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(json),
-    }))
+    return unwrapJson(
+      fetch(this.baseUrl + endpoint, {
+        method: 'UPDATE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(json),
+      }),
+    )
   }
 
   private async delete(endpoint: string): Promise<void> {
-    raiseForStatus(await fetch(this.baseUrl + endpoint, {
-      method: 'DELETE',
-    }))
+    raiseForStatus(
+      await fetch(this.baseUrl + endpoint, {
+        method: 'DELETE',
+      }),
+    )
   }
 
   public async listIntegrations(): Promise<Integration[]> {
@@ -276,14 +302,22 @@ export class Api {
     return data || null
   }
 
-  public async updateIntegration(id: number, body: UpdateIntegrationRequest): Promise<Integration> {
-    const result: Integration = await this.patch(`/api/integrations/${id}`, body)
+  public async updateIntegration(
+    id: number,
+    body: UpdateIntegrationRequest,
+  ): Promise<Integration> {
+    const result: Integration = await this.patch(
+      `/api/integrations/${id}`,
+      body,
+    )
     await mutate('/api/integrations')
     await mutate(`/api/integrations/${result.id}/models`)
     return result
   }
 
-  public async createIntegration(body: CreateIntegrationRequest): Promise<Integration> {
+  public async createIntegration(
+    body: CreateIntegrationRequest,
+  ): Promise<Integration> {
     const result: Integration = await this.post('/api/integrations', body)
     await mutate('/api/integrations')
     await mutate(`/api/integrations/${result.id}/models`)
@@ -296,8 +330,10 @@ export class Api {
 
   public useAvailableModels(integrationId: number | null): ModelInfo[] | null {
     const { data } = useSWR(
-      integrationId !== null ? `/api/integrations/${integrationId}/models` : null,
-      () => integrationId !== null ? this.listModels(integrationId) : null,
+      integrationId !== null
+        ? `/api/integrations/${integrationId}/models`
+        : null,
+      () => (integrationId !== null ? this.listModels(integrationId) : null),
     )
     return data || null
   }
@@ -321,7 +357,10 @@ export class Api {
   }
 
   public async createSession(body: CreateSessionRequest): Promise<Session> {
-    const result = await this.post<CreateSessionRequest, Session>('/api/sessions', body)
+    const result = await this.post<CreateSessionRequest, Session>(
+      '/api/sessions',
+      body,
+    )
     await mutate('/api/sessions')
     return result
   }
@@ -341,12 +380,18 @@ export class Api {
   }
 
   public async createPreset(body: CreatePresetRequest): Promise<Preset> {
-    const result = await this.post<CreatePresetRequest, Preset>('/api/presets', body)
+    const result = await this.post<CreatePresetRequest, Preset>(
+      '/api/presets',
+      body,
+    )
     await mutate('/api/presets')
     return result
   }
 
-  public async updatePreset(id: number, body: UpdatePresetRequest): Promise<Preset> {
+  public async updatePreset(
+    id: number,
+    body: UpdatePresetRequest,
+  ): Promise<Preset> {
     const result: Preset = await this.patch(`/api/presets/${id}`, body)
     await mutate('/api/presets')
     return result
@@ -362,11 +407,16 @@ export class Api {
   }
 
   public useSessionItems(sessionId: number): Item[] | null {
-    const { data } = useSWR(`/api/items?sessionId=${sessionId}`, () => this.listSessionItems(sessionId))
+    const { data } = useSWR(`/api/items?sessionId=${sessionId}`, () =>
+      this.listSessionItems(sessionId),
+    )
     return data || null
   }
 
-  public async createItem(body: CreateItemRequest, signal?: AbortSignal): Promise<Item> {
+  public async createItem(
+    body: CreateItemRequest,
+    signal?: AbortSignal,
+  ): Promise<Item> {
     const options: any = {}
     if (signal) {
       options.signal = signal
@@ -393,7 +443,7 @@ export interface SessionOptionsFields {
 }
 
 export function validateOptions(
-  options: SessionOptionsFields
+  options: SessionOptionsFields,
 ): SessionOptions | null {
   if (!options.integration || !options.model) return null
   return {

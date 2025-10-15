@@ -1,11 +1,16 @@
+import { Content } from '@/lib/backend/content'
 import { Integration } from '@/lib/backend/integration'
 import GeminiApi from '@/lib/backend/integrations/gemini'
-import { ModelInfo, ModelOptions, Role, Content as ApiContent } from '@/lib/frontend/api'
-import { Transaction } from "sequelize"
-import { Item } from '@/lib/backend/item'
-import { Content } from '@/lib/backend/content'
-import { Session } from '@/lib/backend/session'
 import OpenAiApi from '@/lib/backend/integrations/openai'
+import { Item } from '@/lib/backend/item'
+import { Session } from '@/lib/backend/session'
+import {
+  Content as ApiContent,
+  ModelInfo,
+  ModelOptions,
+  Role,
+} from '@/lib/frontend/api'
+import { Transaction } from 'sequelize'
 
 export interface HistoryEntry {
   role: Role
@@ -42,14 +47,28 @@ export class ApiConnector {
     this.integration = integration
 
     switch (integration.interface) {
-    case 'openai':
-      this.api = new OpenAiApi(integration.apiKey, integration.baseUrl)
-      break
-    case 'gemini':
-      this.api = new GeminiApi(integration.apiKey, integration.baseUrl || undefined)
-      break
-    default:
-      throw new Error('unreachable')
+      case 'openai':
+        this.api = new OpenAiApi(
+          integration.apiKey,
+          integration.baseUrl,
+          'openai',
+        )
+        break
+      case 'deepseek':
+        this.api = new OpenAiApi(
+          integration.apiKey,
+          integration.baseUrl,
+          'deepseek',
+        )
+        break
+      case 'gemini':
+        this.api = new GeminiApi(
+          integration.apiKey,
+          integration.baseUrl || undefined,
+        )
+        break
+      default:
+        throw new Error('unreachable')
     }
   }
 
@@ -87,7 +106,11 @@ export class ApiConnector {
       content: item.content,
     }))
 
-    const response = await this.api.generate(history, session.options.modelOptions, signal)
+    const response = await this.api.generate(
+      history,
+      session.options.modelOptions,
+      signal,
+    )
 
     return Item.doCreate({
       sessionId: parent.sessionId,

@@ -1,6 +1,10 @@
 'use client'
 
-import Api, { CreateIntegrationRequest, Integration } from '@/lib/frontend/api'
+import Api, {
+  CreateIntegrationRequest,
+  Integration,
+  Interface,
+} from '@/lib/frontend/api'
 import { useState } from 'react'
 import { mutate } from 'swr'
 import styles from './integrations.module.scss'
@@ -31,7 +35,12 @@ export default function IntegrationsPage() {
       }
 
       // Reset form and refresh list
-      setFormData({ name: '', interface: 'openai', apiKey: '', baseUrl: '' })
+      setFormData({
+        name: '',
+        interface: 'openai',
+        apiKey: '',
+        baseUrl: '',
+      })
       setIsCreating(false)
       setEditingId(null)
       mutate('/api/integrations')
@@ -72,7 +81,12 @@ export default function IntegrationsPage() {
   }
 
   const handleCancel = () => {
-    setFormData({ name: '', interface: 'openai', apiKey: '', baseUrl: '' })
+    setFormData({
+      name: '',
+      interface: 'openai',
+      apiKey: '',
+      baseUrl: '',
+    })
     setIsCreating(false)
     setEditingId(null)
   }
@@ -121,12 +135,13 @@ export default function IntegrationsPage() {
                 onChange={e =>
                   setFormData({
                     ...formData,
-                    interface: e.target.value as 'openai' | 'gemini',
+                    interface: e.target.value as Interface,
                   })
                 }
               >
                 <option value='openai'>OpenAI</option>
                 <option value='gemini'>Gemini</option>
+                <option value='deepseek'>DeepSeek/Qwen</option>
               </select>
             </div>
 
