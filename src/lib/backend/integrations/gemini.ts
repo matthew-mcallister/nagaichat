@@ -33,7 +33,11 @@ async function contentToGoogle(content: Content): Promise<GooglePart> {
 
 async function googleToContent(content: GooglePart): Promise<ApiContent> {
   if (content.text) {
-    return { type: 'text', text: content.text }
+    if (content.thought) {
+      return { type: 'thought', text: content.text }
+    } else {
+      return { type: 'text', text: content.text }
+    }
   } else if (content.inlineData) {
     const { mimeType, data } = content.inlineData
     if (!mimeType || !data) {
@@ -97,7 +101,11 @@ export default class GeminiApi implements IntegrationApi {
       systemInstruction: options.systemPrompt || undefined,
       temperature: options.temperature,
     }
-    if (!options.thinkingEnabled) {
+    if (options.thinkingEnabled) {
+      config.thinkingConfig = {
+        includeThoughts: true,
+      }
+    } else {
       config.thinkingConfig = {
         thinkingBudget: 0,
       }
