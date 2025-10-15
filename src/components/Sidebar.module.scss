@@ -91,3 +91,28 @@
     }
 }
 
+.closeButton {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: var(--space-1);
+    border-radius: var(--radius-md);
+    color: var(--color-foreground);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &:hover {
+        background-color: var(--color-focus);
+    }
+
+    &:focus {
+        outline: 2px solid var(--color-primary);
+        outline-offset: 2px;
+    }
+
+    & svg {
+        width: 20px;
+        height: 20px;
+    }
+}

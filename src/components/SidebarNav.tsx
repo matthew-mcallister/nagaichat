@@ -26,13 +26,12 @@ export default function SidebarNav({ setOpen }: Props) {
   return (
     <nav className='sidebar'>
       <div className={styles.sidebarHeader}>
-        <span>NagaiChat</span>
         <button
           className={styles.closeButton}
           onClick={closeSidebar}
           aria-label='Close sidebar'
         >
-          <ChevronLeftIcon className={styles.chevronIcon} />
+          <ChevronLeftIcon />
         </button>
       </div>
       <ul className={styles.sidebarLinks}>

@@ -109,6 +109,7 @@ export default function ChatLayout({ children }: Props) {
               presets={presets}
               preset={preset}
               setPreset={setPreset}
+              setOpen={setRightSidebarOpen}
             />
           </Sidebar>
         </div>

@@ -5,6 +5,7 @@ import Api, {
   Preset,
   SessionOptionsFields,
 } from '@/lib/frontend/api'
+import { ChevronRightIcon } from '@heroicons/react/24/outline'
 import styles from './OptionSidebar.module.scss'
 
 interface Props {
@@ -13,6 +14,7 @@ interface Props {
   setPreset: (preset?: Preset) => void
   options: SessionOptionsFields
   setOptions: (options: SessionOptionsFields) => void
+  setOpen: (open: boolean) => void
 }
 
 export default function OptionSidebar({
@@ -21,6 +23,7 @@ export default function OptionSidebar({
   setPreset,
   options,
   setOptions,
+  setOpen,
 }: Props) {
   const api = new Api()
   const integrations: Integration[] | null = api.useIntegrations()
@@ -36,6 +39,15 @@ export default function OptionSidebar({
 
   return (
     <aside className={styles.sidebar}>
+      <div className={styles.sidebarHeader}>
+        <button
+          className={styles.closeButton}
+          onClick={() => setOpen(false)}
+          aria-label='Close sidebar'
+        >
+          <ChevronRightIcon />
+        </button>
+      </div>
       {/* Presets section */}
       <div className={styles.section}>
         <input
