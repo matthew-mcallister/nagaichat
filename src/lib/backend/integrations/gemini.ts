@@ -1,20 +1,28 @@
+import { Content, TextContent } from '@/lib/backend/content'
 import {
+  ChatHistory,
+  IntegrationApi,
+  ModelResponse,
+} from '@/lib/backend/integrations/interface'
+import { StaticContent } from '@/lib/backend/static'
+import { ApiResponseError } from '@/lib/error'
+import {
+  Content as ApiContent,
+  ModelInfo,
+  ModelOptions,
+} from '@/lib/frontend/api'
+import { downloadContent } from '@/lib/util'
+import {
+  GenerateContentConfig,
+  GenerateContentParameters,
+  Candidate as GoogleCandidate,
+  Content as GoogleContent,
   GoogleGenAI,
   GoogleGenAIOptions,
-  Content as GoogleContent,
   Part as GooglePart,
   HarmBlockThreshold,
   HarmCategory,
-  GenerateContentParameters,
-  GenerateContentConfig,
-  Candidate as GoogleCandidate,
-} from "@google/genai"
-import { ChatHistory, IntegrationApi, ModelResponse } from '@/lib/backend/integrations/interface'
-import { ModelInfo, ModelOptions, Content as ApiContent } from '@/lib/frontend/api'
-import { ApiResponseError } from '@/lib/error'
-import { Content, TextContent } from "@/lib/backend/content"
-import { StaticContent } from "@/lib/backend/static"
-import { downloadContent } from "@/lib/util"
+} from '@google/genai'
 
 async function contentToGoogle(content: Content): Promise<GooglePart> {
   const inner = content.inner()
@@ -22,10 +30,12 @@ async function contentToGoogle(content: Content): Promise<GooglePart> {
     return { text: content.text || undefined }
   } else if (inner instanceof StaticContent) {
     const data = (await inner.read()).toString('base64')
-    return { inlineData: {
-      mimeType: inner.mimeType,
-      data,
-    } }
+    return {
+      inlineData: {
+        mimeType: inner.mimeType,
+        data,
+      },
+    }
   } else {
     throw new Error('unreachable')
   }
@@ -55,12 +65,14 @@ async function googleToContent(content: GooglePart): Promise<ApiContent> {
 }
 
 async function mapHistory(history: ChatHistory): Promise<GoogleContent[]> {
-  return Promise.all(history.map(async entry => {
-    const role = entry.role
-    const parts = await Promise.all(entry.content.map(contentToGoogle))
-    const content: GoogleContent = { role, parts }
-    return content
-  }))
+  return Promise.all(
+    history.map(async entry => {
+      const role = entry.role
+      const parts = await Promise.all(entry.content.map(contentToGoogle))
+      const content: GoogleContent = { role, parts }
+      return content
+    }),
+  )
 }
 
 export default class GeminiApi implements IntegrationApi {
@@ -79,7 +91,9 @@ export default class GeminiApi implements IntegrationApi {
     const models: ModelInfo[] = []
 
     for await (const model of response) {
-      if (!model.name) { continue }
+      if (!model.name) {
+        continue
+      }
       models.push({
         name: model.name,
         displayName: model.displayName || null,
@@ -89,14 +103,30 @@ export default class GeminiApi implements IntegrationApi {
     return models
   }
 
-  async generate(history: ChatHistory, options: ModelOptions, signal?: AbortSignal): Promise<ModelResponse> {
+  async generate(
+    history: ChatHistory,
+    options: ModelOptions,
+    signal?: AbortSignal,
+  ): Promise<ModelResponse> {
     const contents = await mapHistory(history)
     const config: GenerateContentConfig = {
       safetySettings: [
-        { category: HarmCategory.HARM_CATEGORY_HARASSMENT, threshold: HarmBlockThreshold.OFF },
-        { category: HarmCategory.HARM_CATEGORY_HATE_SPEECH, threshold: HarmBlockThreshold.OFF },
-        { category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT, threshold: HarmBlockThreshold.OFF },
-        { category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT, threshold: HarmBlockThreshold.OFF },
+        {
+          category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+          threshold: HarmBlockThreshold.OFF,
+        },
+        {
+          category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+          threshold: HarmBlockThreshold.OFF,
+        },
+        {
+          category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+          threshold: HarmBlockThreshold.OFF,
+        },
+        {
+          category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+          threshold: HarmBlockThreshold.OFF,
+        },
       ],
       systemInstruction: options.systemPrompt || undefined,
       temperature: options.temperature,
@@ -118,9 +148,12 @@ export default class GeminiApi implements IntegrationApi {
       model: options.model,
       config,
     }
-    const response = await this.client.models.generateContent(body as GenerateContentParameters)
+    const response = await this.client.models.generateContent(
+      body as GenerateContentParameters,
+    )
     console.dir(response, { depth: null })
-    const candidate: GoogleCandidate | undefined = (response.candidates || [])[0]
+    const candidate: GoogleCandidate | undefined = (response.candidates ||
+      [])[0]
     const mapped = candidate?.content?.parts?.map(googleToContent)
     if (!mapped) {
       throw new ApiResponseError()
