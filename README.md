@@ -9,6 +9,8 @@ experience to Google AI Studio or ChatGPT, but it supports a several inference
 APIs powered by your API keys. NagaiChat is designed to support multiple use
 cases, such as conversation, fiction, coding, and image editing.
 
+The name was inspired by Japanese artist Hiroshi Nagai.
+
 ### Features
 
 - Integrations with multiple APIs and models (including all OpenAI-compatible
