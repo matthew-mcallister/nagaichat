@@ -15,10 +15,11 @@ cases, such as conversation, fiction, coding, and image editing.
   APIs).
 - Presets for quickly switching between use cases or personalities
 - Conversation editing and branching
+- Conversation tree view
 - Markdown formatting
 - Image input and output
 
-### Running
+### Starting the server
 
 #### Production
 
@@ -34,15 +35,44 @@ npm i
 npm run start
 ```
 
+### Usage
+
+To use NagaiChat, start the server and visit http://localhost:3000.
+
+#### Adding an integration
+
+Before you can start chatting, you'll have to input a key for the API that you
+want to use. If you've never used an API before, you can get a free API key
+from [Google AI studio](https://aistudio.google.com) as of October 2025.
+
+Once you've obtained an API key, you'll have to visit the _Integrations_ page
+in NagaiChat and click _Add integration_. To create an integration, you not
+only need to paste in your API key, you also must choose the correct
+_interface_ for the API you are using and, sometimes, the correct _base
+URL_
+from the API's documentation.
+
+Here's a rundown of the currently implemented interfaces:
+
+- **OpenAI**: Supports both OpenAI/GPT as well as any API that advertises
+  itself as "OpenAI-compatible". APIs that offer OpenAI compatibility include
+  Claude, DeepSeek, and Qwen. If the base URL is left blank, OpenAI will be
+  used. Note that OpenAI itself lacks support for some features, such as image
+  generation or disabling thinking.
+- **DeepSeek/Qwen**: A modified version of the OpenAI interface that supports
+  DeepSeek and Qwen's extensions to OpenAI's API. The correct base URL must be
+  specified.
+- **Gemini**: Google's Gemini API. Supports the broadest set of features at the
+  moment. Use Nano Banana for image generation.
+
 ### TODO features
 
 - Code highlighting (easy)
 - Image gallery (easy)
-- Audio output (easy)
-- Audio input (medium)
+- Audio input/output (medium)
 - Response streaming (harder)
 - Postgres support (harder)
-- Multitenancy/security (hard)
+- User accounts/security (hard)
 - Finetuning (hard)
 
 ### Legal disclaimer
