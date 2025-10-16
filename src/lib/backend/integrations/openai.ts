@@ -129,8 +129,6 @@ export default class OpenAiApi implements IntegrationApi {
         // @ts-expect-error Nonstandard extension
         requestConfig.enable_thinking = true
       }
-    } else {
-      requestConfig.reasoning_effort = 'minimal'
     }
 
     let thoughts = ''
