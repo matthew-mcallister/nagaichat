@@ -1,5 +1,6 @@
 import { Content } from '@/lib/backend/content'
 import { Integration } from '@/lib/backend/integration'
+import AnthropicApi from '@/lib/backend/integrations/anthropic'
 import GeminiApi from '@/lib/backend/integrations/gemini'
 import OpenAiApi from '@/lib/backend/integrations/openai'
 import { Item } from '@/lib/backend/item'
@@ -63,6 +64,12 @@ export class ApiConnector {
         break
       case 'gemini':
         this.api = new GeminiApi(
+          integration.apiKey,
+          integration.baseUrl || undefined,
+        )
+        break
+      case 'anthropic':
+        this.api = new AnthropicApi(
           integration.apiKey,
           integration.baseUrl || undefined,
         )

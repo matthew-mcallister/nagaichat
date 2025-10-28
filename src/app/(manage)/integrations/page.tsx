@@ -142,6 +142,7 @@ export default function IntegrationsPage() {
                 <option value='openai'>OpenAI</option>
                 <option value='gemini'>Gemini</option>
                 <option value='deepseek'>DeepSeek/Qwen</option>
+                <option value='anthropic'>Anthropic</option>
               </select>
             </div>
 

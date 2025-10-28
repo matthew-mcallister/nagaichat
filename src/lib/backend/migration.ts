@@ -5,7 +5,7 @@ async function migrate_v1(db: Sequelize, transaction: Transaction): Promise<void
     CREATE TABLE integrations (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL UNIQUE,
-      interface TEXT NOT NULL CHECK (interface IN ('openai', 'gemini')),
+      interface TEXT NOT NULL,
       apiKey TEXT NOT NULL,
       baseUrl TEXT,
       createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,

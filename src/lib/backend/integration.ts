@@ -94,7 +94,7 @@ Integration.init(
       unique: true,
     },
     interface: {
-      type: DataTypes.ENUM('openai', 'gemini'),
+      type: DataTypes.STRING,
       allowNull: false,
     },
     apiKey: {

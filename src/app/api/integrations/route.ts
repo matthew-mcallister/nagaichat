@@ -1,11 +1,10 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { handleErrors, ValidationError } from '@/lib/error'
 import { Integration } from '@/lib/backend/integration'
-import { CreateIntegrationRequest } from '@/lib/frontend/api'
+import { handleErrors, ValidationError } from '@/lib/error'
+import { CreateIntegrationRequest, INTERFACES } from '@/lib/frontend/api'
+import { NextRequest, NextResponse } from 'next/server'
 
 export const GET = handleErrors(async () => {
-  const integrations = (await Integration.getAll())
-    .map(int => int.toApiJson())
+  const integrations = (await Integration.getAll()).map(int => int.toApiJson())
   return NextResponse.json(integrations)
 })
 
@@ -17,8 +16,10 @@ export const POST = handleErrors(async (request: NextRequest) => {
     throw new ValidationError('Name, interface, and apiKey are required')
   }
 
-  if (!['openai', 'gemini'].includes(body.interface)) {
-    throw new ValidationError('interface must be either "openai" or "gemini"')
+  if (!INTERFACES.includes(body.interface)) {
+    throw new ValidationError(
+      'interface must be one of ' + INTERFACES.join(', '),
+    )
   }
 
   const integration = await Integration.create(body as any)

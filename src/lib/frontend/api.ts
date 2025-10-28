@@ -27,7 +27,9 @@ async function unwrapJson<T>(
   }
 }
 
-export type Interface = 'deepseek' | 'gemini' | 'openai'
+export const INTERFACES = ['deepseek', 'gemini', 'openai', 'anthropic'] as const
+type InterfaceTuple = typeof INTERFACES
+export type Interface = InterfaceTuple[number]
 
 export interface Integration {
   id: number
