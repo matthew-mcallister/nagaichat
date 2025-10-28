@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { createItem } from '@/lib/backend/helper'
+import { Item } from '@/lib/backend/item'
 import { handleErrors, ValidationError } from '@/lib/error'
 import { parseInteger, withTransaction } from '@/lib/util'
-import { Item } from '@/lib/backend/item'
-import { createItem } from '@/lib/backend/helper'
+import { NextRequest, NextResponse } from 'next/server'
 
 export const GET = handleErrors(async (request: NextRequest) => {
   const query = request.nextUrl.searchParams
@@ -16,6 +16,8 @@ export const GET = handleErrors(async (request: NextRequest) => {
 
 export const POST = handleErrors(async (request: NextRequest) => {
   const body = await request.json()
-  const item = await withTransaction(transaction => createItem(body, transaction, request.signal))
+  const item = await withTransaction(transaction =>
+    createItem(body, transaction, request.signal),
+  )
   return NextResponse.json(item.toApiJson())
 })
