@@ -1,3 +1,5 @@
+'use client'
+
 import { BaseError } from '@/lib/error'
 import useSWR, { mutate } from 'swr'
 
