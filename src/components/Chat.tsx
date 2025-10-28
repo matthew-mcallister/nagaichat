@@ -93,6 +93,7 @@ export function ChatInner({ session, items }: ChatInnerProps) {
           parentId: userMessage.id,
           presetId: preset?.id || null,
           options,
+          content: null,
         },
         controller.current.signal,
       )
@@ -121,6 +122,7 @@ export function ChatInner({ session, items }: ChatInnerProps) {
           parentId: latestItem?.id || null,
           presetId: preset?.id || null,
           options,
+          content: null,
         },
         controller.current.signal,
       )
@@ -185,6 +187,7 @@ export function ChatInner({ session, items }: ChatInnerProps) {
             parentId: newItem.id,
             presetId: preset?.id || null,
             options,
+            content: null,
           },
           controller.current.signal,
         )
@@ -212,6 +215,7 @@ export function ChatInner({ session, items }: ChatInnerProps) {
           parentId,
           presetId: preset?.id || null,
           options,
+          content: null,
         },
         controller.current.signal,
       )

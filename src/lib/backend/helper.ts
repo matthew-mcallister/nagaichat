@@ -18,16 +18,18 @@ export async function createItem(body: CreateItemRequest, transaction: Transacti
     if (parent && parent.role === 'user') {
       throw new ValidationError('Role must be "model"')
     }
+  }
 
+  if (body.content !== null) {
     // Create the item
     item = await Item.doCreate({
       sessionId: session.id,
       parentId: parent?.id,
       content: body.content,
-      role: 'user',
+      role: body.role,
       transaction,
     })
-  } else { // body.role === 'model'
+  } else {
     if (!parent || parent.role === 'model') {
       throw new ValidationError('Role must be "user"')
     }

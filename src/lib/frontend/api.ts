@@ -197,6 +197,7 @@ export interface CreateModelItemRequest {
   parentId: number | null
   presetId: number | null
   options: SessionOptions
+  content: ContentObject[] | null
 }
 
 export interface CreateUserItemRequest {
