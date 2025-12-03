@@ -118,6 +118,13 @@ export default class AnthropicApi implements IntegrationApi {
       messages.push({ role, content: blocks })
     }
 
+    if (messages.length > 0) {
+      const blocks = messages[messages.length - 1].content
+      const block = blocks[blocks.length - 1]
+      // @ts-expect-error aaa
+      block.cache_control = {type: 'ephemeral'}
+    }
+
     const request: Anthropic.Messages.MessageCreateParamsNonStreaming = {
       model: options.model,
       messages,
@@ -127,7 +134,11 @@ export default class AnthropicApi implements IntegrationApi {
     }
 
     if (options.systemPrompt) {
-      request.system = options.systemPrompt
+      request.system = [{
+        type: 'text',
+        text: options.systemPrompt,
+        cache_control: {type: 'ephemeral'},
+      }]
     }
 
     if (options.thinkingEnabled) {
