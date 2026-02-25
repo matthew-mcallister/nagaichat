@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { handleErrors } from '@/lib/error'
 import { Preset } from '@/lib/backend/preset'
 import { parseInteger } from '@/lib/util'
-import { UpdatePresetRequest } from '@/lib/frontend/api'
+import { UpdatePresetRequest } from '@/lib/frontend/shared'
 
 export const PATCH = handleErrors(async (
   request: NextRequest,

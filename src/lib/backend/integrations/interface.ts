@@ -10,7 +10,7 @@ import {
   ModelInfo,
   ModelOptions,
   Role,
-} from '@/lib/frontend/api'
+} from '@/lib/frontend/shared'
 import { Transaction } from 'sequelize'
 
 export interface HistoryEntry {

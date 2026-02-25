@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { handleErrors } from '@/lib/error'
 import { Integration } from '@/lib/backend/integration'
-import { UpdateIntegrationRequest } from '@/lib/frontend/api'
+import { UpdateIntegrationRequest } from '@/lib/frontend/shared'
 import { parseInteger } from '@/lib/util'
 
 export const GET = handleErrors(async (

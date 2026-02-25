@@ -1,7 +1,7 @@
 import { NoSuchResource, ValidationError } from '@/lib/error'
 import getDb from '@/lib/backend/database'
 import { DataTypes, Model, Transaction } from 'sequelize'
-import { Session as ApiSession, Content, ContentObject, CreateSessionRequest, SessionOptions } from '@/lib/frontend/api'
+import { Session as ApiSession, Content, ContentObject, CreateSessionRequest, SessionOptions } from '@/lib/frontend/shared'
 import { Item } from '@/lib/backend/item'
 import { Preset } from '@/lib/backend/preset'
 import { createItem } from '@/lib/backend/helper'

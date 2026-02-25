@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { handleErrors, ValidationError } from '@/lib/error'
 import { Item } from '@/lib/backend/item'
 import { parseInteger } from '@/lib/util'
-import { ContentObject } from '@/lib/frontend/api'
+import { ContentObject } from '@/lib/frontend/shared'
 import { Content } from '@/lib/backend/content'
 import getDb from '@/lib/backend/database'
 

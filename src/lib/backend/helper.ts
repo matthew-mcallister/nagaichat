@@ -3,7 +3,7 @@ import { ApiConnector } from '@/lib/backend/integrations/interface'
 import { Item } from '@/lib/backend/item'
 import { Session } from '@/lib/backend/session'
 import { ValidationError } from '@/lib/error'
-import { CreateItemRequest } from '@/lib/frontend/api'
+import { CreateItemRequest } from '@/lib/frontend/shared'
 import { Transaction } from 'sequelize'
 
 export async function createItem(

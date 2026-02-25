@@ -1,5 +1,5 @@
 import { StaticContent } from '@/lib/backend/static'
-import { Content as ApiContent } from '@/lib/frontend/api'
+import { Content as ApiContent } from '@/lib/frontend/shared'
 import { DataTypes, Model, Transaction } from "sequelize"
 import type { Item } from '@/lib/backend/item'
 import getDb from '@/lib/backend/database'

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { CreateSessionRequest } from '@/lib/frontend/api'
+import { CreateSessionRequest } from '@/lib/frontend/shared'
 import { handleErrors } from '@/lib/error'
 import { Session } from '@/lib/backend/session'
 import { withTransaction } from '@/lib/util'

@@ -3,7 +3,7 @@ import fs from 'node:fs'
 import { NoSuchResource, ValidationError } from '@/lib/error'
 import getDb from '@/lib/backend/database'
 import { DataTypes, Model, Transaction } from 'sequelize'
-import { Content as ApiContent } from '@/lib/frontend/api'
+import { Content as ApiContent } from '@/lib/frontend/shared'
 
 export const UPLOAD_DIR: string = `${process.cwd()}/content`
 export const STATIC_CONTENT_URL: string = `${process.env.BASE_URL || ''}/static-content`

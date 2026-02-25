@@ -7,7 +7,7 @@ import {
   Interface,
   ModelInfo,
   UpdateIntegrationRequest,
-} from '@/lib/frontend/api'
+} from '@/lib/frontend/shared'
 import { DataTypes, Model, Transaction } from 'sequelize'
 
 export class Integration extends Model {

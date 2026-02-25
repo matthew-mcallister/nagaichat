@@ -1,9 +1,9 @@
 import { NoSuchResource } from '@/lib/error'
 import getDb from '@/lib/backend/database'
 import { DataTypes, Model, Transaction } from 'sequelize'
-import { Item as ApiItem, Role } from '@/lib/frontend/api'
+import { Item as ApiItem, Role } from '@/lib/frontend/shared'
 import { Content } from '@/lib/backend/content'
-import { Content as ApiContent } from '@/lib/frontend/api'
+import { Content as ApiContent } from '@/lib/frontend/shared'
 import { StaticContent } from '@/lib/backend/static'
 
 interface ItemCreateInfo {

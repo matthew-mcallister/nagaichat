@@ -1,6 +1,6 @@
 import { Integration } from '@/lib/backend/integration'
 import { handleErrors, ValidationError } from '@/lib/error'
-import { CreateIntegrationRequest, INTERFACES } from '@/lib/frontend/api'
+import { CreateIntegrationRequest, INTERFACES } from '@/lib/frontend/shared'
 import { NextRequest, NextResponse } from 'next/server'
 
 export const GET = handleErrors(async () => {

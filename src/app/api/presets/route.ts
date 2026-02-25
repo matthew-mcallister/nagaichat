@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { handleErrors } from '@/lib/error'
 import { Preset } from '@/lib/backend/preset'
-import { CreatePresetRequest } from '@/lib/frontend/api'
+import { CreatePresetRequest } from '@/lib/frontend/shared'
 
 export const GET = handleErrors(async () => {
   const presets = await Preset.findAll({

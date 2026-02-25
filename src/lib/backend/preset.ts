@@ -1,5 +1,5 @@
 import { DataTypes, Model } from 'sequelize'
-import { SessionOptions, Preset as ApiPreset } from '@/lib/frontend/api'
+import { SessionOptions, Preset as ApiPreset } from '@/lib/frontend/shared'
 import getDb from '@/lib/backend/database'
 import { NoSuchResource } from '@/lib/error'
 

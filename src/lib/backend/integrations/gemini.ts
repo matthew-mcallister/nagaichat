@@ -10,7 +10,7 @@ import {
   Content as ApiContent,
   ModelInfo,
   ModelOptions,
-} from '@/lib/frontend/api'
+} from '@/lib/frontend/shared'
 import { downloadContent } from '@/lib/util'
 import {
   GenerateContentConfig,
