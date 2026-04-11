@@ -122,7 +122,7 @@ async function migrate_v6(db: Sequelize, transaction: Transaction): Promise<void
     INSERT INTO contents (itemId, type, text)
     SELECT it.id, 'text', json_extract(it.content, '$[0].text')
     FROM items it;
-    ALTER TABLE ITEMS DROP COLUMN content;
+    ALTER TABLE items DROP COLUMN content;
 
     CREATE TRIGGER update_contents_timestamp
     AFTER UPDATE ON contents
