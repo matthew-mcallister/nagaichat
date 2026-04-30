@@ -209,6 +209,9 @@ export function ChatInner({ session, items, onUpdateItem }: ChatInnerProps) {
           controller.current.signal,
         )
         setLatestItemId(modelResponse.id)
+        await api.streamItemContent(modelResponse.id, content => {
+          onUpdateItem(modelResponse.id, content)
+        })
       }
     } catch (e) {
       reportError(e)
