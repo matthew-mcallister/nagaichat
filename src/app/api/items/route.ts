@@ -21,6 +21,8 @@ export const POST = handleErrors(async (request: NextRequest) => {
   const item = await withTransaction(transaction =>
     createItem(body, transaction, true, request.signal),
   )
-  startStream(body.options.modelOptions, item.id)
+  if (!body.content && body.role === 'model') {
+    startStream(body.options.modelOptions, item.id)
+  }
   return NextResponse.json(item.toApiJson())
 })
