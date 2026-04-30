@@ -11,6 +11,7 @@ import {
   ModelOptions,
   Role,
 } from '@/lib/frontend/shared'
+import { withTransaction } from '@/lib/util'
 import { Transaction } from 'sequelize'
 
 export interface HistoryEntry {
@@ -28,6 +29,9 @@ export interface ModelResponse {
  * Abstract interface that defines an API-agnostic way of interacting with
  * APIs.
  */
+// TODO: Rework cancelation. The request will no longer be canceled by client
+// disconnect. Instead, the client will supply an ID which can be used to
+// cancel the task via HTTP request.
 export interface IntegrationApi {
   listModels(): Promise<ModelInfo[]>
   generate(
@@ -35,6 +39,11 @@ export interface IntegrationApi {
     options: ModelOptions,
     signal?: AbortSignal,
   ): Promise<ModelResponse>
+  generateStreaming(
+    history: ChatHistory,
+    options: ModelOptions,
+    signal?: AbortSignal,
+  ): AsyncIterable<ModelResponse>
 }
 
 /**
@@ -86,6 +95,24 @@ export class ApiConnector {
     return this.api.listModels()
   }
 
+  private async buildHistory(
+    transaction: Transaction,
+    parent: Item,
+  ): Promise<ChatHistory> {
+    // Construct history
+    const items = [parent]
+    let it = parent
+    while (it.parentId) {
+      it = await Item.getById(it.parentId, transaction)
+      items.push(it)
+    }
+    items.reverse()
+    return items.map(item => ({
+      role: item.role,
+      content: item.content,
+    }))
+  }
+
   /**
    * Creates a new response to a chat item.
    *
@@ -97,34 +124,38 @@ export class ApiConnector {
     parent: Item,
     transaction: Transaction,
     signal?: AbortSignal,
-  ): Promise<Item> {
+  ): Promise<ModelResponse> {
     const session = await Session.getById(parent.sessionId, transaction)
-
-    // Construct history
-    const items = [parent]
-    let it = parent
-    while (it.parentId) {
-      it = await Item.getById(it.parentId, transaction)
-      items.push(it)
-    }
-    items.reverse()
-    const history: ChatHistory = items.map(item => ({
-      role: item.role,
-      content: item.content,
-    }))
-
+    const history = await this.buildHistory(transaction, parent)
     const response = await this.api.generate(
       history,
       session.options.modelOptions,
       signal,
     )
+    return response
+  }
 
-    return Item.doCreate({
-      sessionId: parent.sessionId,
-      parentId: parent.id,
-      role: 'model',
-      content: response.content,
-      transaction,
+  public async *generateStreaming(
+    itemId: number,
+    signal?: AbortSignal,
+  ): AsyncIterable<ModelResponse> {
+    let history, session
+    await withTransaction(async transaction => {
+      const item = await Item.getById(itemId)
+      if (!item.parentId) throw new Error()
+      const parent = await Item.getById(item.parentId)
+      session = await Session.getById(item.sessionId, transaction)
+      history = await this.buildHistory(transaction, parent)
     })
+    const stream = this.api.generateStreaming(
+      // @ts-expect-error ignore
+      history,
+      // @ts-expect-error ignore
+      session.options.modelOptions,
+      signal,
+    )
+    for await (const responseVersion of stream) {
+      yield responseVersion
+    }
   }
 }

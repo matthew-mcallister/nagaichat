@@ -13,7 +13,7 @@ fs.mkdirSync(UPLOAD_DIR, { recursive: true })
 interface StaticContentCreateInfo {
   mimeType: string
   content: string | Buffer
-  transaction: Transaction
+  transaction?: Transaction
 }
 
 function makeBuffer(data: string | Buffer): Buffer {

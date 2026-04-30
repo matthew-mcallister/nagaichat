@@ -104,11 +104,10 @@ export default class OpenAiApi implements IntegrationApi {
     }))
   }
 
-  async generate(
+  private async makeRequestConfig(
     history: ChatHistory,
     options: ModelOptions,
-    signal?: AbortSignal,
-  ): Promise<ModelResponse> {
+  ): Promise<OpenAI.Chat.Completions.ChatCompletionCreateParams> {
     const messages = await mapHistory(history)
 
     if (options.systemPrompt) {
@@ -130,6 +129,37 @@ export default class OpenAiApi implements IntegrationApi {
         requestConfig.enable_thinking = true
       }
     }
+
+    return requestConfig
+  }
+
+  private makeModelResponse(
+    text: string,
+    thoughts?: string | null,
+  ): ModelResponse {
+    // OpenAI's stateless API does not support image outputs - perhaps a
+    // deliberate choice to encourage vendor lock-in.
+    const content: ApiContent[] = [
+      {
+        type: 'text',
+        text,
+      },
+    ]
+    if (thoughts) {
+      content.push({
+        type: 'thought',
+        text: thoughts,
+      })
+    }
+    return { content }
+  }
+
+  async generate(
+    history: ChatHistory,
+    options: ModelOptions,
+    signal?: AbortSignal,
+  ): Promise<ModelResponse> {
+    const requestConfig = await this.makeRequestConfig(history, options)
 
     let thoughts = ''
     let text = ''
@@ -168,21 +198,41 @@ export default class OpenAiApi implements IntegrationApi {
       text = response.choices[0].message.content || ''
     }
 
-    // OpenAI's stateless API does not support image outputs - perhaps a
-    // deliberate choice to encourage vendor lock-in.
-    const content: ApiContent[] = [
-      {
-        type: 'text',
-        text,
-      },
-    ]
-    if (thoughts) {
-      content.push({
-        type: 'thought',
-        text: thoughts,
-      })
+    return this.makeModelResponse(text, thoughts)
+  }
+
+  async *generateStreaming(
+    history: ChatHistory,
+    options: ModelOptions,
+    signal?: AbortSignal,
+  ): AsyncIterable<ModelResponse> {
+    const requestConfig = await this.makeRequestConfig(history, options)
+
+    const config: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming =
+      { ...requestConfig, stream: true }
+    const response = await this.client.chat.completions.create(config, {
+      signal,
+    })
+
+    let text = '',
+      thoughts = ''
+    for await (const chunk of response) {
+      const delta = chunk.choices[0]?.delta
+      if (!delta) continue
+
+      if (delta.content) {
+        text += delta.content
+      }
+
+      // @ts-expect-error Nonstandard extension
+      if (delta.reasoning_content) {
+        // @ts-expect-error Nonstandard extension
+        thoughts += delta.reasoning_content
+      }
+
+      yield this.makeModelResponse(text, thoughts)
     }
 
-    return { content }
+    console.dir({ text, thoughts }, { depth: null })
   }
 }

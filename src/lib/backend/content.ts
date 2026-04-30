@@ -52,7 +52,7 @@ export class Content extends Model {
   public static async createFromApiJson(
     item: Item,
     content: ApiContent,
-    transaction: Transaction,
+    transaction?: Transaction,
   ): Promise<Content> {
     switch (content.type) {
       case 'text':

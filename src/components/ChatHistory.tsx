@@ -8,7 +8,6 @@ import styles from './ChatHistory.module.scss'
 interface ChatHistoryProps {
   disabled?: boolean
   forkDisabled?: boolean
-  awaitingResponse?: boolean
   tree: ChatTree
   renderMarkdown?: boolean
   latestItemId: number | null
@@ -41,7 +40,6 @@ export default function ChatHistory({
   disabled,
   forkDisabled,
   tree,
-  awaitingResponse,
   renderMarkdown,
   latestItemId,
   setLatestItemId,
@@ -90,10 +88,6 @@ export default function ChatHistory({
             />
           )
         })}
-        {awaitingResponse && (
-          // TODO: Better loading visual
-          <div className={styles.loadingMessage}>Waiting for response...</div>
-        )}
       </div>
     </div>
   )
