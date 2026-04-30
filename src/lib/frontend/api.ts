@@ -1,62 +1,61 @@
 'use client'
 
 import { BaseError } from '@/lib/error'
-import useSWR, { mutate } from 'swr'
+import useSWR, { mutate, SWRResponse } from 'swr'
 
 export type {
-  Interface,
-  Integration,
+  Content,
+  ContentObject,
   CreateIntegrationRequest,
-  UpdateIntegrationRequest,
+  CreateItemRequest,
+  CreateModelItemRequest,
+  CreatePresetRequest,
+  CreateSessionRequest,
+  CreateUserItemRequest,
+  ImageContent,
+  InlineContent,
+  Integration,
+  Interface,
+  Item,
   ModelInfo,
   ModelOptions,
-  SessionOptions,
   Preset,
-  CreatePresetRequest,
-  UpdatePresetRequest,
-  TextContent,
-  ThoughtContent,
-  InlineContent,
-  StaticContent,
-  ContentObject,
-  Content,
-  ImageContent,
   Role,
   Session,
-  CreateSessionRequest,
-  Item,
-  CreateModelItemRequest,
-  CreateUserItemRequest,
-  CreateItemRequest,
-  UpdateItemRequest,
+  SessionOptions,
   SessionOptionsFields,
+  StaticContent,
+  TextContent,
+  ThoughtContent,
+  UpdateIntegrationRequest,
+  UpdateItemRequest,
+  UpdatePresetRequest,
 } from './shared'
 
 export {
-  INTERFACES,
-  getItemText,
+  fromPreset,
   getItemImageContent,
   getItemImageUris,
+  getItemText,
   getItemThoughts,
+  INTERFACES,
   validateOptions,
-  fromPreset,
 } from './shared'
 
 import type {
+  Content,
   CreateIntegrationRequest,
-  UpdateIntegrationRequest,
-  ModelInfo,
-  SessionOptions,
-  Preset,
-  CreatePresetRequest,
-  UpdatePresetRequest,
-  Session,
-  CreateSessionRequest,
-  Item,
   CreateItemRequest,
-  UpdateItemRequest,
+  CreatePresetRequest,
+  CreateSessionRequest,
   Integration,
-  ContentObject,
+  Item,
+  ModelInfo,
+  Preset,
+  Session,
+  UpdateIntegrationRequest,
+  UpdateItemRequest,
+  UpdatePresetRequest,
 } from './shared'
 
 async function raiseForStatus(
@@ -157,7 +156,7 @@ export class Api {
   }
 
   private async delete(endpoint: string): Promise<void> {
-    raiseForStatus(
+    await raiseForStatus(
       await fetch(this.baseUrl + endpoint, {
         method: 'DELETE',
       }),
@@ -277,11 +276,12 @@ export class Api {
     return this.get(`/api/items?sessionId=${sessionId}`)
   }
 
-  public useSessionItems(sessionId: number): Item[] | null {
-    const { data } = useSWR(`/api/items?sessionId=${sessionId}`, () =>
-      this.listSessionItems(sessionId),
+  public useSessionItems(sessionId: number): SWRResponse<Item[] | null> {
+    const response = useSWR(
+      `/api/items?sessionId=${sessionId}`,
+      (): Promise<Item[] | null> => this.listSessionItems(sessionId) || null,
     )
-    return data || null
+    return response
   }
 
   public async createItem(
@@ -293,7 +293,9 @@ export class Api {
       options.signal = signal
     }
     const result: Item = await this.post('/api/items', body, options)
-    await mutate(`/api/items?sessionId=${body.sessionId}`)
+    await mutate(`/api/items?sessionId=${body.sessionId}`, (list: any) =>
+      list.concat([result]),
+    )
     return result
   }
 
@@ -301,6 +303,65 @@ export class Api {
     const result: Item = await this.patch(`/api/items/${id}`, body)
     await mutate(`/api/items?sessionId=${result.sessionId}`)
     return result
+  }
+
+  public async streamItemContent(
+    id: number,
+    onUpdate: (content: Content[]) => void,
+  ): Promise<void> {
+    return new Promise((resolve, reject) => {
+      const eventSource = new EventSource(
+        `${this.baseUrl}/api/items/${id}/stream`,
+      )
+      let settled = false
+
+      const cleanup = () => {
+        eventSource.close()
+      }
+
+      const resolveStream = () => {
+        if (settled) {
+          return
+        }
+        settled = true
+        cleanup()
+        resolve()
+      }
+
+      const rejectStream = (error: BaseError) => {
+        if (settled) {
+          return
+        }
+        settled = true
+        cleanup()
+        reject(error)
+      }
+
+      eventSource.addEventListener('update', event => {
+        try {
+          onUpdate(JSON.parse(event.data) as Content[])
+        } catch {
+          rejectStream(new BaseError('Received invalid stream update'))
+        }
+      })
+
+      eventSource.addEventListener('close', () => {
+        resolveStream()
+      })
+
+      eventSource.onerror = () => {
+        if (eventSource.readyState === EventSource.CLOSED) {
+          resolveStream()
+          return
+        }
+
+        rejectStream(new BaseError('Streaming connection failed'))
+      }
+    })
+  }
+
+  public async cancelItemStream(id: number): Promise<void> {
+    await this.delete(`/api/items/${id}/stream`)
   }
 }
 

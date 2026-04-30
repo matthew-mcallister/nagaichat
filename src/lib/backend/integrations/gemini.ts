@@ -161,4 +161,12 @@ export default class GeminiApi implements IntegrationApi {
     const content = await Promise.all(mapped)
     return { content }
   }
+
+  generateStreaming(
+    _history: ChatHistory,
+    _options: ModelOptions,
+    _signal?: AbortSignal,
+  ): AsyncIterable<ModelResponse> {
+    throw new Error('not implemented yet')
+  }
 }

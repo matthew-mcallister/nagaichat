@@ -5,7 +5,7 @@ import ChatHistory, { ChatHistoryPlaceholder } from '@/components/ChatHistory'
 import { useChatContext } from '@/components/context/ChatContext'
 import TreeView from '@/components/TreeView'
 import { reportError } from '@/lib/error'
-import Api, { ImageContent, Item, Session } from '@/lib/frontend/api'
+import Api, { Content, ImageContent, Item, Session } from '@/lib/frontend/api'
 import ChatTree from '@/lib/frontend/chat-tree'
 import { ChatBarAction } from '@/lib/frontend/common'
 import { useParams, useRouter } from 'next/navigation'
@@ -17,9 +17,10 @@ type LoadingState = null | 'processing' | 'awaitingResponse'
 interface ChatInnerProps {
   session: Session
   items: Item[]
+  onUpdateItem: (id: number, content: Content[]) => void
 }
 
-export function ChatInner({ session, items }: ChatInnerProps) {
+export function ChatInner({ session, items, onUpdateItem }: ChatInnerProps) {
   const api = new Api()
   const sessionId = session.id
 
@@ -98,6 +99,9 @@ export function ChatInner({ session, items }: ChatInnerProps) {
         controller.current.signal,
       )
       setLatestItemId(modelResponse.id)
+      await api.streamItemContent(modelResponse.id, content => {
+        onUpdateItem(modelResponse.id, content)
+      })
     } catch (e) {
       reportError(e)
     } finally {
@@ -108,6 +112,16 @@ export function ChatInner({ session, items }: ChatInnerProps) {
   async function handleStop() {
     controller.current.abort()
     controller.current = new AbortController()
+
+    if (loadingState !== 'awaitingResponse' || !latestItemId) {
+      return
+    }
+
+    try {
+      await api.cancelItemStream(latestItemId)
+    } catch (e) {
+      reportError(e)
+    }
   }
 
   async function getResponse() {
@@ -127,6 +141,9 @@ export function ChatInner({ session, items }: ChatInnerProps) {
         controller.current.signal,
       )
       setLatestItemId(item.id)
+      await api.streamItemContent(item.id, content => {
+        onUpdateItem(item.id, content)
+      })
     } catch (e) {
       reportError(e)
     } finally {
@@ -220,6 +237,9 @@ export function ChatInner({ session, items }: ChatInnerProps) {
         controller.current.signal,
       )
       setLatestItemId(newItem.id)
+      await api.streamItemContent(newItem.id, content => {
+        onUpdateItem(newItem.id, content)
+      })
     } catch (e) {
       setLatestItemId(oldLatestItemId)
       reportError(e)
@@ -264,7 +284,6 @@ export function ChatInner({ session, items }: ChatInnerProps) {
       <ChatHistory
         disabled={processing}
         forkDisabled={!options}
-        awaitingResponse={awaitingResponse}
         tree={tree}
         renderMarkdown={rawOptions?.renderMarkdown}
         latestItemId={latestItemId}
@@ -297,8 +316,14 @@ export default function Chat() {
   }
 
   const api = new Api()
-  const items = api.useSessionItems(sessionId)
+  const { data: items, mutate: mutateItems } = api.useSessionItems(sessionId)
   const session = api.useSession(sessionId)
+
+  function onUpdateItem(id: number, content: Content[]) {
+    const mutate = (items: any) =>
+      items.map((item: any) => (item?.id === id ? { ...item, content } : item))
+    mutateItems(mutate, { revalidate: false })
+  }
 
   if (!items || !session) {
     return (
@@ -311,5 +336,7 @@ export default function Chat() {
     )
   }
 
-  return <ChatInner session={session} items={items} />
+  return (
+    <ChatInner session={session} items={items} onUpdateItem={onUpdateItem} />
+  )
 }

@@ -122,7 +122,7 @@ export default class AnthropicApi implements IntegrationApi {
       const blocks = messages[messages.length - 1].content
       const block = blocks[blocks.length - 1]
       // @ts-expect-error aaa
-      block.cache_control = {type: 'ephemeral'}
+      block.cache_control = { type: 'ephemeral' }
     }
 
     const request: Anthropic.Messages.MessageCreateParamsNonStreaming = {
@@ -134,11 +134,13 @@ export default class AnthropicApi implements IntegrationApi {
     }
 
     if (options.systemPrompt) {
-      request.system = [{
-        type: 'text',
-        text: options.systemPrompt,
-        cache_control: {type: 'ephemeral'},
-      }]
+      request.system = [
+        {
+          type: 'text',
+          text: options.systemPrompt,
+          cache_control: { type: 'ephemeral' },
+        },
+      ]
     }
 
     if (options.thinkingEnabled) {
@@ -166,5 +168,13 @@ export default class AnthropicApi implements IntegrationApi {
     }
 
     return { content }
+  }
+
+  generateStreaming(
+    _history: ChatHistory,
+    _options: ModelOptions,
+    _signal?: AbortSignal,
+  ): AsyncIterable<ModelResponse> {
+    throw new Error('not implemented yet')
   }
 }

@@ -9,6 +9,7 @@ import { Transaction } from 'sequelize'
 export async function createItem(
   body: CreateItemRequest,
   transaction: Transaction,
+  streaming: boolean,
   signal?: AbortSignal,
 ): Promise<Item> {
   const session = await Session.getById(body.sessionId, transaction)
@@ -50,7 +51,25 @@ export async function createItem(
       transaction,
     )
     const api = new ApiConnector(integration)
-    item = await api.generate(parent, transaction, signal)
+
+    if (streaming) {
+      item = await Item.doCreate({
+        sessionId: parent.sessionId,
+        parentId: parent.id,
+        role: 'model',
+        content: [],
+        transaction,
+      })
+    } else {
+      const response = await api.generate(parent, transaction, signal)
+      item = await Item.doCreate({
+        sessionId: parent.sessionId,
+        parentId: parent.id,
+        role: 'model',
+        content: response.content,
+        transaction,
+      })
+    }
   }
 
   session.latestItemId = item.id

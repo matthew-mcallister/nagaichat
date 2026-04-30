@@ -295,7 +295,6 @@ function computeLayout(tree: ChatTree): TreeLayout {
     bottom = Math.max(bottom, pos.y + h)
     maxDepth = Math.max(maxDepth, node.depth)
   })
-  console.log({ left, right, top, bottom, maxDepth })
 
   return {
     placements: placements as Map<number, ItemPlacement>,
@@ -374,7 +373,7 @@ function TreeSvg({ tree, placements, onSelect }: TreeSvgProps) {
           {[...placements.values()].map(({ pos, item }) => {
             // Render item
             if (!item) {
-              throw new Error('unreachable')
+              throw new Error('unreachable TreeView.tsx')
             }
             return (
               <TreeItem

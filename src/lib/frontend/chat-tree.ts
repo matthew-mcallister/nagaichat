@@ -30,7 +30,7 @@ export default class ChatTree {
     while (currentId !== null) {
       const item = this.items.get(currentId)
       if (!item) {
-        throw new Error('unreachable')
+        throw new Error('unreachable chat-tree.ts 1')
       }
       history.push(item)
       currentId = item.parentId
@@ -42,7 +42,7 @@ export default class ChatTree {
 
   public get(id: number): Item {
     const item = this.items.get(id)
-    if (!item) throw new Error('unreachable')
+    if (!item) throw new Error('unreachable chat-tree.ts 2')
     return item
   }
 
@@ -58,7 +58,7 @@ export default class ChatTree {
   public getSiblings(item: Item): [number, Item | null, Item | null] {
     const siblings = this.getChildren(item.parentId)
     const index = siblings.findIndex(sibling => sibling.id === item.id)
-    if (index === -1) throw new Error('unreachable')
+    if (index === -1) throw new Error('unreachable chat-tree.ts 3')
 
     const left = index > 0 ? siblings[index - 1] : null
     const right = index < siblings.length - 1 ? siblings[index + 1] : null

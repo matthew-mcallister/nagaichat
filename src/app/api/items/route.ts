@@ -1,6 +1,8 @@
 import { createItem } from '@/lib/backend/helper'
 import { Item } from '@/lib/backend/item'
+import { startStream } from '@/lib/backend/stream'
 import { handleErrors, ValidationError } from '@/lib/error'
+import { CreateItemRequest } from '@/lib/frontend/shared'
 import { parseInteger, withTransaction } from '@/lib/util'
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -15,9 +17,10 @@ export const GET = handleErrors(async (request: NextRequest) => {
 })
 
 export const POST = handleErrors(async (request: NextRequest) => {
-  const body = await request.json()
+  const body: CreateItemRequest = await request.json()
   const item = await withTransaction(transaction =>
-    createItem(body, transaction, request.signal),
+    createItem(body, transaction, true, request.signal),
   )
+  startStream(body.options.modelOptions, item.id)
   return NextResponse.json(item.toApiJson())
 })

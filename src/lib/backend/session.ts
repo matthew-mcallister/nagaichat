@@ -1,10 +1,16 @@
-import { NoSuchResource, ValidationError } from '@/lib/error'
 import getDb from '@/lib/backend/database'
-import { DataTypes, Model, Transaction } from 'sequelize'
-import { Session as ApiSession, Content, ContentObject, CreateSessionRequest, SessionOptions } from '@/lib/frontend/shared'
+import { createItem } from '@/lib/backend/helper'
 import { Item } from '@/lib/backend/item'
 import { Preset } from '@/lib/backend/preset'
-import { createItem } from '@/lib/backend/helper'
+import { NoSuchResource, ValidationError } from '@/lib/error'
+import {
+  Session as ApiSession,
+  Content,
+  ContentObject,
+  CreateSessionRequest,
+  SessionOptions,
+} from '@/lib/frontend/shared'
+import { DataTypes, Model, Transaction } from 'sequelize'
 
 function convertContents(content: Content | Content[]): ContentObject[] {
   if (!Array.isArray(content)) {
@@ -23,7 +29,9 @@ function convertContents(content: Content | Content[]): ContentObject[] {
       numText++
     }
     if (numText > 1) {
-      throw new ValidationError('Request content contains multiple text components')
+      throw new ValidationError(
+        'Request content contains multiple text components',
+      )
     }
   }
   return contents
@@ -47,7 +55,10 @@ export class Session extends Model {
   // XXX: Touch updatedAt when posting a message to chat?
   declare updatedAt: Date
 
-  public static async doCreate(body: CreateSessionRequest, transaction: Transaction): Promise<Session> {
+  public static async doCreate(
+    body: CreateSessionRequest,
+    transaction: Transaction,
+  ): Promise<Session> {
     const contents = convertContents(body.initialContent)
 
     // Extract name from first content item
@@ -60,20 +71,27 @@ export class Session extends Model {
       }
     }
 
-    const session = await this.create({
-      name,
-      presetId: body.presetId,
-      options: body.options,
-    }, { transaction })
+    const session = await this.create(
+      {
+        name,
+        presetId: body.presetId,
+        options: body.options,
+      },
+      { transaction },
+    )
     // FIXME: Add abort signal handler
-    const item = await createItem({
-      sessionId: session.id,
-      parentId: null,
-      content: contents,
-      role: 'user',
-      presetId: body.presetId || null,
-      options: body.options,
-    }, transaction)
+    const item = await createItem(
+      {
+        sessionId: session.id,
+        parentId: null,
+        content: contents,
+        role: 'user',
+        presetId: body.presetId || null,
+        options: body.options,
+      },
+      transaction,
+      false,
+    )
     session.latestItemId = item.id
     await session.save({ transaction })
 
@@ -82,11 +100,14 @@ export class Session extends Model {
 
   public static async getAll(): Promise<Session[]> {
     return await Session.findAll({
-      order: [['createdAt', 'DESC']]
+      order: [['createdAt', 'DESC']],
     })
   }
 
-  public static async getById(id: number, transaction?: Transaction): Promise<Session> {
+  public static async getById(
+    id: number,
+    transaction?: Transaction,
+  ): Promise<Session> {
     const session = await this.findByPk(id, { transaction })
     if (!session) {
       throw new NoSuchResource(`No such session: ${id}`)
@@ -102,60 +123,67 @@ export class Session extends Model {
       presetId: this.presetId,
       options: this.options,
       createdAt: this.createdAt.toISOString(),
-      updatedAt: this.updatedAt.toISOString()
+      updatedAt: this.updatedAt.toISOString(),
     }
   }
 }
 
-Session.init({
-  id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true
-  },
-  name: {
-    type: DataTypes.STRING,
-    allowNull: false,
-  },
-  presetId: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
-    references: {
-      model: 'Preset',
-      key: 'id',
+Session.init(
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    name: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    presetId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'Preset',
+        key: 'id',
+      },
+    },
+    options: {
+      type: DataTypes.JSON,
+      allowNull: false,
+      get() {
+        const v = this.getDataValue('options')
+        return typeof v === 'string' ? JSON.parse(v) : v
+      },
+    },
+    latestItemId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      references: {
+        model: 'Item',
+        key: 'id',
+      },
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
     },
   },
-  options: {
-    type: DataTypes.JSON,
-    allowNull: false,
-    get() {
-      const v = this.getDataValue('options')
-      return typeof v === 'string' ? JSON.parse(v) : v
-    },
+  {
+    sequelize: await getDb(),
+    modelName: 'Session',
+    tableName: 'sessions',
+    timestamps: true,
   },
-  latestItemId: {
-    type: DataTypes.INTEGER,
-    allowNull: true,
-    references: {
-      model: 'Item',
-      key: 'id',
-    },
-  },
-  createdAt: {
-    type: DataTypes.DATE,
-    allowNull: false,
-  },
-  updatedAt: {
-    type: DataTypes.DATE,
-    allowNull: false,
-  },
-}, {
-  sequelize: await getDb(),
-  modelName: 'Session',
-  tableName: 'sessions',
-  timestamps: true
+)
+Session.hasOne(Preset, {
+  as: 'preset',
+  foreignKey: 'id',
+  sourceKey: 'presetId',
 })
-Session.hasOne(Preset, { as: 'preset', foreignKey: 'id', sourceKey: 'presetId' })
 Session.hasMany(Item, { as: 'items', foreignKey: 'sessionId' })
 Session.belongsTo(Item, { as: 'latestItem', foreignKey: 'latestItemId' })
 Item.belongsTo(Session, { as: 'session', foreignKey: 'sessionId' })

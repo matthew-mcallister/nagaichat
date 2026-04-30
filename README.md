@@ -70,9 +70,9 @@ Here's a rundown of the currently implemented interfaces:
 ### TODO features
 
 - Code highlighting (easy)
+- MathJax (easy)
 - Image gallery (easy)
 - Audio input/output (medium)
-- Response streaming (harder)
 - Postgres support (harder)
 - User accounts/security (hard)
 - Finetuning (hard)
