@@ -19,6 +19,11 @@
   }
 }
 
+.bottomLink a {
+  margin-left: var(--space-4);
+  color: var(--color-foreground);
+}
+
 .loadingMessage {
   padding: var(--space-4);
   border-radius: var(--radius-lg);

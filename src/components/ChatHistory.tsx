@@ -52,6 +52,11 @@ export default function ChatHistory({
   return (
     <div className={styles.chatHistory}>
       <div className={styles.messagesContainer}>
+        {history.length > 2 && (
+          <div className={styles.bottomLink}>
+            <a href={`#item-${latestItemId}`}>↓ Latest</a>
+          </div>
+        )}
         {history.map(item => {
           const siblingCount = tree.getChildren(item.parentId).length
           const [index, left, right] = tree.getSiblings(item)
