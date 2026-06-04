@@ -128,6 +128,9 @@ export default class OpenAiApi implements IntegrationApi {
         // @ts-expect-error Nonstandard extension
         requestConfig.enable_thinking = true
       }
+    } else {
+      // @ts-expect-error Out of date type information
+      requestConfig.reasoning_effort = 'none'
     }
 
     return requestConfig
