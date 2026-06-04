@@ -8,6 +8,7 @@ import { StaticContent } from '@/lib/backend/static'
 import { ApiResponseError } from '@/lib/error'
 import {
   Content as ApiContent,
+  getReasoningEffort,
   ModelInfo,
   ModelOptions,
 } from '@/lib/frontend/shared'
@@ -75,6 +76,39 @@ async function mapHistory(history: ChatHistory): Promise<GoogleContent[]> {
   )
 }
 
+function getThinkingConfig(options: ModelOptions) {
+  switch (getReasoningEffort(options)) {
+    case 'none':
+      return {
+        thinkingBudget: 0,
+      }
+    case 'low':
+      return {
+        includeThoughts: true,
+        thinkingBudget: 1024,
+      }
+    case 'medium':
+      return {
+        includeThoughts: true,
+        thinkingBudget: 4096,
+      }
+    case 'high':
+      return {
+        includeThoughts: true,
+        thinkingBudget: 8192,
+      }
+    case 'xhigh':
+      return {
+        includeThoughts: true,
+        thinkingBudget: 16384,
+      }
+    case null:
+      return {
+        includeThoughts: true,
+      }
+  }
+}
+
 export default class GeminiApi implements IntegrationApi {
   private client: GoogleGenAI
 
@@ -130,15 +164,7 @@ export default class GeminiApi implements IntegrationApi {
       ],
       systemInstruction: options.systemPrompt || undefined,
       temperature: options.temperature,
-    }
-    if (options.thinkingEnabled) {
-      config.thinkingConfig = {
-        includeThoughts: true,
-      }
-    } else {
-      config.thinkingConfig = {
-        thinkingBudget: 0,
-      }
+      thinkingConfig: getThinkingConfig(options),
     }
     if (signal) {
       config.abortSignal = signal

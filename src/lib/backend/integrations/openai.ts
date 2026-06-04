@@ -8,6 +8,7 @@ import { StaticContent } from '@/lib/backend/static'
 import { ApiResponseError, ValidationError } from '@/lib/error'
 import {
   Content as ApiContent,
+  getReasoningEffort,
   ModelInfo,
   ModelOptions,
 } from '@/lib/frontend/shared'
@@ -108,6 +109,7 @@ export default class OpenAiApi implements IntegrationApi {
     history: ChatHistory,
     options: ModelOptions,
   ): Promise<OpenAI.Chat.Completions.ChatCompletionCreateParams> {
+    const reasoningEffort = getReasoningEffort(options)
     const messages = await mapHistory(history)
 
     if (options.systemPrompt) {
@@ -123,14 +125,14 @@ export default class OpenAiApi implements IntegrationApi {
       temperature: options.temperature,
     }
 
-    if (options.thinkingEnabled) {
-      if (this.flavor == 'deepseek') {
-        // @ts-expect-error Nonstandard extension
-        requestConfig.enable_thinking = true
+    if (reasoningEffort !== null) {
+      if (this.flavor === 'deepseek' && reasoningEffort === 'none') {
+        // DeepSeek does not support reasoning_effort = 'none'.
+        requestConfig.reasoning_effort = 'low'
+      } else {
+        // @ts-expect-error Out of date type information
+        requestConfig.reasoning_effort = reasoningEffort
       }
-    } else {
-      // @ts-expect-error Out of date type information
-      requestConfig.reasoning_effort = 'none'
     }
 
     return requestConfig

@@ -28,6 +28,14 @@ export default function OptionSidebar({
   const api = new Api()
   const integrations: Integration[] | null = api.useIntegrations()
   const models = api.useAvailableModels(options.integration || null)
+  const reasoningEffortOptions = [
+    { key: 'default', value: 'Default' },
+    { key: 'none', value: 'None' },
+    { key: 'low', value: 'Low' },
+    { key: 'medium', value: 'Medium' },
+    { key: 'high', value: 'High' },
+    { key: 'xhigh', value: 'XHigh' },
+  ]
 
   function handleOptionChange(field: keyof SessionOptionsFields, value: any) {
     options = {
@@ -150,19 +158,23 @@ export default function OptionSidebar({
             </div>
           </div>
 
-          {/* Thinking enabled */}
+          {/* Reasoning effort */}
           <div className={styles.field}>
-            <label className='checkboxLabel'>
-              <input
-                type='checkbox'
-                className='checkbox'
-                checked={options.thinkingEnabled}
-                onChange={e =>
-                  handleOptionChange('thinkingEnabled', e.target.checked)
-                }
-              />
-              <span className='checkboxText'>Enable thinking</span>
+            <label className={styles.label} htmlFor='reasoningEffort'>
+              Reasoning effort
             </label>
+            <Select
+              id='reasoningEffort'
+              selected={options.reasoningEffort ?? 'default'}
+              placeholder={null}
+              onChange={reasoningEffort =>
+                handleOptionChange(
+                  'reasoningEffort',
+                  reasoningEffort === 'default' ? null : reasoningEffort,
+                )
+              }
+              options={reasoningEffortOptions}
+            />
           </div>
 
           <hr />

@@ -29,9 +29,6 @@ export interface ModelResponse {
  * Abstract interface that defines an API-agnostic way of interacting with
  * APIs.
  */
-// TODO: Rework cancelation. The request will no longer be canceled by client
-// disconnect. Instead, the client will supply an ID which can be used to
-// cancel the task via HTTP request.
 export interface IntegrationApi {
   listModels(): Promise<ModelInfo[]>
   generate(

@@ -6,7 +6,7 @@ export interface Option<K, V> {
 export interface SelectProps<K, V> {
   id?: string
   selected?: K
-  placeholder?: string
+  placeholder?: string | null
   options?: Option<K, V>[]
   onChange: (value?: K) => void | Promise<void>
   disabled?: boolean
@@ -32,7 +32,7 @@ export default function Select<K, V>({
     }
   }
 
-  placeholder = placeholder || 'Select...'
+  placeholder = placeholder === undefined ? 'Select...' : placeholder
 
   return (
     <select
@@ -42,9 +42,11 @@ export default function Select<K, V>({
       onChange={handleChange}
       disabled={disabled}
     >
-      <option key='' value=''>
-        {placeholder}
-      </option>
+      {placeholder !== null && (
+        <option key='' value=''>
+          {placeholder}
+        </option>
+      )}
       {options.map(option => (
         <option key={String(option.key)} value={String(option.key)}>
           {String(option.value)}

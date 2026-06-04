@@ -35,9 +35,17 @@ export interface ModelOptions {
   model: string
   systemPrompt: string
   temperature: number
-  thinkingEnabled: boolean
+  reasoningEffort?: ReasoningEffort
   // TODO: Explicit content settings
 }
+
+export type ReasoningEffort =
+  | 'none'
+  | 'low'
+  | 'medium'
+  | 'high'
+  | 'xhigh'
+  | null
 
 // FIXME: Handle missing options correctly
 export interface SessionOptions {
@@ -193,7 +201,7 @@ export interface SessionOptionsFields {
   model?: string
   systemPrompt: string
   temperature: number
-  thinkingEnabled: boolean
+  reasoningEffort: ReasoningEffort
   renderMarkdown: boolean
 }
 
@@ -207,10 +215,14 @@ export function validateOptions(
       model: options.model,
       systemPrompt: options.systemPrompt,
       temperature: options.temperature,
-      thinkingEnabled: options.thinkingEnabled,
+      reasoningEffort: options.reasoningEffort,
     },
     renderMarkdown: options.renderMarkdown,
   }
+}
+
+export function getReasoningEffort(options: ModelOptions): ReasoningEffort {
+  return options.reasoningEffort || null
 }
 
 export function fromPreset(options: SessionOptions): SessionOptionsFields {
@@ -219,7 +231,7 @@ export function fromPreset(options: SessionOptions): SessionOptionsFields {
     model: options.modelOptions.model,
     systemPrompt: options.modelOptions.systemPrompt,
     temperature: options.modelOptions.temperature,
-    thinkingEnabled: options.modelOptions.thinkingEnabled,
+    reasoningEffort: getReasoningEffort(options.modelOptions),
     renderMarkdown: options.renderMarkdown,
   }
 }

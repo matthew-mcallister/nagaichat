@@ -42,7 +42,7 @@ export default function ChatLayout({ children }: Props) {
     model: undefined,
     systemPrompt: '',
     temperature: 1,
-    thinkingEnabled: true,
+    reasoningEffort: null,
     renderMarkdown: true,
   })
   const [preset, setPreset] = useState<Preset | undefined>(undefined)

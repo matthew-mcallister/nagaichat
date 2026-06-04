@@ -8,15 +8,49 @@ import { StaticContent } from '@/lib/backend/static'
 import { ApiResponseError, ValidationError } from '@/lib/error'
 import {
   Content as ApiContent,
+  getReasoningEffort,
   ModelInfo,
   ModelOptions,
 } from '@/lib/frontend/shared'
 
 import Anthropic, { ClientOptions } from '@anthropic-ai/sdk'
 
-const DEFAULT_MAX_OUTPUT_TOKENS = 4096
-const DEFAULT_THINKING_BUDGET = 2048
+const DEFAULT_MAX_OUTPUT_TOKENS = 16384
 type AnthropicImageMime = Anthropic.Messages.Base64ImageSource['media_type']
+
+function getThinkingConfig(
+  options: ModelOptions,
+): Anthropic.Messages.ThinkingConfigParam {
+  switch (getReasoningEffort(options)) {
+    case 'none':
+      return { type: 'disabled' }
+    case 'low':
+      return {
+        type: 'enabled',
+        budget_tokens: 1024,
+      }
+    case 'medium':
+      return {
+        type: 'enabled',
+        budget_tokens: 4096,
+      }
+    case 'high':
+      return {
+        type: 'enabled',
+        budget_tokens: 8192,
+      }
+    case 'xhigh':
+      return {
+        type: 'enabled',
+        budget_tokens: 16384,
+      }
+    case null:
+      return {
+        type: 'enabled',
+        budget_tokens: 4096,
+      }
+  }
+}
 
 function toAnthropicImageMime(mime: string): AnthropicImageMime {
   if (mime === 'image/png' || mime === 'image/jpeg') {
@@ -143,14 +177,7 @@ export default class AnthropicApi implements IntegrationApi {
       ]
     }
 
-    if (options.thinkingEnabled) {
-      request.thinking = {
-        type: 'enabled',
-        budget_tokens: DEFAULT_THINKING_BUDGET,
-      }
-    } else {
-      request.thinking = { type: 'disabled' }
-    }
+    request.thinking = getThinkingConfig(options)
 
     const response = await this.client.messages.create(request, { signal })
     console.dir(response, { depth: null })

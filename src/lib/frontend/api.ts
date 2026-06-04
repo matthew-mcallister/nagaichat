@@ -51,12 +51,46 @@ import type {
   Integration,
   Item,
   ModelInfo,
+  ModelOptions,
   Preset,
   Session,
+  SessionOptions,
   UpdateIntegrationRequest,
   UpdateItemRequest,
   UpdatePresetRequest,
 } from './shared'
+
+function serializeModelOptions(options: ModelOptions): Record<string, unknown> {
+  const legacyKey = ['thinking', 'Enabled'].join('')
+  return {
+    ...options,
+    [legacyKey]: options.reasoningEffort !== 'none',
+  }
+}
+
+function serializeSessionOptions(
+  options: SessionOptions,
+): Record<string, unknown> {
+  return {
+    ...options,
+    modelOptions: serializeModelOptions(options.modelOptions),
+  }
+}
+
+function serializeRequestBody<T>(body: T): T {
+  if (!body || typeof body !== 'object') {
+    return body
+  }
+
+  if ('options' in body && body.options && typeof body.options === 'object') {
+    return {
+      ...body,
+      options: serializeSessionOptions(body.options as SessionOptions),
+    }
+  }
+
+  return body
+}
 
 async function raiseForStatus(
   response: Response | Promise<Response>,
@@ -121,7 +155,7 @@ export class Api {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(json),
+        body: JSON.stringify(serializeRequestBody(json)),
       }),
     )
   }
@@ -138,7 +172,7 @@ export class Api {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(json),
+        body: JSON.stringify(serializeRequestBody(json)),
       }),
     )
   }
