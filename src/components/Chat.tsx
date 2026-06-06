@@ -163,6 +163,7 @@ export function ChatInner({ session, items, onUpdateItem }: ChatInnerProps) {
       })
     } catch (e) {
       reportError(e)
+      throw e
     } finally {
       setLoadingState(null)
     }
@@ -215,6 +216,7 @@ export function ChatInner({ session, items, onUpdateItem }: ChatInnerProps) {
       }
     } catch (e) {
       reportError(e)
+      throw e
     } finally {
       setLoadingState(null)
     }
