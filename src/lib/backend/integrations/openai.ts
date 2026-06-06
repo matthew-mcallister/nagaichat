@@ -214,7 +214,11 @@ export default class OpenAiApi implements IntegrationApi {
     const requestConfig = await this.makeRequestConfig(history, options)
 
     const config: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming =
-      { ...requestConfig, stream: true }
+      {
+        ...requestConfig,
+        stream: true,
+        stream_options: { include_usage: true },
+      }
     const response = await this.client.chat.completions.create(config, {
       signal,
     })
@@ -236,6 +240,10 @@ export default class OpenAiApi implements IntegrationApi {
       }
 
       yield this.makeModelResponse(text, thoughts)
+
+      if (chunk.usage) {
+        console.dir(chunk.usage, { depth: null })
+      }
     }
 
     console.dir({ text, thoughts }, { depth: null })
