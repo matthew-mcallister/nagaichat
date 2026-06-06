@@ -226,6 +226,10 @@ export default class OpenAiApi implements IntegrationApi {
     let text = '',
       thoughts = ''
     for await (const chunk of response) {
+      if (chunk.usage) {
+        console.dir(chunk.usage, { depth: null })
+      }
+
       const delta = chunk.choices[0]?.delta
       if (!delta) continue
 
@@ -240,10 +244,6 @@ export default class OpenAiApi implements IntegrationApi {
       }
 
       yield this.makeModelResponse(text, thoughts)
-
-      if (chunk.usage) {
-        console.dir(chunk.usage, { depth: null })
-      }
     }
 
     console.dir({ text, thoughts }, { depth: null })
