@@ -28,7 +28,7 @@ router.post('/', async (req, res) => {
     createItem(body, transaction, true),
   )
   if (!body.content && body.role === 'model') {
-    startStream(body.options.modelOptions, item.id)
+    await startStream(body.options.modelOptions, item.id)
   }
   res.json(item.toApiJson())
 })
