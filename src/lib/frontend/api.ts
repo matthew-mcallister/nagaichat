@@ -132,7 +132,7 @@ export class Api {
   }
 
   private url(endpoint: string): string {
-    const migrated = new RegExp('^/api/presets')
+    const migrated = new RegExp('^/api/(presets|integrations)')
     if (migrated.test(endpoint)) {
       return this.baseUrl + endpoint
     } else {

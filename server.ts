@@ -1,13 +1,21 @@
-import cors from 'cors'
 import { errorHandler } from '@/server/middleware'
 import apiRouter from '@/server/routes/_index'
+import cors from 'cors'
 import express from 'express'
 
 const app = express()
 const port = parseInt(process.env.EXPRESS_PORT || '3001', 10)
 
 app.use(express.json())
-app.use(cors({ origin: process.env.CORS_ORIGIN || 'http://localhost:3000' }))
+
+const corsOptions = {
+  origin: function (origin: any, callback: any) {
+    // Echo the requesting origin back to the browser dynamically
+    callback(null, origin)
+  },
+  credentials: true,
+}
+app.use(cors(corsOptions))
 
 app.use('/api', apiRouter)
 
