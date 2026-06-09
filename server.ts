@@ -1,10 +1,11 @@
-import { errorHandler } from '@/server/middleware'
-import apiRouter from '@/server/routes/_index'
+import { errorHandler } from '@/backend/middleware'
+import apiRouter from '@/backend/routes/_index'
+import { parseInteger } from '@/lib/util'
 import cors from 'cors'
 import express from 'express'
 
 const app = express()
-const port = parseInt(process.env.EXPRESS_PORT || '3001', 10)
+const port = parseInteger(process.env.EXPRESS_PORT || '3001')
 
 app.use(express.json())
 
