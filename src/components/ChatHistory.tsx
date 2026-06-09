@@ -3,6 +3,8 @@
 import ChatHistoryMessage from '@/components/ChatHistoryMessage'
 import { ImageContent, Item } from '@/lib/frontend/api'
 import ChatTree from '@/lib/frontend/chat-tree'
+import { getItemText } from '@/lib/frontend/shared'
+import wordsCount from 'words-count'
 import styles from './ChatHistory.module.scss'
 
 interface ChatHistoryProps {
@@ -49,6 +51,11 @@ export default function ChatHistory({
 }: ChatHistoryProps) {
   const history = tree.getLinearHistory(latestItemId)
 
+  const totalWords = history.reduce((count, item) => {
+    const text = getItemText(item) || ''
+    return count + wordsCount(text)
+  }, 0)
+
   return (
     <div className={styles.chatHistory}>
       <div className={styles.messagesContainer}>
@@ -93,6 +100,7 @@ export default function ChatHistory({
             />
           )
         })}
+        <p className="description">{totalWords} words</p>
       </div>
     </div>
   )

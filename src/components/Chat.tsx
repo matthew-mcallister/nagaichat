@@ -27,7 +27,6 @@ export function ChatInner({ session, items, onUpdateItem }: ChatInnerProps) {
   const router = useRouter()
   const [loadingState, setLoadingState] = useState<LoadingState>(null)
   const processing = loadingState !== null
-  const awaitingResponse = loadingState === 'awaitingResponse'
   const {
     preset,
     setPreset,

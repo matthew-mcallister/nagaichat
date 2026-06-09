@@ -34,7 +34,8 @@
     "react-hot-toast": "^2.6.0",
     "sequelize": "^6.37.7",
     "sqlite3": "^5.0.2",
-    "swr": "^2.3.6"
+    "swr": "^2.3.6",
+    "words-count": "^2.0.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

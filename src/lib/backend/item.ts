@@ -117,6 +117,7 @@ export class Item extends Model {
   }
 
   public toApiJson(): ApiItem {
+    // TODO maybe: compute, cache, and serve word count for each item
     return {
       id: this.id,
       sessionId: this.sessionId,
