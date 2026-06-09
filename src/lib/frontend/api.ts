@@ -118,9 +118,6 @@ async function unwrapJson<T>(
   }
 }
 
-const BASE_URL: string =
-  process.env.NODE_ENV === 'production' ? '' : 'http://127.0.0.1:3001'
-
 /**
  * Wrapper around the backend API.
  */
@@ -128,17 +125,11 @@ export class Api {
   private baseUrl: string
 
   constructor(baseUrl?: string) {
-    this.baseUrl = baseUrl || BASE_URL
+    this.baseUrl = baseUrl || ''
   }
 
   private url(endpoint: string): string {
-    const migrated = new RegExp('^/api/(presets|integrations)')
-    if (migrated.test(endpoint)) {
-      return this.baseUrl + endpoint
-    } else {
-      // XXX: Once migration is finished always use the new base URL
-      return endpoint
-    }
+    return this.baseUrl + endpoint
   }
 
   private async get<T>(endpoint: string): Promise<T> {
