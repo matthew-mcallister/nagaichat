@@ -1,5 +1,5 @@
-import { errorHandler } from '@/backend/middleware'
-import apiRouter from '@/backend/routes/_index'
+import { errorHandler } from '@/api/middleware'
+import apiRouter from '@/api/routes/_index'
 import { parseInteger } from '@/lib/util'
 import cors from 'cors'
 import express from 'express'

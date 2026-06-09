@@ -4,11 +4,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "concurrently -k -n next,api -c cyan,magenta \"next dev --turbopack\" \"tsx --watch server.ts\"",
+    "dev": "concurrently -k -n next,api -c cyan,magenta \"next dev --turbopack\" \"tsx --watch src/api/app.ts\"",
     "dev:next": "next dev --turbopack",
     "dev:api": "tsx --watch server.ts",
     "build": "next build --turbopack",
-    "start": "next start",
+    "start:next": "next start",
+    "start:api": "tsx src/api/app.ts",
+    "start": "concurrently -k -n next,api -c cyan,magenta \"next start\" \"tsx src/api/app.ts\"",
     "lint": "eslint"
   },
   "dependencies": {

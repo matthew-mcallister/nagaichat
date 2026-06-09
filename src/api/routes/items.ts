@@ -62,7 +62,7 @@ router.get('/:id/stream', (req, res) => {
   let consumedVersion = 0
   let listenerClosed = false
   let responseClosed = false
-  let intervalId: ReturnType<typeof setInterval> | undefined
+  let intervalId: ReturnType<typeof setInterval> | undefined = undefined
 
   // Set SSE headers
   res.setHeader('Content-Type', 'text/event-stream')
