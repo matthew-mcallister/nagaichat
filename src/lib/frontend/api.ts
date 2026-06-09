@@ -118,6 +118,9 @@ async function unwrapJson<T>(
   }
 }
 
+const BASE_URL: string =
+  process.env.NODE_ENV === 'production' ? '' : 'http://127.0.0.1:3001'
+
 /**
  * Wrapper around the backend API.
  */
@@ -125,12 +128,22 @@ export class Api {
   private baseUrl: string
 
   constructor(baseUrl?: string) {
-    this.baseUrl = baseUrl || ''
+    this.baseUrl = baseUrl || BASE_URL
+  }
+
+  private url(endpoint: string): string {
+    const migrated = new RegExp('^/api/presets')
+    if (migrated.test(endpoint)) {
+      return this.baseUrl + endpoint
+    } else {
+      // XXX: Once migration is finished always use the new base URL
+      return endpoint
+    }
   }
 
   private async get<T>(endpoint: string): Promise<T> {
     return unwrapJson(
-      fetch(this.baseUrl + endpoint, {
+      fetch(this.url(endpoint), {
         method: 'GET',
       }),
     )
@@ -138,7 +151,7 @@ export class Api {
 
   private async put<S, T>(endpoint: string, json: S): Promise<T> {
     return unwrapJson(
-      fetch(this.baseUrl + endpoint, {
+      fetch(this.url(endpoint), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -150,7 +163,7 @@ export class Api {
 
   private async patch<S, T>(endpoint: string, json: S): Promise<T> {
     return unwrapJson(
-      fetch(this.baseUrl + endpoint, {
+      fetch(this.url(endpoint), {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -166,7 +179,7 @@ export class Api {
     fetchOptions?: any,
   ): Promise<T> {
     return unwrapJson(
-      fetch(this.baseUrl + endpoint, {
+      fetch(this.url(endpoint), {
         ...fetchOptions,
         method: 'POST',
         headers: {
@@ -179,7 +192,7 @@ export class Api {
 
   private async update<S, T>(endpoint: string, json: S): Promise<T> {
     return unwrapJson(
-      fetch(this.baseUrl + endpoint, {
+      fetch(this.url(endpoint), {
         method: 'UPDATE',
         headers: {
           'Content-Type': 'application/json',
@@ -191,7 +204,7 @@ export class Api {
 
   private async delete(endpoint: string): Promise<void> {
     await raiseForStatus(
-      await fetch(this.baseUrl + endpoint, {
+      await fetch(this.url(endpoint), {
         method: 'DELETE',
       }),
     )

@@ -39,7 +39,7 @@ export class AbortError extends BaseError {
   protected static defaultMessage = 'Request aborted'
 }
 
-function mapError(e: any): BaseError {
+export function mapError(e: any): BaseError {
   if (e instanceof BaseError) {
     return e
   } else if (e instanceof DOMException && e.message === 'AbortError') {
