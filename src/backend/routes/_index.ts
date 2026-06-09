@@ -1,11 +1,13 @@
 import { Router } from 'express'
 import integrationsRouter from './integrations'
+import itemsRouter from './items'
 import presetsRouter from './presets'
 import sessionsRouter from './sessions'
 
 const apiRouter = Router()
 
 apiRouter.use('/integrations', integrationsRouter)
+apiRouter.use('/items', itemsRouter)
 apiRouter.use('/presets', presetsRouter)
 apiRouter.use('/sessions', sessionsRouter)
 
