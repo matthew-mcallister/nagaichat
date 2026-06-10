@@ -51,10 +51,12 @@ export default function ChatHistory({
 }: ChatHistoryProps) {
   const history = tree.getLinearHistory(latestItemId)
 
-  const totalWords = history.reduce((count, item) => {
-    const text = getItemText(item) || ''
-    return count + wordsCount(text)
-  }, 0)
+  const totalWords = disabled
+    ? '-'
+    : history.reduce((count, item) => {
+        const text = getItemText(item) || ''
+        return count + wordsCount(text)
+      }, 0)
 
   return (
     <div className={styles.chatHistory}>
@@ -100,7 +102,7 @@ export default function ChatHistory({
             />
           )
         })}
-        <p className="description">{totalWords} words</p>
+        <p className='description'>{totalWords} words</p>
       </div>
     </div>
   )
