@@ -137,11 +137,11 @@ export default class GeminiApi implements IntegrationApi {
     return models
   }
 
-  async generate(
+  private async makeRequestConfig(
     history: ChatHistory,
     options: ModelOptions,
     signal?: AbortSignal,
-  ): Promise<ModelResponse> {
+  ): Promise<GenerateContentParameters> {
     const contents = await mapHistory(history)
     const config: GenerateContentConfig = {
       safetySettings: [
@@ -169,11 +169,19 @@ export default class GeminiApi implements IntegrationApi {
     if (signal) {
       config.abortSignal = signal
     }
-    const body: GenerateContentParameters = {
+    return {
       contents,
       model: options.model,
       config,
     }
+  }
+
+  async generate(
+    history: ChatHistory,
+    options: ModelOptions,
+    signal?: AbortSignal,
+  ): Promise<ModelResponse> {
+    const body = await this.makeRequestConfig(history, options, signal)
     const response = await this.client.models.generateContent(
       body as GenerateContentParameters,
     )
@@ -188,11 +196,49 @@ export default class GeminiApi implements IntegrationApi {
     return { content }
   }
 
-  generateStreaming(
-    _history: ChatHistory,
-    _options: ModelOptions,
-    _signal?: AbortSignal,
+  async *generateStreaming(
+    history: ChatHistory,
+    options: ModelOptions,
+    signal?: AbortSignal,
   ): AsyncIterable<ModelResponse> {
-    throw new Error('not implemented yet')
+    const body = await this.makeRequestConfig(history, options, signal)
+    const stream = await this.client.models.generateContentStream(body)
+
+    let text = ''
+    let thoughts = ''
+    for await (const response of stream) {
+      if (response.usageMetadata) {
+        console.dir(response.usageMetadata, { depth: null })
+      }
+
+      const candidate: GoogleCandidate | undefined = (response.candidates ||
+        [])[0]
+      const parts = candidate?.content?.parts || []
+      for (const part of parts) {
+        if (part.text) {
+          if (part.thought) {
+            thoughts += part.text
+          } else {
+            text += part.text
+          }
+        }
+      }
+
+      const content: ApiContent[] = [
+        {
+          type: 'text',
+          text,
+        },
+      ]
+      if (thoughts) {
+        content.push({
+          type: 'thought',
+          text: thoughts,
+        })
+      }
+      yield { content }
+    }
+
+    console.dir({ text, thoughts }, { depth: null })
   }
 }
