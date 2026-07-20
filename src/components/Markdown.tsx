@@ -12,12 +12,14 @@ interface MarkdownProps {
 
 const RenderMarkdown = memo(function RenderMarkdown(props: MarkdownProps) {
   const renderMath = true
-  return <ReactMarkdown
-    remarkPlugins={renderMath ? [remarkMathMarkup] : []}
-    rehypePlugins={renderMath ? [rehypeKatex] : []}
-  >
-    {props.text}
-  </ReactMarkdown>
+  return <div className='markdown'>
+      <ReactMarkdown
+      remarkPlugins={renderMath ? [remarkMathMarkup] : []}
+      rehypePlugins={renderMath ? [rehypeKatex] : []}
+    >
+      {props.text}
+    </ReactMarkdown>
+  </div>
 })
 
 export default function Markdown(props: MarkdownProps) {
