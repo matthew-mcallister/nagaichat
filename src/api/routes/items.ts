@@ -55,7 +55,6 @@ router.patch('/:id', async (req, res) => {
 // Returns an SSE stream of type Content[]
 router.get('/:id/stream', (req, res) => {
   const id = parseInteger(req.params.id as string)
-  const encoder = new TextEncoder()
 
   let pendingVersion: any = null
   let queuedVersion = 0

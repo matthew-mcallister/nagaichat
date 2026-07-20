@@ -1,19 +1,29 @@
-import DOMPurify from 'dompurify'
-import { marked } from 'marked'
+import remarkMathMarkup from "@/lib/remark-math-markup"
+import { memo } from "react"
+import ReactMarkdown from 'react-markdown'
+import rehypeKatex from 'rehype-katex'
+import 'katex/dist/katex.min.css'
 
 interface MarkdownProps {
   text: string
   render?: boolean
+  renderMath?: boolean
 }
 
-export default function Markdown({ text, render }: MarkdownProps) {
-  if (render) {
-    const html = marked.parse(text, { async: false })
-    const body = DOMPurify.sanitize(html)
-    return (
-      <div className='markdown' dangerouslySetInnerHTML={{ __html: body }} />
-    )
+const RenderMarkdown = memo(function RenderMarkdown(props: MarkdownProps) {
+  const renderMath = true
+  return <ReactMarkdown
+    remarkPlugins={renderMath ? [remarkMathMarkup] : []}
+    rehypePlugins={renderMath ? [rehypeKatex] : []}
+  >
+    {props.text}
+  </ReactMarkdown>
+})
+
+export default function Markdown(props: MarkdownProps) {
+  if (props.render) {
+    return <RenderMarkdown {...props}/>
   } else {
-    return <div>{text}</div>
+    return <div>{props.text}</div>
   }
 }
