@@ -26,6 +26,7 @@ import { useRouter } from 'next/navigation'
 import { ChangeEvent, useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 import styles from './ChatHistoryMessage.module.scss'
+import { DisplayOptions } from '@/lib/frontend/shared'
 
 async function copyToClipboard(text: string): Promise<void> {
   if (window.isSecureContext && window.navigator.clipboard) {
@@ -218,7 +219,7 @@ export interface ChatHistoryMessageProps {
   index: number
   left?: Item | null
   right?: Item | null
-  renderMarkdown?: boolean
+  displayOptions?: DisplayOptions
   onMoveLeft(): void
   onMoveRight(): void
   /** Overwrites the text of this item. */
@@ -238,7 +239,7 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
     right,
     disabled,
     forkDisabled,
-    renderMarkdown,
+    displayOptions,
     onMoveLeft,
     onMoveRight,
     onOverwrite,
@@ -328,7 +329,12 @@ export default function ChatHistoryMessage(props: ChatHistoryMessageProps) {
       <div
         className={`${styles.messageBubble} ${editing ? styles.hidden : ''}`}
       >
-        <Markdown text={rawText || ''} render={renderMarkdown} />
+        <Markdown 
+          text={rawText || ''} 
+          render={displayOptions?.renderMarkdown}
+          renderMath={displayOptions?.renderMath}
+          useDollarForMath={displayOptions?.useDollarForMath}
+        />
       </div>
 
       {editing ? (

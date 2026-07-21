@@ -11,6 +11,7 @@ import { ChatBarAction } from '@/lib/frontend/common'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState } from 'react'
 import styles from './Chat.module.scss'
+import { getDisplayOptions } from '@/lib/frontend/shared'
 
 type LoadingState = null | 'processing' | 'awaitingResponse'
 
@@ -289,7 +290,7 @@ export function ChatInner({ session, items, onUpdateItem }: ChatInnerProps) {
         disabled={processing}
         forkDisabled={!options}
         tree={tree}
-        renderMarkdown={rawOptions?.renderMarkdown}
+        displayOptions={getDisplayOptions(rawOptions)}
         latestItemId={latestItemId}
         setLatestItemId={setLatestItemId}
         onOverwrite={handleOverwrite}

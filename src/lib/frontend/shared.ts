@@ -1,3 +1,5 @@
+// Definitions shared between frontend and backend.
+
 export const INTERFACES = ['deepseek', 'gemini', 'openai', 'anthropic'] as const
 type InterfaceTuple = typeof INTERFACES
 export type Interface = InterfaceTuple[number]
@@ -47,10 +49,15 @@ export type ReasoningEffort =
   | 'xhigh'
   | null
 
+export interface DisplayOptions {
+  renderMarkdown?: boolean
+  renderMath?: boolean
+  useDollarForMath?: boolean
+}
+
 // FIXME: Handle missing options correctly
-export interface SessionOptions {
+export interface SessionOptions extends DisplayOptions {
   modelOptions: ModelOptions
-  renderMarkdown: boolean
 }
 
 export interface Preset {
@@ -196,13 +203,12 @@ export interface UpdateItemRequest {
   content: ContentObject[]
 }
 
-export interface SessionOptionsFields {
+export interface SessionOptionsFields extends DisplayOptions {
   integration?: number
   model?: string
   systemPrompt: string
   temperature: number
   reasoningEffort: ReasoningEffort
-  renderMarkdown: boolean
 }
 
 export function validateOptions(
@@ -218,11 +224,21 @@ export function validateOptions(
       reasoningEffort: options.reasoningEffort,
     },
     renderMarkdown: options.renderMarkdown,
+    renderMath: options.renderMath,
+    useDollarForMath: options.useDollarForMath,
   }
 }
 
 export function getReasoningEffort(options: ModelOptions): ReasoningEffort {
   return options.reasoningEffort || null
+}
+
+export function getDisplayOptions(options: DisplayOptions): DisplayOptions {
+  return {
+    renderMarkdown: options.renderMarkdown,
+    renderMath: options.renderMath,
+    useDollarForMath: options.useDollarForMath,
+  }
 }
 
 export function fromPreset(options: SessionOptions): SessionOptionsFields {
@@ -233,5 +249,7 @@ export function fromPreset(options: SessionOptions): SessionOptionsFields {
     temperature: options.modelOptions.temperature,
     reasoningEffort: getReasoningEffort(options.modelOptions),
     renderMarkdown: options.renderMarkdown,
+    renderMath: options.renderMath,
+    useDollarForMath: options.useDollarForMath,
   }
 }

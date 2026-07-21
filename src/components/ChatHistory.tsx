@@ -3,7 +3,7 @@
 import ChatHistoryMessage from '@/components/ChatHistoryMessage'
 import { ImageContent, Item } from '@/lib/frontend/api'
 import ChatTree from '@/lib/frontend/chat-tree'
-import { getItemText } from '@/lib/frontend/shared'
+import { DisplayOptions, getItemText } from '@/lib/frontend/shared'
 import wordsCount from 'words-count'
 import styles from './ChatHistory.module.scss'
 
@@ -11,7 +11,7 @@ interface ChatHistoryProps {
   disabled?: boolean
   forkDisabled?: boolean
   tree: ChatTree
-  renderMarkdown?: boolean
+  displayOptions: DisplayOptions
   latestItemId: number | null
   setLatestItemId(id: number): void
   onOverwrite(
@@ -42,7 +42,7 @@ export default function ChatHistory({
   disabled,
   forkDisabled,
   tree,
-  renderMarkdown,
+  displayOptions,
   latestItemId,
   setLatestItemId,
   onOverwrite,
@@ -76,7 +76,7 @@ export default function ChatHistory({
               disabled={disabled}
               forkDisabled={forkDisabled}
               siblingCount={siblingCount}
-              renderMarkdown={renderMarkdown}
+              displayOptions={displayOptions}
               index={index}
               left={left}
               right={right}

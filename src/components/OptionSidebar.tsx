@@ -45,6 +45,10 @@ export default function OptionSidebar({
     setOptions(options)
   }
 
+  const renderMarkdown = options.renderMarkdown !== false
+  const renderMath = options.renderMath !== false
+  const useDollarForMath = options.useDollarForMath === true
+
   return (
     <aside className={styles.sidebar}>
       <div className={styles.sidebarHeader}>
@@ -217,12 +221,40 @@ export default function OptionSidebar({
               <input
                 type='checkbox'
                 className='checkbox'
-                checked={options.renderMarkdown}
+                checked={renderMarkdown}
                 onChange={e =>
                   handleOptionChange('renderMarkdown', e.target.checked)
                 }
               />
               <span className='checkboxText'>Render Markdown</span>
+            </label>
+          </div>
+          <div className={styles.field}>
+            <label className='checkboxLabel'>
+              <input
+                type='checkbox'
+                className='checkbox'
+                checked={renderMath}
+                onChange={e =>
+                  handleOptionChange('renderMath', e.target.checked)
+                }
+                disabled={!renderMarkdown}
+              />
+              <span className='checkboxText'>Render math</span>
+            </label>
+          </div>
+          <div className={styles.field}>
+            <label className='checkboxLabel'>
+              <input
+                type='checkbox'
+                className='checkbox'
+                checked={useDollarForMath}
+                onChange={e =>
+                  handleOptionChange('useDollarForMath', e.target.checked)
+                }
+                disabled={!renderMarkdown || !renderMath}
+              />
+              <span className='checkboxText'>Use $ for inline math</span>
             </label>
           </div>
         </div>
