@@ -83,6 +83,10 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
+
+    :disabled, label:has(:disabled) {
+        opacity: 50%;
+    }
 }
 
 .label {
