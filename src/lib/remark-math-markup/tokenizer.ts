@@ -1,32 +1,33 @@
 /**
- * Configurable tokenizers. These recognize opening and closing delimiters and
- * emit mathInline or mathDisplay tokens containing the text inside. Newlines,
- * text data, and the delimiters themselves are emitted as nested tokens.
+ * Tokenizers that recognize math delimiters and emit mathText or mathDisplay
+ * tokens. Supports arbitrary delimiter strings with optional backslash-escape
+ * handling so that `\$` never acts as a closing delimiter inside math.
  */
 
 import { markdownLineEnding } from 'micromark-util-character'
 
 export interface MathTokenizerOptions {
-  startChar: number
-  endChar: number
-  displayMode: boolean
+  start: string
+  end: string
+  escape?: string
+  display: boolean
 }
 
 const BACKSLASH = '\\'.charCodeAt(0)
 
-export const INLINE_TOKENIZER = createMathTokenizer({ 
-  startChar: '('.charCodeAt(0),
-  endChar: ')'.charCodeAt(0),
-  displayMode: false,
-})
-export const DISPLAY_TOKENIZER = createMathTokenizer({ 
-  startChar: '['.charCodeAt(0),
-  endChar: ']'.charCodeAt(0),
-  displayMode: true,
-})
+export const INLINE_TOKENIZER = createMathTokenizer({ start: '\\(', end: '\\)', display: false })
+export const DISPLAY_TOKENIZER = createMathTokenizer({ start: '\\[', end: '\\]', display: true })
+export const DOLLAR_TOKENIZER = createMathTokenizer({ start: '$', end: '$', escape: '$', display: false })
+export const DOUBLE_DOLLAR_TOKENIZER = createMathTokenizer({ start: '$$', end: '$$', escape: '$', display: true })
 
 export function createMathTokenizer(options: MathTokenizerOptions): any {
-  const prefix = options.displayMode ? 'mathDisplay' : 'mathText'
+  const prefix = options.display ? 'mathDisplay' : 'mathText'
+  const startSeq = options.start
+  const endSeq = options.end
+  const endTrigger = endSeq.charCodeAt(0)
+  const escapeCode = options.escape ? options.escape.charCodeAt(0) : -1
+  const hasEscape = escapeCode !== -1
+  const guardEmpty = startSeq === endSeq
 
   return {
     name: prefix,
@@ -37,47 +38,57 @@ export function createMathTokenizer(options: MathTokenizerOptions): any {
     return start
 
     function start(code: number | null): any {
+      if (hasEscape && code === BACKSLASH) {
+        return effects.attempt(
+          { tokenize: tokenizeBackslashEscape, partial: true },
+          ok,
+          nok,
+        )(code)
+      }
       return effects.attempt(
-        {
-          tokenize: tokenizeOpen,
-          partial: true,
-        },
+        { tokenize: tokenizeOpen, partial: true },
         afterOpen,
         nok,
       )(code)
     }
 
     function tokenizeOpen(effects: any, ok: any, nok: any) {
-      return openStart
-      function openStart(code: number | null): any {
-        if (code !== BACKSLASH) return nok(code)
-        effects.enter(prefix)
-        effects.enter(prefix + 'Sequence')
+      effects.enter(prefix)
+      effects.enter(prefix + 'Sequence')
+      let pos = 0
+      return step
+
+      function step(code: number | null): any {
+        if (code !== startSeq.charCodeAt(pos)) return nok(code)
         effects.consume(code)
-        return openSecond
-      }
-      function openSecond(code: number | null): any {
-        if (code !== options.startChar) return nok(code)
-        effects.consume(code)
-        effects.exit(prefix + 'Sequence')
-        return ok(code)
+        pos++
+        if (pos >= startSeq.length) {
+          effects.exit(prefix + 'Sequence')
+          return ok(code)
+        }
+        return step
       }
     }
 
     function afterOpen(code: number | null): any {
+      if (guardEmpty && code === endTrigger) return nok(code)
       return between(code)
     }
 
     function between(code: number | null): any {
       if (code === null) return nok(code)
-      if (code === BACKSLASH) {
+      if (hasEscape && code === BACKSLASH) {
         return effects.attempt(
-          {
-            tokenize: tokenizeClose,
-            partial: true,
-          },
-          ok,
+          { tokenize: tokenizeEscapeInMath, partial: true },
+          between,
           backslashAsData,
+        )(code)
+      }
+      if (code === endTrigger) {
+        return effects.attempt(
+          { tokenize: tokenizeClose, partial: true },
+          ok,
+          triggerAsData,
         )(code)
       }
       if (markdownLineEnding(code)) {
@@ -91,18 +102,57 @@ export function createMathTokenizer(options: MathTokenizerOptions): any {
     }
 
     function tokenizeClose(effects: any, ok: any, nok: any) {
-      return closeStart
-      function closeStart(code: number | null): any {
-        if (code !== BACKSLASH) return nok(code)
-        effects.enter(prefix + 'Sequence')
+      effects.enter(prefix + 'Sequence')
+      let pos = 0
+      return step
+
+      function step(code: number | null): any {
+        if (code !== endSeq.charCodeAt(pos)) return nok(code)
         effects.consume(code)
-        return closeSecond
+        pos++
+        if (pos >= endSeq.length) {
+          effects.exit(prefix + 'Sequence')
+          effects.exit(prefix)
+          return ok(code)
+        }
+        return step
       }
-      function closeSecond(code: number | null): any {
-        if (code !== options.endChar) return nok(code)
+    }
+
+    function tokenizeEscapeInMath(effects: any, ok: any, nok: any) {
+      return backslash
+
+      function backslash(code: number | null): any {
+        if (code !== BACKSLASH) return nok(code)
+        effects.enter(prefix + 'Data')
         effects.consume(code)
-        effects.exit(prefix + 'Sequence')
-        effects.exit(prefix)
+        return escaped
+      }
+
+      function escaped(code: number | null): any {
+        if (code !== escapeCode) return nok(code)
+        effects.consume(code)
+        effects.exit(prefix + 'Data')
+        return ok(code)
+      }
+    }
+
+    function tokenizeBackslashEscape(effects: any, ok: any, nok: any) {
+      return backslash
+
+      function backslash(code: number | null): any {
+        if (code !== BACKSLASH) return nok(code)
+        effects.enter(prefix + 'Escape')
+        effects.consume(code)
+        return escaped
+      }
+
+      function escaped(code: number | null): any {
+        if (code !== escapeCode) return nok(code)
+        effects.exit(prefix + 'Escape')
+        effects.enter(prefix + 'Data')
+        effects.consume(code)
+        effects.exit(prefix + 'Data')
         return ok(code)
       }
     }
@@ -113,8 +163,14 @@ export function createMathTokenizer(options: MathTokenizerOptions): any {
       return data
     }
 
+    function triggerAsData(code: number | null): any {
+      effects.enter(prefix + 'Data')
+      effects.consume(code)
+      return data
+    }
+
     function data(code: number | null): any {
-      if (code === null || code === BACKSLASH || markdownLineEnding(code)) {
+      if (code === null || code === endTrigger || markdownLineEnding(code) || (hasEscape && code === BACKSLASH)) {
         effects.exit(prefix + 'Data')
         return between(code)
       }
