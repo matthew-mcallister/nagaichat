@@ -7,7 +7,7 @@ import express from 'express'
 const app = express()
 const port = parseInteger(process.env.EXPRESS_PORT || '3001')
 
-app.use(express.json())
+app.use(express.json({ limit: '50mb' }))
 
 const corsOptions = {
   origin: function (origin: any, callback: any) {
