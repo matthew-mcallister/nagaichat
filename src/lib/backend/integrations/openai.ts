@@ -43,31 +43,83 @@ async function contentToOpenAI(
   }
 }
 
+export type OpenAiFlavor = 'openai' | 'deepseek'
+
+type ReasoningConfig = NonNullable<
+  OpenAI.Responses.ResponseCreateParamsStreaming['reasoning']
+>
+type ReasoningEffort = NonNullable<ReasoningConfig['effort']>
+
+/**
+ * Builds a reasoning input item for replaying the reasoning of a previous
+ * model turn. Must be immediately followed by its assistant message.
+ */
+function reasoningInputItem(
+  thoughts: string,
+  index: number,
+): OpenAI.Responses.ResponseReasoningItem {
+  // The `summary` field is display-only and not visible to the model - the
+  // reasoning text content is what gets replayed into the model's context.
+  return {
+    type: 'reasoning',
+    id: `rs_history_${index}`,
+    summary: [],
+    content: [{ type: 'reasoning_text', text: thoughts }],
+  }
+}
+
 async function mapHistory(
   history: ChatHistory,
 ): Promise<OpenAI.Responses.ResponseInput> {
   const input: OpenAI.Responses.ResponseInput = []
 
-  for (const entry of history) {
+  for (const [index, entry] of history.entries()) {
     if (entry.role === 'model') {
-      // For assistant messages, OpenAI only supports text content.
-      // Combine all text content into a single string. Thought content is
-      // excluded - the chain of thought is not replayed back to the API.
-      const textContent = entry.content
-        .map(content => {
-          const inner = content.inner()
-          if (inner instanceof TextContent) {
-            return inner.isThought ? '' : inner.text
+      // Assistant messages only support text content. Text and thought
+      // content are collected separately so that the reasoning can be
+      // replayed as a reasoning item.
+      const textParts: string[] = []
+      const thoughtParts: string[] = []
+      for (const content of entry.content) {
+        const inner = content.inner()
+        if (inner instanceof TextContent) {
+          if (inner.isThought) {
+            thoughtParts.push(inner.text)
           } else {
-            throw new ValidationError(
-              'OpenAI does not support images in model messages',
-            )
+            textParts.push(inner.text)
           }
-        })
+        } else {
+          throw new ValidationError(
+            'OpenAI does not support images in model messages',
+          )
+        }
+      }
+
+      const textContent = textParts
+        .filter(text => text.length > 0)
+        .join('\n')
+      const thoughts = thoughtParts
         .filter(text => text.length > 0)
         .join('\n')
 
-      if (textContent.length > 0) {
+      if (textContent.length === 0) {
+        // A reasoning item must be followed by its assistant message, so
+        // turns without any text are skipped entirely.
+        continue
+      }
+
+      if (thoughts.length > 0) {
+        input.push(reasoningInputItem(thoughts, index))
+        input.push({
+          type: 'message',
+          role: 'assistant',
+          id: `msg_history_${index}`,
+          status: 'completed',
+          content: [
+            { type: 'output_text', text: textContent, annotations: [] },
+          ],
+        })
+      } else {
         input.push({
           role: 'assistant',
           content: textContent,
@@ -85,13 +137,6 @@ async function mapHistory(
 
   return input
 }
-
-export type OpenAiFlavor = 'openai' | 'deepseek'
-
-type ReasoningConfig = NonNullable<
-  OpenAI.Responses.ResponseCreateParamsStreaming['reasoning']
->
-type ReasoningEffort = NonNullable<ReasoningConfig['effort']>
 
 export default class OpenAiApi implements IntegrationApi {
   private client: OpenAI
