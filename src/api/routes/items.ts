@@ -25,7 +25,7 @@ router.get('/', async (req, res) => {
 router.post('/', async (req, res) => {
   const body: CreateItemRequest = req.body
   const item = await withTransaction(transaction =>
-    createItem(body, transaction, true),
+    createItem(body, transaction),
   )
   if (!body.content && body.role === 'model') {
     await startStream(body.options.modelOptions, item.id)

@@ -90,7 +90,6 @@ export class Session extends Model {
         options: body.options,
       },
       transaction,
-      false,
     )
     session.latestItemId = item.id
     await session.save({ transaction })

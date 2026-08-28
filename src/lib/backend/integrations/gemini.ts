@@ -5,14 +5,12 @@ import {
   ModelResponse,
 } from '@/lib/backend/integrations/interface'
 import { StaticContent } from '@/lib/backend/static'
-import { ApiResponseError } from '@/lib/error'
 import {
   Content as ApiContent,
   getReasoningEffort,
   ModelInfo,
   ModelOptions,
 } from '@/lib/frontend/shared'
-import { downloadContent } from '@/lib/util'
 import {
   GenerateContentConfig,
   GenerateContentParameters,
@@ -39,29 +37,6 @@ async function contentToGoogle(content: Content): Promise<GooglePart> {
     }
   } else {
     throw new Error('unreachable')
-  }
-}
-
-async function googleToContent(content: GooglePart): Promise<ApiContent> {
-  if (content.text) {
-    if (content.thought) {
-      return { type: 'thought', text: content.text }
-    } else {
-      return { type: 'text', text: content.text }
-    }
-  } else if (content.inlineData) {
-    const { mimeType, data } = content.inlineData
-    if (!mimeType || !data) {
-      throw new ApiResponseError()
-    }
-    return { type: 'inline', mimeType, data }
-  } else if (content.fileData) {
-    const { mimeType, fileUri } = content.fileData
-    if (!mimeType || !fileUri) throw new ApiResponseError()
-    const data = await downloadContent(fileUri)
-    return { type: 'inline', mimeType, data }
-  } else {
-    throw new ApiResponseError()
   }
 }
 
@@ -174,26 +149,6 @@ export default class GeminiApi implements IntegrationApi {
       model: options.model,
       config,
     }
-  }
-
-  async generate(
-    history: ChatHistory,
-    options: ModelOptions,
-    signal?: AbortSignal,
-  ): Promise<ModelResponse> {
-    const body = await this.makeRequestConfig(history, options, signal)
-    const response = await this.client.models.generateContent(
-      body as GenerateContentParameters,
-    )
-    console.dir(response, { depth: null })
-    const candidate: GoogleCandidate | undefined = (response.candidates ||
-      [])[0]
-    const mapped = candidate?.content?.parts?.map(googleToContent)
-    if (!mapped) {
-      throw new ApiResponseError()
-    }
-    const content = await Promise.all(mapped)
-    return { content }
   }
 
   async *generateStreaming(

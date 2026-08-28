@@ -31,11 +31,6 @@ export interface ModelResponse {
  */
 export interface IntegrationApi {
   listModels(): Promise<ModelInfo[]>
-  generate(
-    history: ChatHistory,
-    options: ModelOptions,
-    signal?: AbortSignal,
-  ): Promise<ModelResponse>
   generateStreaming(
     history: ChatHistory,
     options: ModelOptions,
@@ -111,27 +106,11 @@ export class ApiConnector {
   }
 
   /**
-   * Creates a new response to a chat item.
+   * Streams a new response to a chat item.
    *
    * - The chat history is automatically reconstructed from the given item.
-   * - A new item is created for the response.
-   * - The new item is returned.
+   * - Successive versions of the response are yielded as they arrive.
    */
-  public async generate(
-    parent: Item,
-    transaction: Transaction,
-    signal?: AbortSignal,
-  ): Promise<ModelResponse> {
-    const session = await Session.getById(parent.sessionId, transaction)
-    const history = await this.buildHistory(transaction, parent)
-    const response = await this.api.generate(
-      history,
-      session.options.modelOptions,
-      signal,
-    )
-    return response
-  }
-
   public async *generateStreaming(
     itemId: number,
     signal?: AbortSignal,

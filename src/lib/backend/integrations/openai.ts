@@ -27,17 +27,16 @@ function slugToTitle(modelId: string): string {
 
 async function contentToOpenAI(
   content: Content,
-): Promise<OpenAI.Chat.Completions.ChatCompletionContentPart> {
+): Promise<OpenAI.Responses.ResponseInputContent> {
   const inner = content.inner()
   if (inner instanceof TextContent) {
-    return { type: 'text', text: content.text || '' }
+    return { type: 'input_text', text: content.text || '' }
   } else if (inner instanceof StaticContent) {
     const data = (await inner.read()).toString('base64')
     return {
-      type: 'image_url',
-      image_url: {
-        url: `data:${inner.mimeType};base64,${data}`,
-      },
+      type: 'input_image',
+      detail: 'auto',
+      image_url: `data:${inner.mimeType};base64,${data}`,
     }
   } else {
     throw new Error('unreachable')
@@ -46,43 +45,53 @@ async function contentToOpenAI(
 
 async function mapHistory(
   history: ChatHistory,
-): Promise<OpenAI.Chat.Completions.ChatCompletionMessageParam[]> {
-  return Promise.all(
-    history.map(async entry => {
-      if (entry.role === 'model') {
-        // For assistant messages, OpenAI only supports text content.
-        // Combine all text content into a single string.
-        const textContent = entry.content
-          .map(content => {
-            const inner = content.inner()
-            if (inner instanceof TextContent) {
-              return inner.text
-            } else {
-              throw new ValidationError(
-                'OpenAI does not support images in model messages',
-              )
-            }
-          })
-          .filter(text => text.length > 0)
-          .join('\n')
+): Promise<OpenAI.Responses.ResponseInput> {
+  const input: OpenAI.Responses.ResponseInput = []
 
-        return {
+  for (const entry of history) {
+    if (entry.role === 'model') {
+      // For assistant messages, OpenAI only supports text content.
+      // Combine all text content into a single string. Thought content is
+      // excluded - the chain of thought is not replayed back to the API.
+      const textContent = entry.content
+        .map(content => {
+          const inner = content.inner()
+          if (inner instanceof TextContent) {
+            return inner.isThought ? '' : inner.text
+          } else {
+            throw new ValidationError(
+              'OpenAI does not support images in model messages',
+            )
+          }
+        })
+        .filter(text => text.length > 0)
+        .join('\n')
+
+      if (textContent.length > 0) {
+        input.push({
           role: 'assistant',
           content: textContent,
-        }
-      } else {
-        // entry.role === 'user'
-        const content = await Promise.all(entry.content.map(contentToOpenAI))
-        return {
-          role: 'user',
-          content: content,
-        }
+        })
       }
-    }),
-  )
+    } else {
+      // entry.role === 'user'
+      const content = await Promise.all(entry.content.map(contentToOpenAI))
+      input.push({
+        role: 'user',
+        content,
+      })
+    }
+  }
+
+  return input
 }
 
 export type OpenAiFlavor = 'openai' | 'deepseek'
+
+type ReasoningConfig = NonNullable<
+  OpenAI.Responses.ResponseCreateParamsStreaming['reasoning']
+>
+type ReasoningEffort = NonNullable<ReasoningConfig['effort']>
 
 export default class OpenAiApi implements IntegrationApi {
   private client: OpenAI
@@ -105,34 +114,64 @@ export default class OpenAiApi implements IntegrationApi {
     }))
   }
 
+  /**
+   * Maps the application's reasoning effort setting onto the Responses API's
+   * reasoning configuration. Returns null when reasoning should be left at
+   * the model's default.
+   */
+  private makeReasoningConfig(
+    options: ModelOptions,
+  ): ReasoningConfig | null {
+    const effort = getReasoningEffort(options)
+    if (effort === null) {
+      return null
+    }
+
+    let mapped: ReasoningEffort
+    if (effort === 'none') {
+      // The Responses API has no 'none' effort. DeepSeek does not support
+      // 'minimal', so fall back to 'low' there.
+      mapped = this.flavor === 'deepseek' ? 'low' : 'minimal'
+    } else if (effort === 'xhigh') {
+      // The Responses API tops out at 'high'.
+      mapped = 'high'
+    } else {
+      mapped = effort
+    }
+
+    if (this.flavor === 'deepseek') {
+      // DeepSeek accepts `summary` but never generates summaries.
+      return { effort: mapped }
+    }
+    return { effort: mapped, summary: 'auto' }
+  }
+
   private async makeRequestConfig(
     history: ChatHistory,
     options: ModelOptions,
-  ): Promise<OpenAI.Chat.Completions.ChatCompletionCreateParams> {
-    const reasoningEffort = getReasoningEffort(options)
-    const messages = await mapHistory(history)
+  ): Promise<OpenAI.Responses.ResponseCreateParamsStreaming> {
+    const input = await mapHistory(history)
+
+    const requestConfig: OpenAI.Responses.ResponseCreateParamsStreaming = {
+      model: options.model,
+      input,
+      temperature: options.temperature,
+      stream: true,
+    }
 
     if (options.systemPrompt) {
-      messages.unshift({
-        role: 'system',
-        content: options.systemPrompt,
-      })
+      requestConfig.instructions = options.systemPrompt
     }
 
-    const requestConfig: OpenAI.Chat.Completions.ChatCompletionCreateParams = {
-      model: options.model,
-      messages,
-      temperature: options.temperature,
+    if (this.flavor === 'openai') {
+      // The application manages conversation state itself, so there is no
+      // reason to keep responses stored on OpenAI's side.
+      requestConfig.store = false
     }
 
-    if (reasoningEffort !== null) {
-      if (this.flavor === 'deepseek' && reasoningEffort === 'none') {
-        // DeepSeek does not support reasoning_effort = 'none'.
-        requestConfig.reasoning_effort = 'low'
-      } else {
-        // @ts-expect-error Out of date type information
-        requestConfig.reasoning_effort = reasoningEffort
-      }
+    const reasoning = this.makeReasoningConfig(options)
+    if (reasoning) {
+      requestConfig.reasoning = reasoning
     }
 
     return requestConfig
@@ -142,8 +181,6 @@ export default class OpenAiApi implements IntegrationApi {
     text: string,
     thoughts?: string | null,
   ): ModelResponse {
-    // OpenAI's stateless API does not support image outputs - perhaps a
-    // deliberate choice to encourage vendor lock-in.
     const content: ApiContent[] = [
       {
         type: 'text',
@@ -159,93 +196,44 @@ export default class OpenAiApi implements IntegrationApi {
     return { content }
   }
 
-  async generate(
-    history: ChatHistory,
-    options: ModelOptions,
-    signal?: AbortSignal,
-  ): Promise<ModelResponse> {
-    const requestConfig = await this.makeRequestConfig(history, options)
-
-    let thoughts = ''
-    let text = ''
-
-    if (this.flavor == 'deepseek') {
-      const config: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming =
-        { ...requestConfig, stream: true }
-      const response = await this.client.chat.completions.create(config, {
-        signal,
-      })
-
-      // Iterate over the response stream to collect text and reasoning parts
-      for await (const chunk of response) {
-        const delta = chunk.choices[0]?.delta
-        if (!delta) continue
-
-        if (delta.content) {
-          text += delta.content
-        }
-
-        // @ts-expect-error Nonstandard extension
-        if (delta.reasoning_content) {
-          // @ts-expect-error Nonstandard extension
-          thoughts += delta.reasoning_content
-        }
-      }
-      console.dir({ text, thoughts }, { depth: null })
-    } else {
-      const config: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming =
-        { ...requestConfig, stream: false }
-      const response = await this.client.chat.completions.create(config, {
-        signal,
-      })
-      console.dir(response, { depth: null })
-      if (!response.choices?.length) throw new ApiResponseError()
-      text = response.choices[0].message.content || ''
-    }
-
-    return this.makeModelResponse(text, thoughts)
-  }
-
   async *generateStreaming(
     history: ChatHistory,
     options: ModelOptions,
     signal?: AbortSignal,
   ): AsyncIterable<ModelResponse> {
-    const requestConfig = await this.makeRequestConfig(history, options)
+    const config = await this.makeRequestConfig(history, options)
+    const stream = this.client.responses.stream(config, { signal })
 
-    const config: OpenAI.Chat.Completions.ChatCompletionCreateParamsStreaming =
-      {
-        ...requestConfig,
-        stream: true,
-        stream_options: { include_usage: true },
+    // Reasoning summaries are preferred (e.g. OpenAI), but some providers
+    // only expose the raw reasoning text (e.g. DeepSeek).
+    let text = ''
+    let summary = ''
+    let reasoning = ''
+
+    for await (const event of stream) {
+      switch (event.type) {
+        case 'response.output_text.delta':
+          text += event.delta
+          break
+        case 'response.reasoning_summary_text.delta':
+          summary += event.delta
+          break
+        case 'response.reasoning_text.delta':
+          reasoning += event.delta
+          break
+        case 'response.refusal.delta':
+          text += event.delta
+          break
+        case 'response.completed':
+          console.dir(event.response.usage, { depth: null })
+          break
+        case 'response.failed':
+        case 'response.incomplete':
+        case 'error':
+          throw new ApiResponseError()
       }
-    const response = await this.client.chat.completions.create(config, {
-      signal,
-    })
 
-    let text = '',
-      thoughts = ''
-    for await (const chunk of response) {
-      if (chunk.usage) {
-        console.dir(chunk.usage, { depth: null })
-      }
-
-      const delta = chunk.choices[0]?.delta
-      if (!delta) continue
-
-      if (delta.content) {
-        text += delta.content
-      }
-
-      // @ts-expect-error Nonstandard extension
-      if (delta.reasoning_content) {
-        // @ts-expect-error Nonstandard extension
-        thoughts += delta.reasoning_content
-      }
-
-      yield this.makeModelResponse(text, thoughts)
+      yield this.makeModelResponse(text, summary || reasoning)
     }
-
-    console.dir({ text, thoughts }, { depth: null })
   }
 }

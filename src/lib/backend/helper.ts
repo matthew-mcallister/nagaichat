@@ -1,5 +1,3 @@
-import { Integration } from '@/lib/backend/integration'
-import { ApiConnector } from '@/lib/backend/integrations/interface'
 import { Item } from '@/lib/backend/item'
 import { Session } from '@/lib/backend/session'
 import { ValidationError } from '@/lib/error'
@@ -9,8 +7,6 @@ import { Transaction } from 'sequelize'
 export async function createItem(
   body: CreateItemRequest,
   transaction: Transaction,
-  streaming: boolean,
-  signal?: AbortSignal,
 ): Promise<Item> {
   const session = await Session.getById(body.sessionId, transaction)
 
@@ -24,12 +20,6 @@ export async function createItem(
   )
 
   let item: Item
-  if (body.role == 'user') {
-    if (parent && parent.role === 'user') {
-      throw new ValidationError('Role must be "model"')
-    }
-  }
-
   if (body.content !== null) {
     // Create the item
     item = await Item.doCreate({
@@ -44,32 +34,14 @@ export async function createItem(
       throw new ValidationError('Role must be "user"')
     }
 
-    // Generate a response
-    const options = body.options.modelOptions
-    const integration = await Integration.getById(
-      options.integration,
+    // Create an empty item for the model to stream into
+    item = await Item.doCreate({
+      sessionId: parent.sessionId,
+      parentId: parent.id,
+      role: 'model',
+      content: [],
       transaction,
-    )
-    const api = new ApiConnector(integration)
-
-    if (streaming) {
-      item = await Item.doCreate({
-        sessionId: parent.sessionId,
-        parentId: parent.id,
-        role: 'model',
-        content: [],
-        transaction,
-      })
-    } else {
-      const response = await api.generate(parent, transaction, signal)
-      item = await Item.doCreate({
-        sessionId: parent.sessionId,
-        parentId: parent.id,
-        role: 'model',
-        content: response.content,
-        transaction,
-      })
-    }
+    })
   }
 
   session.latestItemId = item.id
