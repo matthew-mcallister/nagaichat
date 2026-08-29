@@ -58,8 +58,6 @@ function reasoningInputItem(
   thoughts: string,
   index: number,
 ): OpenAI.Responses.ResponseReasoningItem {
-  // The `summary` field is display-only and not visible to the model - the
-  // reasoning text content is what gets replayed into the model's context.
   return {
     type: 'reasoning',
     id: `rs_history_${index}`,
@@ -101,12 +99,6 @@ async function mapHistory(
       const thoughts = thoughtParts
         .filter(text => text.length > 0)
         .join('\n')
-
-      if (textContent.length === 0) {
-        // A reasoning item must be followed by its assistant message, so
-        // turns without any text are skipped entirely.
-        continue
-      }
 
       if (thoughts.length > 0) {
         input.push(reasoningInputItem(thoughts, index))
